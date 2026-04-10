@@ -73,6 +73,8 @@
       gap: 18px;
       padding: 22px;
       overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
     }
 
     .screen.active { display: flex; }
@@ -266,9 +268,9 @@
     .hp-fill.enemy { background: linear-gradient(90deg, #ff9a7a, #ff6f78); }
 
     .dice-row {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
-      justify-content: space-between;
     }
 
     .die {
@@ -461,9 +463,110 @@
         height: 100dvh;
         border-radius: 0;
       }
-      .screen { padding: 16px; }
-      .battle-layout,
-      .combatants { grid-template-columns: 1fr; }
+      .screen {
+        padding:
+          max(12px, env(safe-area-inset-top))
+          14px
+          max(16px, env(safe-area-inset-bottom))
+          14px;
+        gap: 14px;
+      }
+      .top-bar {
+        align-items: flex-start;
+      }
+      .top-bar h2 {
+        font-size: 1.5rem;
+      }
+      .battle-layout { grid-template-columns: 1fr; }
+      .combatants {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+      .combat-card,
+      .panel,
+      .hand-box,
+      .reward-btn,
+      .summary-box,
+      .mini-card {
+        padding: 12px;
+      }
+      .dice-row {
+        gap: 8px;
+      }
+      .die {
+        padding: 8px 6px;
+        border-radius: 18px;
+      }
+      .die-value {
+        font-size: clamp(1.8rem, 8vw, 2.4rem);
+      }
+      .die-meta {
+        font-size: 0.66rem;
+      }
+      .hand-name {
+        font-size: 1.25rem;
+      }
+      .damage-preview {
+        font-size: 1.6rem;
+      }
+      .action-row {
+        position: sticky;
+        bottom: 0;
+        z-index: 2;
+        padding-top: 4px;
+        background: linear-gradient(180deg, rgba(24, 18, 31, 0), rgba(24, 18, 31, 0.92) 28%);
+      }
+      .log-box {
+        min-height: 160px;
+      }
+      .summary-stats {
+        gap: 8px;
+      }
+      .deck-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .screen {
+        padding:
+          max(10px, env(safe-area-inset-top))
+          10px
+          max(14px, env(safe-area-inset-bottom))
+          10px;
+      }
+      .chip,
+      .eyebrow,
+      .reward-type {
+        font-size: 0.68rem;
+        padding: 7px 10px;
+      }
+      .logo {
+        font-size: clamp(2.5rem, 12vw, 3.5rem);
+      }
+      .subtitle {
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+      .combat-card {
+        gap: 6px;
+      }
+      .flavor,
+      .subtext,
+      .log-entry {
+        font-size: 0.84rem;
+      }
+      .action-row {
+        grid-template-columns: 1fr;
+      }
+      .primary-btn,
+      .secondary-btn {
+        min-height: 50px;
+        padding: 12px 14px;
+      }
+      .damage-preview {
+        font-size: 1.4rem;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
