@@ -871,8 +871,8 @@
             </div>
 
             <div class="action-row">
-              <button class="secondary-btn action-btn push-action" id="reroll-btn">继续重掷<span id="reroll-subline">赌更高的牌型</span></button>
-              <button class="primary-btn action-btn cash-action" id="cashout-btn">立即结算<span id="cashout-subline">把当前伤害落袋为安</span></button>
+              <button class="secondary-btn action-btn push-action" id="reroll-btn"><span id="reroll-title">继续重掷</span><span id="reroll-subline">赌更高的牌型</span></button>
+              <button class="primary-btn action-btn cash-action" id="cashout-btn"><span id="cashout-title">立即结算</span><span id="cashout-subline">把当前伤害落袋为安</span></button>
             </div>
 
             <div class="stats-row muted-stats">
@@ -998,8 +998,10 @@
       cashCard: document.getElementById("cash-card"),
       pushCard: document.getElementById("push-card"),
       rerollBtn: document.getElementById("reroll-btn"),
+      rerollTitle: document.getElementById("reroll-title"),
       rerollSubline: document.getElementById("reroll-subline"),
       cashoutBtn: document.getElementById("cashout-btn"),
+      cashoutTitle: document.getElementById("cashout-title"),
       cashoutSubline: document.getElementById("cashout-subline"),
       lockedCount: document.getElementById("locked-count"),
       highestHand: document.getElementById("highest-hand"),
@@ -1176,6 +1178,102 @@
       };
     }
 
+    function getStraightWindowText(values) {
+      const unique = [...new Set(values)].sort((a, b) => a - b);
+      if (unique.length < 4) return null;
+
+      for (let start = 1; start <= 2; start += 1) {
+        const needed = [];
+        for (let point = start; point < start + 5; point += 1) {
+          if (!unique.includes(point)) needed.push(point);
+        }
+        if (needed.length === 1) {
+          const keep = unique.filter((point) => point >= start && point < start + 5);
+          return `留住 ${keep.join("-")}，只差 ${needed[0]} 就成顺子`;
+        }
+      }
+
+      if (unique.length === 4 && unique[3] - unique[0] <= 4) {
+        const keep = unique.join("-");
+        const leftNeed = unique[0] > 1 ? unique[0] - 1 : null;
+        const rightNeed = unique[3] < 6 ? unique[3] + 1 : null;
+        if (leftNeed && rightNeed) return `留住 ${keep}，补 ${leftNeed} 或 ${rightNeed} 都能成顺子`;
+        if (leftNeed) return `留住 ${keep}，只差 ${leftNeed} 就成顺子`;
+        if (rightNeed) return `留住 ${keep}，只差 ${rightNeed} 就成顺子`;
+      }
+
+      return null;
+    }
+
+    function getSpecificNearMissText(values) {
+      const countEntries = getCounts(values);
+      const counts = countEntries.map((entry) => entry[1]);
+      const topValue = countEntries[0][0];
+      const secondValue = countEntries[1] ? countEntries[1][0] : null;
+      const straightText = getStraightWindowText(values);
+
+      if (counts[0] === 4) return `留住四颗 ${topValue}，再摸一颗 ${topValue} 就能冲五条`;
+      if (counts[0] === 3 && counts[1] === 2) return `留住三颗 ${topValue}，再摸一颗 ${topValue} 就能把葫芦顶成四条`;
+      if (counts[0] === 3 && counts[1] === 1) return `留住三颗 ${topValue}，补一颗 ${topValue} 冲四条；如果补到 ${secondValue} 也能稳成葫芦`;
+      if (counts[0] === 2 && counts[1] === 2) return `留住两组 ${topValue} / ${secondValue}，再来一颗 ${topValue} 或 ${secondValue} 就成葫芦`;
+      if (counts[0] === 2) return `先抱住一对 ${topValue}，再摸一颗 ${topValue} 就能升成三条`;
+      if (straightText) return straightText;
+      return "这一手还有上冲空间，但还没露出特别明确的牌胚";
+    }
+
+    function getSpecificPotentialUpgrade(preview, battle, player) {
+      const uniqueCount = [...new Set(preview.hand.values)].length;
+      let target = null;
+      let missText = getSpecificNearMissText(preview.hand.values);
+
+      if (preview.busted) {
+        if (getStraightWindowText(preview.hand.values)) {
+          target = HAND_RULES.find((rule) => rule.key === "straight");
+        } else {
+          target = HAND_RULES.find((rule) => rule.key === "pair");
+          if (uniqueCount === 5) missText = "先摸出一对再说，这手还没有真正成型";
+        }
+      } else if (preview.hand.key === "pair") {
+        target = HAND_RULES.find((rule) => rule.key === "threeKind");
+      } else if (preview.hand.key === "twoPair") {
+        target = HAND_RULES.find((rule) => rule.key === "fullHouse");
+      } else if (preview.hand.key === "threeKind") {
+        target = HAND_RULES.find((rule) => rule.key === "fourKind");
+      } else if (preview.hand.key === "straight") {
+        missText = "顺子已经成了，再赌不是补牌型，而是在拿更高倍率换波动";
+      } else if (preview.hand.key === "fullHouse") {
+        target = HAND_RULES.find((rule) => rule.key === "fourKind");
+      } else if (preview.hand.key === "fourKind") {
+        target = HAND_RULES.find((rule) => rule.key === "fiveKind");
+      }
+
+      if (!target) {
+        return {
+          targetName: null,
+          missText,
+          damageHint: null,
+        };
+      }
+
+      let estimate = target.baseDamage + player.mods.flatDamage;
+      if (target.key === "pair") estimate += player.mods.pairBonus;
+      if (target.key === "straight") estimate += player.mods.straightBonus;
+      if (target.key === "fourKind") estimate *= player.mods.fourKindMultiplier;
+      estimate += player.mods.lockedDieBonus * battle.dice.filter((die) => die.locked).length;
+
+      const nextMultiplier = battle.rerollsRemaining > 0
+        ? getMultiplierForTurn({ ...battle, rerollsUsed: battle.rerollsUsed + 1 }, player)
+        : preview.multiplier;
+      const low = Math.round(estimate * nextMultiplier);
+      const high = Math.round(estimate * Math.max(nextMultiplier, preview.multiplier + 0.25));
+
+      return {
+        targetName: target.name,
+        missText,
+        damageHint: low === high ? `${low}` : `${low}-${high}`,
+      };
+    }
+
     function getBuildFocusLabel(player) {
       if (!player.rewards.length) return "当前流派：未成型";
       const counts = new Map();
@@ -1288,6 +1386,102 @@
       result.pushReason = potential
         ? `${potential.missText} 赌成 ${potential.targetName} 约有 ${potential.damageHint} 伤害。`
         : `${nearMiss} 下一次还能把倍率推到 x${nextMultiplier.toFixed(2)}。`;
+      result.pushClass = "active push-bias";
+      result.cashClass = "cash-bias";
+      return result;
+    }
+
+    function getDecisionStateV2(preview, battle, player) {
+      const nextMultiplier = getMultiplierForTurn(
+        {
+          ...battle,
+          rerollsUsed: battle.rerollsUsed + 1,
+          bonusMultiplier: battle.bonusMultiplier,
+        },
+        player
+      );
+      const enemyHp = battle.enemy.hp;
+      const nearMiss = getSpecificNearMissText(preview.hand.values);
+      const potential = getSpecificPotentialUpgrade(preview, battle, player);
+
+      const result = {
+        cashHeadline: "先稳住",
+        cashReason: `现在收手，至少能稳拿 ${preview.damage} 伤害`,
+        pushHeadline: "再赌一手",
+        pushReason: potential?.targetName
+          ? `${potential.missText}。如果成 ${potential.targetName}，这一手大概能抬到 ${potential.damageHint} 伤害`
+          : `下一次重掷后倍率会到 x${nextMultiplier.toFixed(2)}，还能继续往上赌`,
+        cashClass: "cash-bias",
+        pushClass: "push-bias",
+        handClass: "",
+      };
+
+      if (preview.damage >= enemyHp && !preview.busted) {
+        result.cashHeadline = "直接收掉";
+        result.cashReason = `现在结算就能带走 ${battle.enemy.name}`;
+        result.cashClass = "active cash-bias";
+        result.pushHeadline = "还想更贪";
+        result.pushReason = "这一手已经够赢了，再赌是在拿斩杀去换事故";
+        result.handClass = "hot";
+        return result;
+      }
+
+      if (preview.busted) {
+        result.cashHeadline = "这手收不住";
+        result.cashReason = "现在停手等于空过这一回合";
+        result.pushHeadline = battle.rerollsRemaining > 0 ? "必须再赌" : "已经锁死";
+        result.pushReason = battle.rerollsRemaining > 0
+          ? (potential?.targetName
+            ? `${potential.missText}。只要成 ${potential.targetName}，这手就还能救回来`
+            : nearMiss)
+          : "没有重掷了，这一手只能硬吃反击";
+        result.cashClass = "danger";
+        result.pushClass = battle.rerollsRemaining > 0 ? "active push-bias" : "danger";
+        result.handClass = "bust";
+        return result;
+      }
+
+      if (battle.rerollsRemaining === 0) {
+        result.cashHeadline = "只能收手";
+        result.cashReason = `${preview.damage} 伤害就是这一手的最终结果`;
+        result.pushHeadline = "没得再赌";
+        result.pushReason = "这一回合已经没有继续上冲的机会";
+        result.cashClass = "active cash-bias";
+        result.pushClass = "danger";
+        return result;
+      }
+
+      if (preview.hand.rank >= 6) {
+        result.cashHeadline = "这手已经很硬";
+        result.cashReason = `${preview.hand.name} 已经够痛，收掉会更稳`;
+        result.pushHeadline = "还能更狠";
+        result.pushReason = potential?.targetName
+          ? `${potential.missText}。如果贪成 ${potential.targetName}，伤害会抬到 ${potential.damageHint}`
+          : "这一手已经成了，再赌主要是在拿更高倍率换波动";
+        result.cashClass = "active cash-bias";
+        result.pushClass = "push-bias";
+        result.handClass = preview.hand.rank >= 7 ? "jackpot" : "hot";
+        return result;
+      }
+
+      if (battle.rerollsRemaining >= 2 && preview.hand.rank <= 2) {
+        result.cashHeadline = "现在收太早";
+        result.cashReason = `${preview.hand.name} 还不够值钱，现在收很亏`;
+        result.pushHeadline = "这手很能追";
+        result.pushReason = potential?.targetName
+          ? `${potential.missText}。继续赌，很容易直接抬到 ${potential.targetName} 和 ${potential.damageHint} 伤害`
+          : `${nearMiss}。而且下一次倍率还会继续上涨`;
+        result.cashClass = "cash-bias";
+        result.pushClass = "active push-bias";
+        return result;
+      }
+
+      result.cashHeadline = "先把收益拿下";
+      result.cashReason = `现在收手能稳稳打出 ${preview.damage} 伤害`;
+      result.pushHeadline = "还有机会抬一档";
+      result.pushReason = potential?.targetName
+        ? `${potential.missText}。如果赌成 ${potential.targetName}，这手大概是 ${potential.damageHint} 伤害`
+        : `${nearMiss}。下一次还能把倍率推到 x${nextMultiplier.toFixed(2)}`;
       result.pushClass = "active push-bias";
       result.cashClass = "cash-bias";
       return result;
@@ -1594,7 +1788,8 @@
       const player = state.player;
       const hand = evaluateHand(battle.dice, player);
       const preview = calculateDamagePreview(hand, battle, player);
-      const advice = getDecisionState(preview, battle, player);
+      const advice = getDecisionStateV2(preview, battle, player);
+      const potential = getSpecificPotentialUpgrade(preview, battle, player);
       battle.preview = preview;
 
       ui.battleStage.textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
@@ -1612,9 +1807,13 @@
 
       renderDice();
       ui.heroHand.textContent = hand.name;
-      ui.heroHandCopy.textContent = preview.busted ? "这手不继续赌就会空过。" : advice.pushReason;
+      ui.heroHandCopy.textContent = preview.busted
+        ? "这手没成，继续赌才有机会活下来。"
+        : (potential?.targetName
+          ? `再赌是在追 ${potential.targetName}。${potential.missText}`
+          : advice.pushReason);
       ui.heroDamage.textContent = `${preview.damage} 伤害`;
-      ui.heroDamageCopy.textContent = advice.cashReason;
+      ui.heroDamageCopy.textContent = preview.busted ? "现在收手等于白给这一回合。" : advice.cashReason;
       ui.heroRerolls.textContent = `${battle.rerollsRemaining} 次`;
       ui.heroRerollsCopy.textContent = battle.rerollsRemaining > 0
         ? `现在最值得问的是：这手要不要再赌一次。`
@@ -1633,6 +1832,11 @@
       ui.lockedCount.textContent = battle.dice.filter((die) => die.locked).length;
       ui.highestHand.textContent = player.highestHandName;
       ui.deckSize.textContent = player.rewards.length;
+      ui.heroRerollsCopy.textContent = battle.rerollsRemaining > 0
+        ? (potential?.targetName
+          ? `这手值不值得赌，就看你想不想追 ${potential.targetName}。`
+          : "现在最重要的问题就是：这一手还要不要再赌一次。")
+        : "这一回合已经没有继续再赌的机会。";
 
       const nextMultiplier = getMultiplierForTurn({ ...battle, rerollsUsed: battle.rerollsUsed + 1 }, player);
       ui.rerollBtn.textContent = battle.rerollsRemaining > 0
@@ -1643,6 +1847,22 @@
         : "这回合已经到底";
       ui.cashoutBtn.textContent = preview.busted ? "现在收手会爆掉" : `立即结算 ${preview.damage} 伤害`;
       ui.cashoutSubline.textContent = preview.busted ? "稳不住了，这一手不会造成伤害" : advice.cashReason;
+      ui.rerollBtn.innerHTML = '<span id="reroll-title"></span><span id="reroll-subline"></span>';
+      ui.cashoutBtn.innerHTML = '<span id="cashout-title"></span><span id="cashout-subline"></span>';
+      ui.rerollTitle = ui.rerollBtn.querySelector("#reroll-title");
+      ui.rerollSubline = ui.rerollBtn.querySelector("#reroll-subline");
+      ui.cashoutTitle = ui.cashoutBtn.querySelector("#cashout-title");
+      ui.cashoutSubline = ui.cashoutBtn.querySelector("#cashout-subline");
+      ui.rerollTitle.textContent = battle.rerollsRemaining > 0
+        ? `继续重掷 ${player.mods.softGlove && battle.rerollsUsed === 0 ? "(这次不涨倍率)" : `(下一次 x${nextMultiplier.toFixed(2)})`}`
+        : "没有重掷了";
+      ui.rerollSubline.textContent = battle.rerollsRemaining > 0
+        ? (potential?.targetName
+          ? `追 ${potential.targetName} · ${potential.missText}`
+          : (preview.busted ? "这手不重掷就会直接空过" : advice.pushReason))
+        : "这一回合已经到头了";
+      ui.cashoutTitle.textContent = preview.busted ? "现在收手会空过" : `立即结算 ${preview.damage} 伤害`;
+      ui.cashoutSubline.textContent = preview.busted ? "这手根本收不住，停手就是白给" : `稳稳拿下 ${preview.damage} 伤害`;
       ui.rerollBtn.disabled = battle.rerollsRemaining <= 0;
       ui.cashoutBtn.disabled = false;
       renderBattleLog();
