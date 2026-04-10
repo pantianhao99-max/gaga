@@ -245,6 +245,56 @@
       font-weight: 700;
     }
 
+    .hero-decision-strip {
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr 0.9fr;
+      gap: 12px;
+    }
+
+    .hero-stat {
+      padding: 14px;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .hero-stat.primary {
+      background:
+        linear-gradient(180deg, rgba(240, 199, 119, 0.12), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.04);
+      border-color: rgba(240, 199, 119, 0.2);
+    }
+
+    .hero-stat.warning {
+      background:
+        linear-gradient(180deg, rgba(255, 125, 130, 0.12), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 125, 130, 0.2);
+    }
+
+    .hero-label {
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-value {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .hero-copy {
+      color: var(--muted);
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
     .battle-layout {
       display: grid;
       grid-template-columns: 1.2fr 0.8fr;
@@ -433,16 +483,27 @@
       border-radius: var(--radius-md);
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: rgba(255, 255, 255, 0.03);
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
     }
 
     .decision-card.active {
       border-color: rgba(240, 199, 119, 0.24);
       background: rgba(240, 199, 119, 0.08);
+      box-shadow: 0 0 0 1px rgba(240, 199, 119, 0.14);
     }
 
     .decision-card.danger {
       border-color: rgba(255, 125, 130, 0.24);
       background: rgba(255, 125, 130, 0.08);
+      box-shadow: 0 0 0 1px rgba(255, 125, 130, 0.12);
+    }
+
+    .decision-card.push-bias {
+      transform: translateY(-2px);
+    }
+
+    .decision-card.cash-bias {
+      transform: translateY(-2px);
     }
 
     .decision-label {
@@ -472,6 +533,21 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+    }
+
+    .action-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 3px;
+      text-align: left;
+    }
+
+    .action-btn span {
+      font-size: 0.78rem;
+      font-weight: 700;
+      opacity: 0.8;
     }
 
     .muted-stats {
@@ -533,6 +609,13 @@
       margin: 0;
       font-size: 1.08rem;
       font-weight: 900;
+    }
+
+    .reward-hook {
+      margin: 0;
+      color: var(--gold-2);
+      font-size: 0.84rem;
+      font-weight: 800;
     }
 
     .reward-type {
@@ -617,6 +700,10 @@
         gap: 14px;
       }
       .battle-layout { grid-template-columns: 1fr; }
+      .hero-decision-strip {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
       .combatants {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
@@ -721,6 +808,24 @@
           </div>
         </div>
 
+        <div class="hero-decision-strip">
+          <div class="hero-stat primary">
+            <span class="hero-label">当前牌型</span>
+            <strong class="hero-value" id="hero-hand">散点</strong>
+            <span class="hero-copy" id="hero-hand-copy">这手还不够硬。</span>
+          </div>
+          <div class="hero-stat primary">
+            <span class="hero-label">现在收手</span>
+            <strong class="hero-value" id="hero-damage">0 伤害</strong>
+            <span class="hero-copy" id="hero-damage-copy">当前这一手还不值得结算。</span>
+          </div>
+          <div class="hero-stat warning">
+            <span class="hero-label">还能继续赌</span>
+            <strong class="hero-value" id="hero-rerolls">2 次</strong>
+            <span class="hero-copy" id="hero-rerolls-copy">下一次还能继续拉倍率。</span>
+          </div>
+        </div>
+
         <div class="battle-layout">
           <div class="panel">
             <div class="dice-row" id="dice-row"></div>
@@ -745,8 +850,8 @@
             </div>
 
             <div class="action-row">
-              <button class="secondary-btn" id="reroll-btn">继续重掷</button>
-              <button class="primary-btn" id="cashout-btn">立即结算</button>
+              <button class="secondary-btn action-btn" id="reroll-btn">继续重掷<span id="reroll-subline">赌更高的牌型</span></button>
+              <button class="primary-btn action-btn" id="cashout-btn">立即结算<span id="cashout-subline">把当前伤害落袋为安</span></button>
             </div>
 
             <div class="stats-row muted-stats">
@@ -853,6 +958,12 @@
       enemyHpText: document.getElementById("enemy-hp-text"),
       enemyName: document.getElementById("enemy-name"),
       enemyFlavor: document.getElementById("enemy-flavor"),
+      heroHand: document.getElementById("hero-hand"),
+      heroHandCopy: document.getElementById("hero-hand-copy"),
+      heroDamage: document.getElementById("hero-damage"),
+      heroDamageCopy: document.getElementById("hero-damage-copy"),
+      heroRerolls: document.getElementById("hero-rerolls"),
+      heroRerollsCopy: document.getElementById("hero-rerolls-copy"),
       diceRow: document.getElementById("dice-row"),
       handBox: document.getElementById("hand-box"),
       handRankChip: document.getElementById("hand-rank-chip"),
@@ -866,7 +977,9 @@
       cashCard: document.getElementById("cash-card"),
       pushCard: document.getElementById("push-card"),
       rerollBtn: document.getElementById("reroll-btn"),
+      rerollSubline: document.getElementById("reroll-subline"),
       cashoutBtn: document.getElementById("cashout-btn"),
+      cashoutSubline: document.getElementById("cashout-subline"),
       lockedCount: document.getElementById("locked-count"),
       highestHand: document.getElementById("highest-hand"),
       deckSize: document.getElementById("deck-size"),
@@ -1005,6 +1118,22 @@
       return `当前流派：${top[0]} (${top[1]})`;
     }
 
+    function getRewardHook(reward) {
+      const hooks = {
+        "对子流": "把这一把推向稳定保底的对子结算。",
+        "锁骰流": "更强调锁住关键点数，再把收益一点点堆高。",
+        "贪刀流": "鼓励你多按一次重掷，把风险换成更高上限。",
+        "顺子流": "更偏向追连续点数，一旦成型爆发更明显。",
+        "续航流": "让你更敢拖回合，用容错换更多尝试。",
+        "四条流": "朝着大面额、高爆发的四条结算走。",
+        "通用流": "不给你换打法，但会把每一手都抬高一点。",
+        "收益流": "把这局的额外价值拉起来，鼓励更贪的打法。",
+        "爆发流": "让关键一手来得更猛，适合抢节奏。",
+        "高点流": "把低点变成高点，拉高胡牌的上限。",
+      };
+      return hooks[reward.focus] || "这张牌会把你的打法进一步推向一个明确方向。";
+    }
+
     function getDecisionState(preview, battle, player) {
       const nextMultiplier = getMultiplierForTurn(
         {
@@ -1031,6 +1160,8 @@
         result.cashHeadline = "直接斩杀";
         result.cashReason = `现在结算就能收掉 ${battle.enemy.name}。`;
         result.cashClass = "active";
+        result.pushHeadline = "再贪就多余";
+        result.pushReason = "这一手已经够了，继续赌是在拿斩杀去换事故。";
         result.handClass = "hot";
         return result;
       }
@@ -1062,6 +1193,7 @@
         result.pushHeadline = "还能更胡";
         result.pushReason = `但如果你想赌更夸张的上限，${nearMiss}`;
         result.cashClass = "active";
+        result.pushClass = "push-bias";
         result.handClass = preview.hand.rank >= 7 ? "jackpot" : "hot";
         return result;
       }
@@ -1071,7 +1203,7 @@
         result.cashReason = `这手只有 ${preview.hand.name}，现在收太保守。`;
         result.pushHeadline = "上行很高";
         result.pushReason = `${nearMiss}，而且倍率还能继续往上叠。`;
-        result.pushClass = "active";
+        result.pushClass = "active push-bias";
         return result;
       }
 
@@ -1079,7 +1211,8 @@
       result.cashReason = `现在收手能稳定打出 ${preview.damage} 伤害。`;
       result.pushHeadline = "可以贪";
       result.pushReason = `${nearMiss} 下一次还能把倍率推到 x${nextMultiplier.toFixed(2)}。`;
-      result.pushClass = "active";
+      result.pushClass = "active push-bias";
+      result.cashClass = "cash-bias";
       return result;
     }
 
@@ -1156,6 +1289,12 @@
       state.battle.justLocked = index;
       renderBattleScreen();
       flashDamage(state.battle.dice[index].locked ? "LOCK" : "FREE", "blue");
+      addLog(
+        state.battle.dice[index].locked
+          ? `你锁住了第 ${index + 1} 颗骰子，准备围绕它继续赌。`
+          : `你解开了第 ${index + 1} 颗骰子，重新把它交给运气。`,
+        state.battle.dice[index].locked ? "锁骰：" : "松锁："
+      );
       setTimeout(() => {
         if (state && state.battle) {
           state.battle.justLocked = null;
@@ -1181,7 +1320,15 @@
       battle.rerollsRemaining -= 1;
       battle.rerollsUsed += 1;
       battle.justRolled = rerolled;
+      const freshHand = evaluateHand(battle.dice, state.player);
+      const freshPreview = calculateDamagePreview(freshHand, battle, state.player);
       addLog(`你继续加注，当前还剩 ${battle.rerollsRemaining} 次重掷。`, "继续赌：");
+      addLog(
+        freshPreview.busted
+          ? `结果还是散点，还得继续找出路。`
+          : `现在是 ${freshHand.name}，如果收手可打 ${freshPreview.damage} 伤害。`,
+        freshPreview.hand.rank >= 4 ? "成型：" : "回看："
+      );
       renderBattleScreen();
       flashDamage(`x${getMultiplierForTurn(battle, state.player).toFixed(2)}`, "blue");
       pulseShell("state-push");
@@ -1249,6 +1396,9 @@
         addLog(`你以 ${preview.hand.name} 结算，造成 ${preview.damage} 点伤害。`, "结算：");
         flashDamage(`-${preview.damage}`);
         pulseShell(preview.hand.rank >= 6 ? "state-win" : "state-hit");
+        if (preview.hand.rank >= 6) {
+          addLog(`这是一手高质量 ${preview.hand.name}，赌中了。`, "命中：");
+        }
       }
 
       renderBattleScreen();
@@ -1337,7 +1487,9 @@
         <button class="reward-btn" data-reward-id="${reward.id}">
           <span class="eyebrow reward-type">${reward.type}</span>
           <p class="reward-title">${reward.name}</p>
+          <p class="reward-hook">方向：${reward.focus}</p>
           <p class="subtext">${reward.text}</p>
+          <p class="subtext">${getRewardHook(reward)}</p>
           <div class="tags-row">
             <span class="tag">${reward.focus}</span>
             ${reward.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
@@ -1382,6 +1534,14 @@
       ui.enemyFlavor.textContent = battle.enemy.flavor;
 
       renderDice();
+      ui.heroHand.textContent = hand.name;
+      ui.heroHandCopy.textContent = preview.busted ? "现在收手会直接爆掉。" : advice.pushReason;
+      ui.heroDamage.textContent = `${preview.damage} 伤害`;
+      ui.heroDamageCopy.textContent = advice.cashReason;
+      ui.heroRerolls.textContent = `${battle.rerollsRemaining} 次`;
+      ui.heroRerollsCopy.textContent = battle.rerollsRemaining > 0
+        ? `再赌一次后将来到 x${getMultiplierForTurn({ ...battle, rerollsUsed: battle.rerollsUsed + 1 }, player).toFixed(2)}。`
+        : "这回合已经没有继续赌的机会。";
       ui.handBox.className = `hand-box ${advice.handClass}`.trim();
       ui.handRankChip.textContent = preview.busted ? "爆点风险" : "当前牌型";
       ui.handName.textContent = hand.name;
@@ -1401,7 +1561,11 @@
       ui.rerollBtn.textContent = battle.rerollsRemaining > 0
         ? `继续重掷 ${player.mods.softGlove && battle.rerollsUsed === 0 ? "(本次不涨倍率)" : `(下一次 x${nextMultiplier.toFixed(2)})`}`
         : "没有重掷了";
+      ui.rerollSubline.textContent = battle.rerollsRemaining > 0
+        ? (preview.busted ? "这手不重掷就会爆掉" : advice.pushReason)
+        : "这回合已经到底";
       ui.cashoutBtn.textContent = preview.busted ? "现在收手会爆掉" : `立即结算 ${preview.damage} 伤害`;
+      ui.cashoutSubline.textContent = advice.cashReason;
       ui.rerollBtn.disabled = battle.rerollsRemaining <= 0;
       ui.cashoutBtn.disabled = false;
       renderBattleLog();
