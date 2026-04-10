@@ -1,44 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Dice Heist</title>
+  <title>骰命劫局</title>
   <style>
     :root {
       color-scheme: dark;
       --bg: #0d0b12;
-      --bg-soft: #16111d;
-      --panel: rgba(24, 18, 31, 0.92);
-      --panel-2: rgba(33, 25, 42, 0.94);
-      --card: #f1e7d0;
-      --card-ink: #231910;
-      --text: #f6f2e8;
-      --muted: #b9ac95;
+      --bg-2: #17111f;
+      --panel: rgba(24, 18, 31, 0.94);
+      --line: rgba(255, 255, 255, 0.08);
+      --text: #f4efe4;
+      --muted: #b5aa96;
       --gold: #f0c777;
       --gold-2: #ffdf9f;
-      --red: #ff6f78;
-      --green: #79dfac;
-      --blue: #8ebcff;
-      --purple: #b68bff;
-      --border: rgba(255,255,255,0.08);
-      --shadow: 0 16px 40px rgba(0,0,0,0.35);
+      --green: #7ce0aa;
+      --red: #ff7d82;
+      --ink: #23170d;
       --radius-xl: 28px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --radius-sm: 12px;
-      --font-display: "Trebuchet MS", "Avenir Next Condensed", "Segoe UI", sans-serif;
-      --font-body: "Segoe UI", "Inter", sans-serif;
+      --radius-lg: 20px;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
+      --font-display: "Trebuchet MS", "Avenir Next Condensed", "Microsoft YaHei UI", sans-serif;
+      --font-body: "Microsoft YaHei UI", "Segoe UI", sans-serif;
     }
 
     * { box-sizing: border-box; }
-    html, body { height: 100%; margin: 0; }
+    html, body { margin: 0; min-height: 100%; }
     body {
       font-family: var(--font-body);
       color: var(--text);
       background:
-        radial-gradient(circle at top, rgba(252, 221, 155, 0.12), transparent 30%),
-        radial-gradient(circle at 80% 20%, rgba(142, 188, 255, 0.08), transparent 28%),
+        radial-gradient(circle at top, rgba(240, 199, 119, 0.15), transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(142, 188, 255, 0.1), transparent 26%),
         linear-gradient(180deg, #0a0810 0%, #110d18 45%, #0d0b12 100%);
       overflow: hidden;
     }
@@ -46,13 +40,13 @@
     button {
       font: inherit;
       color: inherit;
-      cursor: pointer;
       border: 0;
+      cursor: pointer;
       background: none;
     }
 
     .app {
-      min-height: 100%;
+      min-height: 100dvh;
       display: grid;
       place-items: center;
       padding: 18px;
@@ -64,64 +58,35 @@
       position: relative;
       overflow: hidden;
       border-radius: 32px;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       background:
-        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0)),
-        linear-gradient(180deg, rgba(20,16,27,0.98), rgba(12,10,17,0.98));
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
+        linear-gradient(180deg, rgba(20, 16, 27, 0.98), rgba(12, 10, 17, 0.98));
       box-shadow: var(--shadow);
-    }
-
-    .shell::before,
-    .shell::after {
-      content: "";
-      position: absolute;
-      border-radius: 999px;
-      pointer-events: none;
-      filter: blur(10px);
-    }
-
-    .shell::before {
-      width: 260px;
-      height: 260px;
-      right: -60px;
-      top: -80px;
-      background: radial-gradient(circle, rgba(240, 199, 119, 0.18), transparent 70%);
-    }
-
-    .shell::after {
-      width: 280px;
-      height: 280px;
-      left: -80px;
-      bottom: -100px;
-      background: radial-gradient(circle, rgba(182, 139, 255, 0.12), transparent 72%);
     }
 
     .screen {
       position: absolute;
       inset: 0;
-      padding: 22px;
       display: none;
+      flex-direction: column;
+      gap: 18px;
+      padding: 22px;
       overflow: auto;
     }
 
-    .screen.active {
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
+    .screen.active { display: flex; }
 
     .title-screen {
       justify-content: center;
       align-items: center;
       text-align: center;
-      gap: 22px;
       background:
-        radial-gradient(circle at top, rgba(240, 199, 119, 0.16), transparent 26%),
-        linear-gradient(180deg, rgba(13,11,18,0.82), rgba(13,11,18,0.98));
+        radial-gradient(circle at top, rgba(240, 199, 119, 0.15), transparent 30%),
+        linear-gradient(180deg, rgba(13, 11, 18, 0.84), rgba(13, 11, 18, 0.98));
     }
 
     .eyebrow,
-    .tag,
     .chip,
     .reward-type {
       display: inline-flex;
@@ -130,66 +95,81 @@
       gap: 6px;
       padding: 8px 12px;
       border-radius: 999px;
-      font-size: 0.74rem;
+      font-size: 0.76rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       font-weight: 800;
     }
 
     .eyebrow {
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       color: var(--gold-2);
       border: 1px solid rgba(240, 199, 119, 0.24);
     }
 
     .logo {
+      margin: 0;
       font-family: var(--font-display);
       font-size: clamp(3rem, 8vw, 5.5rem);
-      line-height: 0.9;
-      margin: 0;
+      line-height: 0.92;
       letter-spacing: -0.06em;
     }
 
     .subtitle {
-      max-width: 520px;
+      max-width: 560px;
       margin: 0;
-      font-size: 1rem;
-      line-height: 1.65;
       color: var(--muted);
+      line-height: 1.65;
+      font-size: 0.98rem;
+    }
+
+    .meta-row,
+    .stats-row,
+    .summary-stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+    }
+
+    .chip strong {
+      color: var(--text);
+      font-weight: 900;
     }
 
     .primary-btn,
     .secondary-btn,
-    .dice-btn,
-    .reward-btn {
-      min-height: 54px;
-      border-radius: 18px;
+    .reward-btn,
+    .die {
       transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, opacity 180ms ease;
     }
 
-    .primary-btn {
-      padding: 16px 22px;
-      background: linear-gradient(180deg, #f0c777, #d9a84d);
-      color: #24180b;
+    .primary-btn,
+    .secondary-btn {
+      min-height: 54px;
+      border-radius: 18px;
+      padding: 14px 18px;
       font-weight: 900;
-      box-shadow: 0 14px 28px rgba(217, 168, 77, 0.28);
+    }
+
+    .primary-btn {
+      background: linear-gradient(180deg, #f0c777, #d6a247);
+      color: #24170b;
+      box-shadow: 0 14px 28px rgba(214, 162, 71, 0.25);
     }
 
     .secondary-btn {
-      padding: 14px 18px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
       color: var(--text);
-      font-weight: 700;
     }
 
-    .primary-btn:hover,
-    .secondary-btn:hover,
-    .dice-btn:hover,
-    .reward-btn:hover {
-      transform: translateY(-2px);
-    }
-
+    button:hover { transform: translateY(-2px); }
     button:disabled {
       opacity: 0.45;
       cursor: not-allowed;
@@ -206,47 +186,30 @@
     }
 
     .top-bar h2,
-    .panel h3,
-    .summary-box h3 {
+    .panel h3 {
       margin: 0;
       font-family: var(--font-display);
       letter-spacing: -0.04em;
     }
 
-    .top-bar h2 {
-      font-size: 1.8rem;
-    }
-
     .battle-layout {
       display: grid;
-      grid-template-columns: 1.18fr 0.82fr;
+      grid-template-columns: 1.14fr 0.86fr;
       gap: 18px;
-      min-height: 0;
       flex: 1;
+      min-height: 0;
     }
 
     .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow);
       padding: 18px;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: rgba(24, 18, 31, 0.94);
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
       gap: 14px;
       min-height: 0;
-    }
-
-    .hero-panel {
-      background:
-        linear-gradient(180deg, rgba(240,199,119,0.05), rgba(255,255,255,0)),
-        var(--panel);
-    }
-
-    .enemy-panel {
-      background:
-        linear-gradient(180deg, rgba(255,111,120,0.08), rgba(255,255,255,0)),
-        var(--panel);
     }
 
     .combatants {
@@ -258,30 +221,38 @@
     .combat-card {
       padding: 16px;
       border-radius: var(--radius-lg);
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       flex-direction: column;
       gap: 10px;
     }
 
-    .combat-card strong {
-      font-size: 1.08rem;
+    .hero-panel {
+      background:
+        linear-gradient(180deg, rgba(124, 224, 170, 0.08), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.03);
+    }
+
+    .enemy-panel {
+      background:
+        linear-gradient(180deg, rgba(255, 125, 130, 0.1), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.03);
     }
 
     .flavor {
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.45;
       margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
     }
 
     .hp-track {
       width: 100%;
       height: 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
       overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .hp-fill {
@@ -291,101 +262,72 @@
       border-radius: inherit;
     }
 
-    .hp-fill.player { background: linear-gradient(90deg, #79dfac, #48c989); }
+    .hp-fill.player { background: linear-gradient(90deg, #79dfac, #49c989); }
     .hp-fill.enemy { background: linear-gradient(90deg, #ff9a7a, #ff6f78); }
 
-    .stats-row,
-    .dice-row,
-    .control-row,
-    .reward-grid,
-    .summary-stats,
-    .meta-row {
+    .dice-row {
       display: flex;
       gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .chip {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--muted);
-    }
-
-    .chip strong {
-      color: var(--text);
-      font-weight: 800;
-    }
-
-    .dice-row {
       justify-content: space-between;
     }
 
-    .dice-btn {
+    .die {
       flex: 1;
       min-width: 0;
       aspect-ratio: 1 / 1.15;
       padding: 10px;
       border-radius: 22px;
-      border: 2px solid rgba(255,255,255,0.1);
-      background: linear-gradient(180deg, rgba(255,250,240,0.98), rgba(233,221,198,0.96));
-      color: var(--card-ink);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(180deg, rgba(255, 250, 240, 0.98), rgba(233, 221, 198, 0.96));
+      color: var(--ink);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.24);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
     }
 
-    .dice-btn.locked {
-      border-color: rgba(240,199,119,0.9);
-      box-shadow: 0 0 0 2px rgba(240,199,119,0.25), 0 12px 26px rgba(0,0,0,0.3);
+    .die.locked {
+      border-color: rgba(240, 199, 119, 0.95);
+      box-shadow: 0 0 0 2px rgba(240, 199, 119, 0.2), 0 12px 24px rgba(0, 0, 0, 0.3);
       transform: translateY(-2px);
     }
 
     .die-value {
-      font-size: clamp(2.4rem, 6vw, 3.4rem);
+      font-family: var(--font-display);
+      font-size: clamp(2.4rem, 6vw, 3.2rem);
       font-weight: 900;
       line-height: 1;
-      font-family: var(--font-display);
     }
 
     .die-meta {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
+      color: rgba(35, 23, 13, 0.72);
       font-weight: 800;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: rgba(35,25,16,0.7);
+      letter-spacing: 0.05em;
     }
 
     .hand-box,
     .log-box,
-    .reward-card,
-    .summary-box {
+    .summary-box,
+    .reward-btn,
+    .mini-card {
       border-radius: var(--radius-lg);
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .hand-box {
+      padding: 16px;
       background:
-        linear-gradient(180deg, rgba(240,199,119,0.09), rgba(255,255,255,0)),
-        rgba(255,255,255,0.04);
+        linear-gradient(180deg, rgba(240, 199, 119, 0.09), rgba(255, 255, 255, 0)),
+        rgba(255, 255, 255, 0.04);
     }
 
     .hand-name {
+      margin: 0 0 8px;
       font-size: 1.5rem;
       font-family: var(--font-display);
-      margin: 0 0 6px;
-    }
-
-    .damage-preview {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--gold-2);
-      margin: 8px 0 0;
     }
 
     .subtext {
@@ -395,37 +337,43 @@
       font-size: 0.92rem;
     }
 
-    .action-stack {
+    .damage-preview {
+      margin-top: 10px;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--gold-2);
+    }
+
+    .action-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
 
     .log-box {
+      position: relative;
       flex: 1;
+      min-height: 220px;
       overflow: auto;
-      min-height: 180px;
+      padding: 16px;
     }
 
     .log-entry {
       padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      font-size: 0.92rem;
-      line-height: 1.45;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.92rem;
     }
 
-    .log-entry strong {
-      color: var(--text);
-    }
+    .log-entry strong { color: var(--text); }
 
     .damage-float {
       position: absolute;
-      right: 22px;
-      top: 86px;
+      right: 18px;
+      top: 18px;
       font-size: 1.9rem;
       font-weight: 900;
-      color: var(--gold-2);
       opacity: 0;
       transform: translateY(10px);
       pointer-events: none;
@@ -438,40 +386,39 @@
     }
 
     .reward-grid {
-      flex-direction: column;
+      display: grid;
+      gap: 12px;
     }
 
     .reward-btn {
       width: 100%;
       text-align: left;
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255,255,255,0.08);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
     }
 
     .reward-type {
       width: fit-content;
       padding: 6px 10px;
-      background: rgba(240,199,119,0.12);
+      background: rgba(240, 199, 119, 0.12);
+      border: 1px solid rgba(240, 199, 119, 0.22);
       color: var(--gold-2);
-      border: 1px solid rgba(240,199,119,0.2);
     }
 
     .reward-title {
-      font-size: 1.08rem;
-      font-weight: 800;
       margin: 0;
+      font-size: 1.08rem;
+      font-weight: 900;
     }
 
     .summary-panel {
-      max-width: 700px;
-      margin: auto;
       width: 100%;
+      max-width: 760px;
+      margin: auto;
       justify-content: center;
       text-align: center;
     }
@@ -482,12 +429,13 @@
 
     .summary-box {
       min-width: 140px;
-      background: rgba(255,255,255,0.05);
+      padding: 16px;
     }
 
     .summary-box h3 {
+      margin: 0 0 6px;
       font-size: 2rem;
-      margin-bottom: 4px;
+      font-family: var(--font-display);
     }
 
     .deck-strip {
@@ -499,42 +447,30 @@
 
     .mini-card {
       padding: 12px;
-      border-radius: var(--radius-md);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .mini-card strong {
       display: block;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
 
     @media (max-width: 860px) {
+      .app { padding: 0; }
       .shell {
         width: 100%;
         height: 100dvh;
         border-radius: 0;
       }
-
-      .app {
-        padding: 0;
-      }
-
+      .screen { padding: 16px; }
       .battle-layout,
-      .combatants {
-        grid-template-columns: 1fr;
-      }
-
-      .screen {
-        padding: 16px;
-      }
+      .combatants { grid-template-columns: 1fr; }
     }
 
     @media (prefers-reduced-motion: reduce) {
       * {
-        scroll-behavior: auto !important;
         animation: none !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
       }
     }
   </style>
@@ -543,43 +479,41 @@
   <div class="app">
     <div class="shell">
       <section class="screen title-screen active" id="screen-title">
-        <div class="eyebrow">Dice Poker Roguelike</div>
-        <h1 class="logo">Dice Heist</h1>
-        <p class="subtitle">
-          Roll 5 dice, lock what matters, push for a better hand, and build a ridiculous run out of relic synergies.
-        </p>
+        <div class="eyebrow">骰子扑克 Roguelike</div>
+        <h1 class="logo">骰命劫局</h1>
+        <p class="subtitle">掷 5 枚骰子，锁住关键点数，继续重掷赌更大牌型，再把奖励联动堆到离谱。每局 5 场战斗，死了也会想立刻再开一把。</p>
         <div class="meta-row">
-          <span class="chip">5 battles</span>
-          <span class="chip">5 dice</span>
-          <span class="chip">Lock + reroll</span>
-          <span class="chip">Cash Out or Push</span>
+          <span class="chip">5 场战斗</span>
+          <span class="chip">5 枚骰子</span>
+          <span class="chip">锁定 + 重掷</span>
+          <span class="chip">结算 or 继续赌</span>
         </div>
-        <button class="primary-btn" id="start-run-btn">Start Run</button>
+        <button class="primary-btn" id="start-run-btn">开始一局</button>
       </section>
 
       <section class="screen" id="screen-battle">
         <div class="top-bar">
           <div>
-            <div class="eyebrow" id="battle-stage">Battle 1 / 5</div>
-            <h2 id="battle-title">Rat Thug</h2>
+            <div class="eyebrow" id="battle-stage">第 1 / 5 战</div>
+            <h2 id="battle-title">鼠巷混混</h2>
           </div>
           <div class="stats-row">
-            <span class="chip">Run Gold <strong id="gold-value">0</strong></span>
-            <span class="chip">Rerolls <strong id="rerolls-value">2</strong></span>
-            <span class="chip">Turn Multiplier <strong id="multiplier-value">x1.00</strong></span>
+            <span class="chip">金币 <strong id="gold-value">0</strong></span>
+            <span class="chip">重掷 <strong id="rerolls-value">2</strong></span>
+            <span class="chip">倍率 <strong id="multiplier-value">x1.00</strong></span>
           </div>
         </div>
 
         <div class="combatants">
           <div class="combat-card hero-panel">
-            <strong>You</strong>
+            <strong>你</strong>
             <div class="hp-track"><div class="hp-fill player" id="player-hp-fill"></div></div>
             <div id="player-hp-text">40 / 40 HP</div>
           </div>
           <div class="combat-card enemy-panel">
-            <strong id="enemy-name">Rat Thug</strong>
+            <strong id="enemy-name">鼠巷混混</strong>
             <div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
-            <div id="enemy-hp-text">18 / 18 HP</div>
+            <div id="enemy-hp-text">24 / 24 HP</div>
             <p class="flavor" id="enemy-flavor"></p>
           </div>
         </div>
@@ -589,27 +523,28 @@
             <div class="dice-row" id="dice-row"></div>
 
             <div class="hand-box">
-              <div class="eyebrow" id="hand-rank-chip">Current Hand</div>
-              <h3 class="hand-name" id="hand-name">High Die</h3>
-              <p class="subtext" id="hand-copy">High Die busts if you cash out. Push for something real.</p>
-              <div class="damage-preview" id="damage-preview">0 dmg</div>
+              <div class="eyebrow" id="hand-rank-chip">当前牌型</div>
+              <h3 class="hand-name" id="hand-name">散点</h3>
+              <p class="subtext" id="hand-copy">散点会爆掉。如果现在结算，本回合伤害为 0。</p>
+              <div class="damage-preview" id="damage-preview">0 伤害</div>
             </div>
 
-            <div class="action-stack">
-              <button class="secondary-btn" id="reroll-btn">Push Reroll</button>
-              <button class="primary-btn" id="cashout-btn">Cash Out</button>
+            <div class="action-row">
+              <button class="secondary-btn" id="reroll-btn">继续重掷</button>
+              <button class="primary-btn" id="cashout-btn">立即结算</button>
             </div>
 
             <div class="stats-row">
-              <span class="chip">Locked Dice <strong id="locked-count">0</strong></span>
-              <span class="chip">Highest Hand <strong id="highest-hand">None</strong></span>
-              <span class="chip">Deck Size <strong id="deck-size">0</strong></span>
+              <span class="chip">已锁骰子 <strong id="locked-count">0</strong></span>
+              <span class="chip">最高牌型 <strong id="highest-hand">无</strong></span>
+              <span class="chip">构筑数量 <strong id="deck-size">0</strong></span>
             </div>
           </div>
 
           <div class="panel">
-            <div class="damage-float" id="damage-float">-12</div>
-            <div class="log-box" id="battle-log"></div>
+            <div class="log-box" id="battle-log">
+              <div class="damage-float" id="damage-float">-12</div>
+            </div>
           </div>
         </div>
       </section>
@@ -617,180 +552,66 @@
       <section class="screen" id="screen-reward">
         <div class="top-bar">
           <div>
-            <div class="eyebrow">Choose 1 Reward</div>
-            <h2>Build Breakpoint</h2>
+            <div class="eyebrow">三选一奖励</div>
+            <h2>构筑成型点</h2>
           </div>
           <div class="stats-row">
-            <span class="chip">Relics <strong id="reward-relic-count">0</strong></span>
-            <span class="chip">Gold <strong id="reward-gold-value">0</strong></span>
+            <span class="chip">已获奖励 <strong id="reward-count">0</strong></span>
+            <span class="chip">金币 <strong id="reward-gold">0</strong></span>
           </div>
         </div>
-        <p class="subtitle" style="text-align:left; max-width:none;">
-          Pick one reward. It applies immediately to the next battle.
-        </p>
+        <p class="subtitle" style="text-align:left; max-width:none;">选 1 个奖励，效果会立刻带入下一场战斗。</p>
         <div class="reward-grid" id="reward-grid"></div>
       </section>
 
       <section class="screen summary-panel" id="screen-summary">
-        <div class="eyebrow">Run Over</div>
-        <h1 class="logo" id="summary-title">Busted</h1>
+        <div class="eyebrow">本局结算</div>
+        <h1 class="logo" id="summary-title">爆掉了</h1>
         <p class="subtitle" id="summary-copy"></p>
         <div class="summary-stats" id="summary-stats"></div>
         <div class="deck-strip" id="summary-deck"></div>
-        <button class="primary-btn" id="play-again-btn">Play Again</button>
+        <button class="primary-btn" id="play-again-btn">再来一局</button>
       </section>
     </div>
   </div>
 
   <script>
     const HAND_RULES = [
-      { key: "fiveKind", name: "Five of a Kind", baseDamage: 35, rank: 8 },
-      { key: "fourKind", name: "Four of a Kind", baseDamage: 24, rank: 7 },
-      { key: "fullHouse", name: "Full House", baseDamage: 18, rank: 6 },
-      { key: "straight", name: "Straight", baseDamage: 14, rank: 5 },
-      { key: "threeKind", name: "Three of a Kind", baseDamage: 10, rank: 4 },
-      { key: "twoPair", name: "Two Pair", baseDamage: 7, rank: 3 },
-      { key: "pair", name: "Pair", baseDamage: 4, rank: 2 },
-      { key: "high", name: "High Die", baseDamage: 1, rank: 1 },
+      { key: "fiveKind", name: "五条", baseDamage: 35, rank: 8 },
+      { key: "fourKind", name: "四条", baseDamage: 24, rank: 7 },
+      { key: "fullHouse", name: "葫芦", baseDamage: 18, rank: 6 },
+      { key: "straight", name: "顺子", baseDamage: 14, rank: 5 },
+      { key: "threeKind", name: "三条", baseDamage: 10, rank: 4 },
+      { key: "twoPair", name: "两对", baseDamage: 7, rank: 3 },
+      { key: "pair", name: "一对", baseDamage: 4, rank: 2 },
+      { key: "high", name: "散点", baseDamage: 1, rank: 1 },
     ];
 
     const ENEMIES = [
-      { name: "Rat Thug", hp: 24, damage: 5, flavor: "A gutter bruiser with bad odds and worse manners." },
-      { name: "Alley Guard", hp: 34, damage: 7, flavor: "He knows every trick except when to fold." },
-      { name: "Card Shark", hp: 42, damage: 9, flavor: "Smiles wide, cheats wider, hits hard." },
-      { name: "Iron Dealer", hp: 56, damage: 11, flavor: "Cold hands, loaded sleeves, no mercy." },
-      { name: "The House", hp: 76, damage: 13, flavor: "The table itself is rigged against you. Beat it anyway." },
+      { name: "鼠巷混混", hp: 24, damage: 5, flavor: "下水道里爬出来的打手，手气烂，脾气更烂。" },
+      { name: "巷口守卫", hp: 34, damage: 7, flavor: "他会很多招，唯独不会见好就收。" },
+      { name: "鲨牌老千", hp: 42, damage: 9, flavor: "笑得大方，作弊更大方，下手也狠。" },
+      { name: "铁面庄家", hp: 56, damage: 11, flavor: "袖口藏牌，脸上没表情，也没有怜悯。" },
+      { name: "赌场本身", hp: 76, damage: 13, flavor: "整张桌子都在针对你。那就狠狠干碎它。" },
     ];
 
     const REWARD_POOL = [
-      {
-        id: "lucky-coin",
-        type: "Relic",
-        name: "Lucky Coin",
-        text: "Pairs deal +3 damage.",
-        unique: true,
-        apply: (player) => { player.mods.pairBonus += 3; },
-      },
-      {
-        id: "crooked-die",
-        type: "Relic",
-        name: "Crooked Die",
-        text: "Ones count as sixes for hand evaluation.",
-        unique: true,
-        apply: (player) => { player.mods.onesAreSixes = true; },
-      },
-      {
-        id: "loaded-grip",
-        type: "Relic",
-        name: "Loaded Grip",
-        text: "Locked dice grant +1 damage each when you cash out.",
-        unique: true,
-        apply: (player) => { player.mods.lockedDieBonus += 1; },
-      },
-      {
-        id: "fever-charm",
-        type: "Relic",
-        name: "Fever Charm",
-        text: "Straight gains +8 damage.",
-        unique: true,
-        apply: (player) => { player.mods.straightBonus += 8; },
-      },
-      {
-        id: "greedy-ring",
-        type: "Relic",
-        name: "Greedy Ring",
-        text: "If you used 2+ rerolls, gain +2 gold.",
-        unique: true,
-        apply: (player) => { player.mods.greedyRing = true; },
-      },
-      {
-        id: "bone-chip",
-        type: "Relic",
-        name: "Bone Chip",
-        text: "Full House heals 2 HP when scored.",
-        unique: true,
-        apply: (player) => { player.mods.fullHouseHeal += 2; },
-      },
-      {
-        id: "double-down",
-        type: "Relic",
-        name: "Double Down",
-        text: "Four of a Kind gains x1.3 multiplier.",
-        unique: true,
-        apply: (player) => { player.mods.fourKindMultiplier *= 1.3; },
-      },
-      {
-        id: "soft-glove",
-        type: "Relic",
-        name: "Soft Glove",
-        text: "First reroll each turn is free multiplier-wise.",
-        unique: true,
-        apply: (player) => { player.mods.softGlove = true; },
-      },
-      {
-        id: "cold-start",
-        type: "Upgrade",
-        name: "Cold Start",
-        text: "One random die starts locked each turn.",
-        unique: true,
-        apply: (player) => { player.mods.startLockedDie = true; },
-      },
-      {
-        id: "backroom-pass",
-        type: "Upgrade",
-        name: "Backroom Pass",
-        text: "Gain +1 reroll each battle.",
-        unique: true,
-        apply: (player) => { player.mods.bonusBattleRerolls += 1; },
-      },
-      {
-        id: "stacked-floor",
-        type: "Upgrade",
-        name: "Stacked Floor",
-        text: "Pairs score at least as Two Pair.",
-        unique: true,
-        apply: (player) => { player.mods.pairFloorTwoPair = true; },
-      },
-      {
-        id: "brass-knuckles",
-        type: "Upgrade",
-        name: "Brass Knuckles",
-        text: "+1 flat damage to every scored hand.",
-        unique: true,
-        apply: (player) => { player.mods.flatDamage += 1; },
-      },
-      {
-        id: "odd-job",
-        type: "Upgrade",
-        name: "Odd Job",
-        text: "If all dice are odd, gain +3 gold on cash out.",
-        unique: true,
-        apply: (player) => { player.mods.oddGoldBonus = true; },
-      },
-      {
-        id: "street-medic",
-        type: "Utility",
-        name: "Street Medic",
-        text: "Heal 5 HP now.",
-        unique: false,
-        apply: (player) => { player.hp = Math.min(player.maxHp, player.hp + 5); },
-      },
-      {
-        id: "stash",
-        type: "Utility",
-        name: "Hidden Stash",
-        text: "Gain 6 gold now.",
-        unique: false,
-        apply: (player) => { player.gold += 6; },
-      },
-      {
-        id: "hot-streak",
-        type: "Utility",
-        name: "Hot Streak",
-        text: "Next battle starts with +0.5 multiplier.",
-        unique: false,
-        apply: (player) => { player.mods.nextBattleBonusMultiplier += 0.5; },
-      },
+      { id: "lucky-coin", type: "遗物", name: "好运硬币", text: "一对额外 +3 伤害。", unique: true, apply: (p) => { p.mods.pairBonus += 3; } },
+      { id: "crooked-die", type: "遗物", name: "偏骰", text: "判定牌型时，点数 1 视为 6。", unique: true, apply: (p) => { p.mods.onesAreSixes = true; } },
+      { id: "loaded-grip", type: "遗物", name: "灌铅握把", text: "每枚已锁骰子结算时额外 +1 伤害。", unique: true, apply: (p) => { p.mods.lockedDieBonus += 1; } },
+      { id: "fever-charm", type: "遗物", name: "发热符咒", text: "顺子额外 +8 伤害。", unique: true, apply: (p) => { p.mods.straightBonus += 8; } },
+      { id: "greedy-ring", type: "遗物", name: "贪婪指环", text: "若本回合用了 2 次重掷，额外获得 +2 金币。", unique: true, apply: (p) => { p.mods.greedyRing = true; } },
+      { id: "bone-chip", type: "遗物", name: "骨片筹码", text: "葫芦回复 2 点生命。", unique: true, apply: (p) => { p.mods.fullHouseHeal += 2; } },
+      { id: "double-down", type: "遗物", name: "孤注一掷", text: "四条额外获得 x1.3 倍率。", unique: true, apply: (p) => { p.mods.fourKindMultiplier *= 1.3; } },
+      { id: "soft-glove", type: "遗物", name: "软手套", text: "每回合第一次重掷不增加倍率。", unique: true, apply: (p) => { p.mods.softGlove = true; } },
+      { id: "cold-start", type: "升级", name: "冷开局", text: "每回合开始时随机有 1 枚骰子已锁定。", unique: true, apply: (p) => { p.mods.startLockedDie = true; } },
+      { id: "backroom-pass", type: "升级", name: "后门通行证", text: "每场战斗额外获得 1 次重掷。", unique: true, apply: (p) => { p.mods.bonusBattleRerolls += 1; } },
+      { id: "stacked-floor", type: "升级", name: "偏斜桌面", text: "一对至少按两对结算。", unique: true, apply: (p) => { p.mods.pairFloorTwoPair = true; } },
+      { id: "brass-knuckles", type: "升级", name: "黄铜指虎", text: "所有已成型牌型额外 +1 伤害。", unique: true, apply: (p) => { p.mods.flatDamage += 1; } },
+      { id: "odd-job", type: "升级", name: "奇数生意", text: "若 5 枚骰子全为奇数，结算时额外 +3 金币。", unique: true, apply: (p) => { p.mods.oddGoldBonus = true; } },
+      { id: "street-medic", type: "功能", name: "街头医生", text: "立刻回复 5 点生命。", unique: false, apply: (p) => { p.hp = Math.min(p.maxHp, p.hp + 5); } },
+      { id: "stash", type: "功能", name: "暗仓", text: "立刻获得 6 金币。", unique: false, apply: (p) => { p.gold += 6; } },
+      { id: "hot-streak", type: "功能", name: "手热", text: "下一场战斗开局获得 +0.5 倍率。", unique: false, apply: (p) => { p.mods.nextBattleBonusMultiplier += 0.5; } },
     ];
 
     const ui = {
@@ -826,8 +647,8 @@
       battleLog: document.getElementById("battle-log"),
       damageFloat: document.getElementById("damage-float"),
       rewardGrid: document.getElementById("reward-grid"),
-      rewardRelicCount: document.getElementById("reward-relic-count"),
-      rewardGoldValue: document.getElementById("reward-gold-value"),
+      rewardCount: document.getElementById("reward-count"),
+      rewardGold: document.getElementById("reward-gold"),
       summaryTitle: document.getElementById("summary-title"),
       summaryCopy: document.getElementById("summary-copy"),
       summaryStats: document.getElementById("summary-stats"),
@@ -845,7 +666,7 @@
           gold: 0,
           totalDamage: 0,
           highestHandRank: 0,
-          highestHandName: "None",
+          highestHandName: "无",
           rewards: [],
           ownedRewardIds: new Set(),
           mods: {
@@ -877,26 +698,13 @@
 
     function setScreen(name) {
       state.screen = name;
-      Object.entries(ui.screens).forEach(([key, el]) => {
-        el.classList.toggle("active", key === name);
-      });
+      Object.entries(ui.screens).forEach(([key, el]) => el.classList.toggle("active", key === name));
     }
 
-    function randInt(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function rollDie() {
-      return randInt(1, 6);
-    }
-
-    function makeDiceSet() {
-      return Array.from({ length: 5 }, () => ({ value: rollDie(), locked: false }));
-    }
-
-    function getEffectiveValues(dice, player) {
-      return dice.map((die) => (player.mods.onesAreSixes && die.value === 1 ? 6 : die.value));
-    }
+    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    function rollDie() { return randInt(1, 6); }
+    function makeDiceSet() { return Array.from({ length: 5 }, () => ({ value: rollDie(), locked: false })); }
+    function getEffectiveValues(dice, player) { return dice.map((die) => (player.mods.onesAreSixes && die.value === 1 ? 6 : die.value)); }
 
     function getCounts(values) {
       const map = new Map();
@@ -906,115 +714,67 @@
 
     function isStraight(values) {
       const unique = [...new Set(values)].sort((a, b) => a - b);
-      if (unique.length !== 5) {
-        return false;
-      }
+      if (unique.length !== 5) return false;
       const joined = unique.join(",");
       return joined === "1,2,3,4,5" || joined === "2,3,4,5,6";
     }
 
-    // Returns the strongest poker-style hand for the current dice.
     function evaluateHand(dice, player) {
       const values = getEffectiveValues(dice, player);
       const counts = getCounts(values);
       let hand = HAND_RULES[HAND_RULES.length - 1];
-
-      if (counts[0] === 5) {
-        hand = HAND_RULES[0];
-      } else if (counts[0] === 4) {
-        hand = HAND_RULES[1];
-      } else if (counts[0] === 3 && counts[1] === 2) {
-        hand = HAND_RULES[2];
-      } else if (isStraight(values)) {
-        hand = HAND_RULES[3];
-      } else if (counts[0] === 3) {
-        hand = HAND_RULES[4];
-      } else if (counts[0] === 2 && counts[1] === 2) {
-        hand = HAND_RULES[5];
-      } else if (counts[0] === 2) {
-        hand = HAND_RULES[6];
-      }
-
-      if (player.mods.pairFloorTwoPair && hand.key === "pair") {
-        hand = HAND_RULES[5];
-      }
-
-      return {
-        ...hand,
-        values,
-        highestDie: Math.max(...values),
-        allOdd: values.every((value) => value % 2 === 1),
-      };
+      if (counts[0] === 5) hand = HAND_RULES[0];
+      else if (counts[0] === 4) hand = HAND_RULES[1];
+      else if (counts[0] === 3 && counts[1] === 2) hand = HAND_RULES[2];
+      else if (isStraight(values)) hand = HAND_RULES[3];
+      else if (counts[0] === 3) hand = HAND_RULES[4];
+      else if (counts[0] === 2 && counts[1] === 2) hand = HAND_RULES[5];
+      else if (counts[0] === 2) hand = HAND_RULES[6];
+      if (player.mods.pairFloorTwoPair && hand.key === "pair") hand = HAND_RULES[5];
+      return { ...hand, values, allOdd: values.every((value) => value % 2 === 1) };
     }
 
     function getMultiplierForTurn(battle, player) {
-      const freeRerollOffset = player.mods.softGlove ? 1 : 0;
-      const paidRerolls = Math.max(0, battle.rerollsUsed - freeRerollOffset);
+      const freeOffset = player.mods.softGlove ? 1 : 0;
+      const paidRerolls = Math.max(0, battle.rerollsUsed - freeOffset);
       return 1 + paidRerolls * 0.25 + battle.bonusMultiplier;
     }
 
-    // Converts the scored hand into final damage after relics and push-your-luck rules.
     function calculateDamagePreview(hand, battle, player) {
       const multiplier = getMultiplierForTurn(battle, player);
       const lockedDice = battle.dice.filter((die) => die.locked).length;
-
       if (hand.key === "high") {
-        return {
-          hand,
-          multiplier,
-          damage: 0,
-          busted: true,
-          note: "High Die busts. If you cash out now, you deal 0 damage.",
-        };
+        return { hand, multiplier, damage: 0, busted: true, note: "散点会爆掉。如果现在结算，本回合伤害为 0。" };
       }
-
       let damage = hand.baseDamage;
-
-      if (hand.key === "pair") {
-        damage += player.mods.pairBonus;
-      }
-      if (hand.key === "straight") {
-        damage += player.mods.straightBonus;
-      }
-      if (hand.key === "fourKind") {
-        damage *= player.mods.fourKindMultiplier;
-      }
-
+      if (hand.key === "pair") damage += player.mods.pairBonus;
+      if (hand.key === "straight") damage += player.mods.straightBonus;
+      if (hand.key === "fourKind") damage *= player.mods.fourKindMultiplier;
       damage += player.mods.lockedDieBonus * lockedDice;
       damage += player.mods.flatDamage;
       damage = Math.round(damage * multiplier);
+      return { hand, multiplier, damage, busted: false, note: `基础伤害 ${hand.baseDamage}，当前倍率 x${multiplier.toFixed(2)}。` };
+    }
 
-      return {
-        hand,
-        multiplier,
-        damage,
-        busted: false,
-        note: `Base ${hand.baseDamage}, multiplier x${multiplier.toFixed(2)}.`,
-      };
+    function renderBattleLog() {
+      const floatMarkup = '<div class="damage-float" id="damage-float"></div>';
+      ui.battleLog.innerHTML = floatMarkup + state.run.log.map((entry) => `
+        <div class="log-entry">
+          ${entry.emphasis ? `<strong>${entry.emphasis}</strong> ` : ""}
+          ${entry.text}
+        </div>
+      `).join("");
+      ui.damageFloat = document.getElementById("damage-float");
     }
 
     function addLog(text, emphasis = "") {
       state.run.log.unshift({ text, emphasis });
-      if (state.run.log.length > 24) {
-        state.run.log.length = 24;
-      }
+      if (state.run.log.length > 24) state.run.log.length = 24;
       renderBattleLog();
     }
 
-    function renderBattleLog() {
-      ui.battleLog.innerHTML = state.run.log
-        .map(
-          (entry) => `
-            <div class="log-entry">
-              ${entry.emphasis ? `<strong>${entry.emphasis}</strong> ` : ""}
-              ${entry.text}
-            </div>
-          `
-        )
-        .join("");
-    }
-
     function flashDamage(text, tone = "gold") {
+      if (!ui.damageFloat) return;
       ui.damageFloat.textContent = text;
       ui.damageFloat.style.color = tone === "red" ? "var(--red)" : tone === "green" ? "var(--green)" : "var(--gold-2)";
       ui.damageFloat.classList.remove("show");
@@ -1025,8 +785,8 @@
     function drawInitialDice() {
       state.battle.dice = makeDiceSet();
       if (state.player.mods.startLockedDie) {
-        const index = randInt(0, state.battle.dice.length - 1);
-        state.battle.dice[index].locked = true;
+        const randomIndex = randInt(0, state.battle.dice.length - 1);
+        state.battle.dice[randomIndex].locked = true;
       }
     }
 
@@ -1043,116 +803,105 @@
       };
       state.player.mods.nextBattleBonusMultiplier = 0;
       drawInitialDice();
-      addLog(`You slide into battle with ${enemyData.name}.`, "Deal In:");
+      addLog(`你踏上赌桌，对上了 ${enemyData.name}。`, "开局：");
       renderBattleScreen();
       setScreen("battle");
     }
 
     function startRun() {
       state = makeInitialState();
+      renderBattleLog();
       startBattle(0);
     }
 
     function toggleDie(index) {
-      const die = state.battle.dice[index];
-      die.locked = !die.locked;
+      state.battle.dice[index].locked = !state.battle.dice[index].locked;
       renderBattleScreen();
     }
 
     function rerollUnlockedDice() {
       const battle = state.battle;
-      if (!battle || battle.rerollsRemaining <= 0) {
+      if (!battle || battle.rerollsRemaining <= 0) return;
+      const unlocked = battle.dice.filter((die) => !die.locked);
+      if (!unlocked.length) {
+        addLog("所有骰子都锁住了，至少解锁 1 枚才能重掷。", "卡住：");
         return;
       }
-
-      const unlockedDice = battle.dice.filter((die) => !die.locked);
-      if (!unlockedDice.length) {
-        addLog("All dice are locked. Unlock at least one die to reroll.", "Stall:");
-        return;
-      }
-
       battle.dice = battle.dice.map((die) => (die.locked ? die : { ...die, value: rollDie() }));
       battle.rerollsRemaining -= 1;
       battle.rerollsUsed += 1;
-      addLog(`You push the roll. ${battle.rerollsRemaining} rerolls left.`, "Push:");
-      flashDamage(`x${getMultiplierForTurn(battle, state.player).toFixed(2)}`, "green");
+      addLog(`你继续加注，当前还剩 ${battle.rerollsRemaining} 次重掷。`, "继续赌：");
       renderBattleScreen();
+      flashDamage(`x${getMultiplierForTurn(battle, state.player).toFixed(2)}`, "green");
     }
 
     function applyOnCashOutEffects(preview) {
       if (preview.hand.key === "fullHouse" && state.player.mods.fullHouseHeal > 0) {
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + state.player.mods.fullHouseHeal);
-        addLog(`Bone Chip restores ${state.player.mods.fullHouseHeal} HP.`, "Relic:");
+        addLog(`骨片筹码触发，回复 ${state.player.mods.fullHouseHeal} 点生命。`, "遗物：");
       }
-
       if (state.player.mods.greedyRing && state.battle.rerollsUsed >= 2) {
         state.player.gold += 2;
-        addLog("Greedy Ring pays out +2 gold for going all the way.", "Relic:");
+        addLog("贪婪指环触发，额外 +2 金币。", "遗物：");
       }
-
       if (preview.hand.allOdd && state.player.mods.oddGoldBonus) {
         state.player.gold += 3;
-        addLog("Odd Job triggers. +3 gold.", "Upgrade:");
+        addLog("奇数生意触发，额外 +3 金币。", "升级：");
       }
     }
 
     function enemyAttack() {
       const damage = state.battle.enemy.damage;
       state.player.hp = Math.max(0, state.player.hp - damage);
-      addLog(`${state.battle.enemy.name} hits back for ${damage}.`, "Enemy:");
+      addLog(`${state.battle.enemy.name} 反击，造成 ${damage} 点伤害。`, "敌方：");
       flashDamage(`-${damage}`, "red");
     }
 
     function handleBattleWin() {
       state.run.enemiesDefeated += 1;
       state.player.gold += 4 + state.run.battleIndex;
-      addLog(`${state.battle.enemy.name} folds. You collect your winnings.`, "Win:");
-
+      addLog(`${state.battle.enemy.name} 倒下了，你把桌上的筹码全收走。`, "胜利：");
       if (state.run.battleIndex === ENEMIES.length - 1) {
         showSummary(true);
         return;
       }
-
       prepareRewards();
       setScreen("reward");
     }
 
     function cashOut() {
-      const preview = state.battle.preview || calculateDamagePreview(evaluateHand(state.battle.dice, state.player), state.battle, state.player);
+      const hand = evaluateHand(state.battle.dice, state.player);
+      const preview = calculateDamagePreview(hand, state.battle, state.player);
+      state.battle.preview = preview;
       applyOnCashOutEffects(preview);
-
       if (preview.busted) {
-        addLog("You busted with only a High Die. The table goes cold.", "Bust:");
+        addLog("你只打出了散点，这手直接爆掉。", "爆掉：");
         flashDamage("BUST", "red");
       } else {
         state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - preview.damage);
         state.player.totalDamage += preview.damage;
-        state.player.highestHandRank = Math.max(state.player.highestHandRank, preview.hand.rank);
         if (preview.hand.rank >= state.player.highestHandRank) {
+          state.player.highestHandRank = preview.hand.rank;
           state.player.highestHandName = preview.hand.name;
         }
-        addLog(`${preview.hand.name} cashes out for ${preview.damage} damage.`, "Cash Out:");
+        addLog(`你以 ${preview.hand.name} 结算，造成 ${preview.damage} 点伤害。`, "结算：");
         flashDamage(`-${preview.damage}`);
       }
-
       renderBattleScreen();
-
       if (state.battle.enemy.hp <= 0) {
         handleBattleWin();
         return;
       }
-
       enemyAttack();
       if (state.player.hp <= 0) {
         showSummary(false);
         return;
       }
-
       state.battle.rerollsRemaining = 2 + state.player.mods.bonusBattleRerolls;
       state.battle.rerollsUsed = 0;
       state.battle.bonusMultiplier = 0;
       drawInitialDice();
-      addLog("Fresh turn. Roll again.", "Next Hand:");
+      addLog("新的一手开始，继续掷骰。", "下一手：");
       renderBattleScreen();
     }
 
@@ -1160,16 +909,12 @@
       const pool = REWARD_POOL.filter((reward) => !reward.unique || !state.player.ownedRewardIds.has(reward.id));
       const picks = [];
       const used = new Set();
-
       while (picks.length < 3 && used.size < pool.length) {
         const candidate = pool[randInt(0, pool.length - 1)];
-        if (used.has(candidate.id)) {
-          continue;
-        }
+        if (used.has(candidate.id)) continue;
         used.add(candidate.id);
         picks.push(candidate);
       }
-
       return picks;
     }
 
@@ -1178,90 +923,64 @@
       renderRewards();
     }
 
-    // Applies the chosen reward immediately and moves the run forward.
     function chooseReward(rewardId) {
       const reward = state.run.pendingRewards.find((entry) => entry.id === rewardId);
-      if (!reward) {
-        return;
-      }
-
+      if (!reward) return;
       reward.apply(state.player);
       state.player.rewards.push({ type: reward.type, name: reward.name, text: reward.text });
-      if (reward.unique) {
-        state.player.ownedRewardIds.add(reward.id);
-      }
-      addLog(`${reward.name} joins your build.`, "Reward:");
-
+      if (reward.unique) state.player.ownedRewardIds.add(reward.id);
+      addLog(`${reward.name} 已加入你的构筑。`, "奖励：");
       startBattle(state.run.battleIndex + 1);
     }
 
     function showSummary(victory) {
       setScreen("summary");
-      ui.summaryTitle.textContent = victory ? "The House Falls" : "Busted";
+      ui.summaryTitle.textContent = victory ? "庄家倒下" : "爆掉了";
       ui.summaryCopy.textContent = victory
-        ? "You broke the table, cracked the run, and walked out with the whole room staring."
-        : "The run ended, but the next one is already whispering that one more reroll could fix everything.";
-
+        ? "你掀翻了整张赌桌，拆穿了这场局，带着所有人的目光走出了门。"
+        : "这局结束了，但下一局已经在耳边低语，再重掷一次说不定就成了。";
       const stats = [
-        { label: "Enemies Defeated", value: state.run.enemiesDefeated },
-        { label: "Relics Collected", value: state.player.rewards.length },
-        { label: "Highest Hand", value: state.player.highestHandName },
-        { label: "Total Damage", value: state.player.totalDamage },
+        { label: "击败敌人数", value: state.run.enemiesDefeated },
+        { label: "获得奖励数", value: state.player.rewards.length },
+        { label: "最高牌型", value: state.player.highestHandName },
+        { label: "总伤害", value: state.player.totalDamage },
       ];
-
-      ui.summaryStats.innerHTML = stats
-        .map(
-          (stat) => `
-            <div class="summary-box">
-              <h3>${stat.value}</h3>
-              <div class="subtext">${stat.label}</div>
-            </div>
-          `
-        )
-        .join("");
-
+      ui.summaryStats.innerHTML = stats.map((stat) => `
+        <div class="summary-box">
+          <h3>${stat.value}</h3>
+          <div class="subtext">${stat.label}</div>
+        </div>
+      `).join("");
       ui.summaryDeck.innerHTML = state.player.rewards.length
-        ? state.player.rewards
-            .map(
-              (reward) => `
-                <div class="mini-card">
-                  <strong>${reward.name}</strong>
-                  <div class="subtext">${reward.type} · ${reward.text}</div>
-                </div>
-              `
-            )
-            .join("")
-        : `<div class="mini-card"><strong>No rewards</strong><div class="subtext">You went down before your build ever came online.</div></div>`;
+        ? state.player.rewards.map((reward) => `
+            <div class="mini-card">
+              <strong>${reward.name}</strong>
+              <div class="subtext">${reward.type} · ${reward.text}</div>
+            </div>
+          `).join("")
+        : `<div class="mini-card"><strong>没有奖励</strong><div class="subtext">你的构筑还没成型，这局就已经结束了。</div></div>`;
     }
 
     function renderRewards() {
-      ui.rewardRelicCount.textContent = state.player.rewards.length;
-      ui.rewardGoldValue.textContent = state.player.gold;
-      ui.rewardGrid.innerHTML = state.run.pendingRewards
-        .map(
-          (reward) => `
-            <button class="reward-btn" data-reward-id="${reward.id}">
-              <span class="reward-type">${reward.type}</span>
-              <p class="reward-title">${reward.name}</p>
-              <p class="subtext">${reward.text}</p>
-            </button>
-          `
-        )
-        .join("");
+      ui.rewardCount.textContent = state.player.rewards.length;
+      ui.rewardGold.textContent = state.player.gold;
+      ui.rewardGrid.innerHTML = state.run.pendingRewards.map((reward) => `
+        <button class="reward-btn" data-reward-id="${reward.id}">
+          <span class="reward-type">${reward.type}</span>
+          <p class="reward-title">${reward.name}</p>
+          <p class="subtext">${reward.text}</p>
+        </button>
+      `).join("");
     }
 
     function renderDice() {
-      ui.diceRow.innerHTML = state.battle.dice
-        .map(
-          (die, index) => `
-            <button class="dice-btn ${die.locked ? "locked" : ""}" data-die-index="${index}">
-              <span class="die-meta">${die.locked ? "Locked" : "Tap to lock"}</span>
-              <span class="die-value">${die.value}</span>
-              <span class="die-meta">${state.player.mods.onesAreSixes && die.value === 1 ? "acts as 6" : "d6"}</span>
-            </button>
-          `
-        )
-        .join("");
+      ui.diceRow.innerHTML = state.battle.dice.map((die, index) => `
+        <button class="die ${die.locked ? "locked" : ""}" data-die-index="${index}">
+          <span class="die-meta">${die.locked ? "已锁定" : "点击锁定"}</span>
+          <span class="die-value">${die.value}</span>
+          <span class="die-meta">${state.player.mods.onesAreSixes && die.value === 1 ? "按 6 计算" : "六面骰"}</span>
+        </button>
+      `).join("");
     }
 
     function renderBattleScreen() {
@@ -1270,29 +989,25 @@
       const hand = evaluateHand(battle.dice, player);
       const preview = calculateDamagePreview(hand, battle, player);
       battle.preview = preview;
-
-      ui.battleStage.textContent = `Battle ${state.run.battleIndex + 1} / ${ENEMIES.length}`;
+      ui.battleStage.textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
       ui.battleTitle.textContent = battle.enemy.name;
       ui.goldValue.textContent = player.gold;
       ui.rerollsValue.textContent = battle.rerollsRemaining;
       ui.multiplierValue.textContent = `x${preview.multiplier.toFixed(2)}`;
-
       ui.playerHpFill.style.width = `${(player.hp / player.maxHp) * 100}%`;
       ui.playerHpText.textContent = `${player.hp} / ${player.maxHp} HP`;
       ui.enemyHpFill.style.width = `${(battle.enemy.hp / battle.enemy.maxHp) * 100}%`;
       ui.enemyHpText.textContent = `${battle.enemy.hp} / ${battle.enemy.maxHp} HP`;
       ui.enemyName.textContent = battle.enemy.name;
       ui.enemyFlavor.textContent = battle.enemy.flavor;
-
       renderDice();
-      ui.handRankChip.textContent = preview.busted ? "Bust Risk" : "Current Hand";
+      ui.handRankChip.textContent = preview.busted ? "爆点风险" : "当前牌型";
       ui.handName.textContent = hand.name;
       ui.handCopy.textContent = preview.note;
-      ui.damagePreview.textContent = `${preview.damage} dmg`;
+      ui.damagePreview.textContent = `${preview.damage} 伤害`;
       ui.lockedCount.textContent = battle.dice.filter((die) => die.locked).length;
       ui.highestHand.textContent = player.highestHandName;
       ui.deckSize.textContent = player.rewards.length;
-
       ui.rerollBtn.disabled = battle.rerollsRemaining <= 0;
       ui.cashoutBtn.disabled = false;
       renderBattleLog();
@@ -1303,20 +1018,14 @@
       ui.playAgainBtn.addEventListener("click", startRun);
       ui.rerollBtn.addEventListener("click", rerollUnlockedDice);
       ui.cashoutBtn.addEventListener("click", cashOut);
-
       ui.diceRow.addEventListener("click", (event) => {
         const dieButton = event.target.closest("[data-die-index]");
-        if (!dieButton || state.screen !== "battle") {
-          return;
-        }
+        if (!dieButton || state.screen !== "battle") return;
         toggleDie(Number(dieButton.dataset.dieIndex));
       });
-
       ui.rewardGrid.addEventListener("click", (event) => {
         const rewardButton = event.target.closest("[data-reward-id]");
-        if (!rewardButton || state.screen !== "reward") {
-          return;
-        }
+        if (!rewardButton || state.screen !== "reward") return;
         chooseReward(rewardButton.dataset.rewardId);
       });
     }
