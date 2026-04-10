@@ -1,10 +1,8 @@
 @echo off
 setlocal
 
-set PORT=8110
+set PREVIEW_URL=https://pantianhao99-max.github.io/gaga/
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -WindowStyle Hidden -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-File','%~dp0serve-static.ps1','-Port','%PORT%'"
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 2"
-start "" "http://localhost:%PORT%/"
-echo Preview launching at http://localhost:%PORT%/
+start "" "%PREVIEW_URL%"
+echo Preview launching at %PREVIEW_URL%
 exit /b 0
