@@ -388,7 +388,7 @@ function renderSquad() {
       </div>
       <p>${getSelectedAnimals()
         .map((animal) => animal.skill)
-        .join(" • ")}</p>
+        .join(" / ")}</p>
     </div>
   `;
 
@@ -908,7 +908,7 @@ function renderBattle() {
         (action) => `
           <button class="battle-action-button" data-action="battle-action" data-actor="${action.id}">
             <div>
-              <strong>${ANIMAL_LIBRARY[action.id].name} · ${action.label}</strong>
+              <strong>${ANIMAL_LIBRARY[action.id].name} - ${action.label}</strong>
               <div class="codex-note">${action.sublabel}</div>
             </div>
             <span class="mini-badge">-${action.damage} hp</span>
