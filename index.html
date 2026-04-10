@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tiny Expedition Village</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="ambient-backdrop" aria-hidden="true">
+    <div class="ambient-blob blob-a"></div>
+    <div class="ambient-blob blob-b"></div>
+    <div class="ambient-blob blob-c"></div>
+    <div class="ambient-cloud cloud-a"></div>
+    <div class="ambient-cloud cloud-b"></div>
+  </div>
+
+  <main class="prototype-shell">
+    <div class="phone-frame">
+      <div class="phone-shadow"></div>
+      <div class="phone-stage">
+        <header class="status-strip">
+          <span class="status-pill">Tiny Expedition Village</span>
+          <span class="status-meta">Vertical H5 Cozy Prototype</span>
+        </header>
+
+        <section class="screen screen-launch is-active" id="screen-launch" data-screen="launch">
+          <div class="screen-scroll">
+            <div class="launch-hero">
+              <div class="launch-badge">cozy animal village roguelite</div>
+              <h1>Tiny Expedition Village</h1>
+              <p>
+                Grow a warm woodland village, form a tiny expedition team,
+                and bring treasures home from bite-sized adventures.
+              </p>
+            </div>
+
+            <div class="launch-scene card glass-card">
+              <div class="sun-disc"></div>
+              <div class="hill hill-back"></div>
+              <div class="hill hill-mid"></div>
+              <div class="hill hill-front"></div>
+              <div class="house camp-house">
+                <span>Camp</span>
+              </div>
+              <div class="house garden-house">
+                <span>Garden</span>
+              </div>
+              <div class="house workshop-house">
+                <span>Workshop</span>
+              </div>
+              <div class="trail-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="launch-party">
+                <div class="hero-animal bunny">
+                  <span>Bunny Scout</span>
+                </div>
+                <div class="hero-animal bear">
+                  <span>Bear Cub Forager</span>
+                </div>
+                <div class="hero-animal fox">
+                  <span>Fox Tinkerer</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="launch-summary card">
+              <div class="summary-chip">Village Growth</div>
+              <div class="summary-chip">Short Expedition</div>
+              <div class="summary-chip">Collection Codex</div>
+            </div>
+
+            <button class="primary-button launch-button" data-action="enter-village">
+              Enter the Village
+            </button>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-village" data-screen="village">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Village Home</span>
+                <h2>Willowburrow</h2>
+              </div>
+              <button class="icon-button" data-action="switch-screen" data-screen="codex" aria-label="Open codex">
+                Codex
+              </button>
+            </div>
+
+            <div class="resource-bar" id="village-resource-bar"></div>
+
+            <section class="village-stage card">
+              <div class="stage-topline">
+                <span>Warmth 78%</span>
+                <span>Village Rank 04</span>
+              </div>
+              <div class="village-stage-scene" id="village-building-scene"></div>
+              <div class="stage-quest">
+                <div>
+                  <strong>Next Cozy Goal</strong>
+                  <p>Upgrade the Workshop and finish a five-node expedition.</p>
+                </div>
+                <span class="quest-glow">Bloom Season</span>
+              </div>
+            </section>
+
+            <section class="card spotlight-card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Expedition Loop</span>
+                  <h3>Tiny team, short run, homeward rewards</h3>
+                </div>
+                <span class="mini-badge">Roguelite run</span>
+              </div>
+              <p class="muted-copy">
+                Pick animals, follow a simple route, resolve nodes, and bring
+                rewards back into long-term village upgrades.
+              </p>
+              <button class="primary-button" data-action="switch-screen" data-screen="squad">
+                Plan Expedition
+              </button>
+            </section>
+
+            <section class="card panel-stack">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Resting Team</span>
+                  <h3>Village companions</h3>
+                </div>
+                <span class="mini-badge" id="team-count-chip">0 selected</span>
+              </div>
+              <div class="animal-grid compact" id="village-animal-grid"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-squad" data-screen="squad">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Expedition Setup</span>
+                <h2>Choose the team</h2>
+              </div>
+              <button class="icon-button" data-action="switch-screen" data-screen="village">Back</button>
+            </div>
+
+            <section class="card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Trail Preview</span>
+                  <h3>Fernroot Ridge</h3>
+                </div>
+                <span class="mini-badge">5 nodes</span>
+              </div>
+              <div class="route-preview" id="route-preview-strip"></div>
+            </section>
+
+            <section class="card squad-panel">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Default Heroes</span>
+                  <h3>Tap to add or remove</h3>
+                </div>
+                <span class="mini-badge">2 to 3 animals</span>
+              </div>
+              <div class="animal-grid" id="animal-selection-grid"></div>
+            </section>
+
+            <section class="card team-summary-card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Selected Team</span>
+                  <h3>Expedition stats</h3>
+                </div>
+                <span class="mini-badge" id="team-power-chip">0 power</span>
+              </div>
+              <div id="team-summary"></div>
+              <button class="primary-button" id="start-expedition-button" data-action="start-expedition">
+                Start Tiny Expedition
+              </button>
+            </section>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-route" data-screen="route">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Expedition Route</span>
+                <h2>Fernroot Ridge</h2>
+              </div>
+              <button class="icon-button subtle" data-action="switch-screen" data-screen="village">Abort</button>
+            </div>
+
+            <div class="resource-bar small" id="expedition-loot-bar"></div>
+
+            <section class="card route-map-card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Path Nodes</span>
+                  <h3>Follow the glowing trail</h3>
+                </div>
+                <span class="mini-badge" id="route-progress-chip">0 / 5</span>
+              </div>
+              <div class="route-list" id="route-list"></div>
+            </section>
+
+            <section class="card route-footer-card">
+              <div class="route-footer-grid">
+                <div class="stat-card">
+                  <span>Team HP</span>
+                  <strong id="route-team-hp">0 / 0</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Morale</span>
+                  <strong id="route-team-morale">0%</strong>
+                </div>
+              </div>
+              <button class="primary-button" id="resolve-node-button" data-action="resolve-node">
+                Resolve Current Node
+              </button>
+            </section>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-result" data-screen="result">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Expedition Result</span>
+                <h2>Home with pockets full</h2>
+              </div>
+              <span class="mini-badge success">Run cleared</span>
+            </div>
+
+            <section class="card result-hero" id="result-hero"></section>
+            <section class="card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Collected Rewards</span>
+                  <h3>Pack inventory</h3>
+                </div>
+              </div>
+              <div class="resource-bar tall" id="result-loot-bar"></div>
+            </section>
+
+            <section class="card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Run Notes</span>
+                  <h3>What happened on the trail</h3>
+                </div>
+              </div>
+              <div class="result-log" id="result-log"></div>
+            </section>
+
+            <button class="primary-button" data-action="claim-rewards">
+              Return to Village
+            </button>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-buildings" data-screen="buildings">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Building Upgrade</span>
+                <h2>Village growth</h2>
+              </div>
+              <button class="icon-button" data-action="switch-screen" data-screen="village">Back</button>
+            </div>
+
+            <div class="resource-bar" id="upgrade-resource-bar"></div>
+
+            <section class="card">
+              <div class="panel-title-row">
+                <div>
+                  <span class="eyebrow">Village Buildings</span>
+                  <h3>Upgrade with gathered materials</h3>
+                </div>
+                <span class="mini-badge">Camp / Garden / Workshop</span>
+              </div>
+              <div class="building-list" id="building-upgrade-list"></div>
+            </section>
+
+            <section class="card building-detail-card" id="building-detail"></section>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-codex" data-screen="codex">
+          <div class="screen-scroll">
+            <div class="screen-header">
+              <div>
+                <span class="eyebrow">Collection Codex</span>
+                <h2>Village archive</h2>
+              </div>
+              <button class="icon-button" data-action="switch-screen" data-screen="village">Back</button>
+            </div>
+
+            <section class="tab-strip card" id="codex-tab-strip">
+              <button class="tab-button active" data-action="codex-tab" data-tab="animals">Animals</button>
+              <button class="tab-button" data-action="codex-tab" data-tab="relics">Relics</button>
+              <button class="tab-button" data-action="codex-tab" data-tab="buildings">Buildings</button>
+              <button class="tab-button" data-action="codex-tab" data-tab="records">Records</button>
+            </section>
+
+            <section class="card codex-panel" id="codex-content"></section>
+          </div>
+        </section>
+
+        <nav class="bottom-nav" id="bottom-nav">
+          <button class="nav-button active" data-action="switch-screen" data-screen="village">
+            <span>Village</span>
+          </button>
+          <button class="nav-button" data-action="switch-screen" data-screen="buildings">
+            <span>Build</span>
+          </button>
+          <button class="nav-button" data-action="switch-screen" data-screen="codex">
+            <span>Codex</span>
+          </button>
+        </nav>
+
+        <div class="overlay-layer hidden" id="overlay-layer">
+          <div class="modal-card hidden" id="event-modal">
+            <div class="modal-topline">
+              <span class="mini-badge" id="event-node-tag">Node</span>
+            </div>
+            <h3 id="event-title">Event</h3>
+            <p id="event-copy"></p>
+            <div class="reward-preview" id="event-reward-preview"></div>
+            <div class="choice-stack" id="event-choices"></div>
+          </div>
+
+          <div class="modal-card battle-card hidden" id="battle-modal">
+            <div class="battle-topline">
+              <div>
+                <span class="eyebrow">Battle Node</span>
+                <h3 id="battle-enemy-name">Enemy</h3>
+              </div>
+              <span class="mini-badge danger" id="battle-status-chip">Live</span>
+            </div>
+
+            <div class="battle-health-panel">
+              <div>
+                <span>Enemy HP</span>
+                <div class="health-track">
+                  <div class="health-fill enemy" id="battle-enemy-fill"></div>
+                </div>
+                <strong id="battle-enemy-hp">0 / 0</strong>
+              </div>
+              <div>
+                <span>Team HP</span>
+                <div class="health-track">
+                  <div class="health-fill team" id="battle-team-fill"></div>
+                </div>
+                <strong id="battle-team-hp">0 / 0</strong>
+              </div>
+            </div>
+
+            <div class="battle-actions" id="battle-actions"></div>
+            <div class="battle-log" id="battle-log"></div>
+          </div>
+        </div>
+
+        <div class="toast-stack" id="toast-stack"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
