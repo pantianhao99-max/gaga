@@ -1,1897 +1,308 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>骰命劫局</title>
+  <title>Dice Heist: Neon Break</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #0d0b12;
-      --panel: rgba(24, 18, 31, 0.94);
-      --panel-2: rgba(38, 28, 48, 0.96);
-      --line: rgba(255, 255, 255, 0.08);
-      --text: #f4efe4;
-      --muted: #b5aa96;
-      --gold: #f0c777;
-      --gold-2: #ffdf9f;
-      --red: #ff7d82;
-      --green: #7ce0aa;
-      --blue: #8cbfff;
-      --cream: #efe2c8;
-      --ink: #23170d;
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 16px;
-      --shadow: 0 18px 40px rgba(0, 0, 0, 0.34);
-      --font-display: "Trebuchet MS", "Avenir Next Condensed", "Microsoft YaHei UI", sans-serif;
-      --font-body: "Microsoft YaHei UI", "Segoe UI", sans-serif;
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
-    body {
-      font-family: var(--font-body);
-      color: var(--text);
-      background:
-        radial-gradient(circle at top, rgba(240, 199, 119, 0.15), transparent 28%),
-        radial-gradient(circle at 82% 14%, rgba(140, 191, 255, 0.1), transparent 24%),
-        linear-gradient(180deg, #0a0810 0%, #110d18 45%, #0d0b12 100%);
-      overflow: hidden;
-    }
-
-    button {
-      font: inherit;
-      color: inherit;
-      border: 0;
-      cursor: pointer;
-      background: none;
-    }
-
-    .app {
-      min-height: 100dvh;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-    }
-
-    .shell {
-      width: min(100%, 1100px);
-      height: min(100dvh - 24px, 960px);
-      position: relative;
-      overflow: hidden;
-      border-radius: 32px;
-      border: 1px solid var(--line);
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0)),
-        linear-gradient(180deg, rgba(20, 16, 27, 0.98), rgba(12, 10, 17, 0.98));
-      box-shadow: var(--shadow);
-      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
-    }
-
-    .shell.state-push {
-      box-shadow: 0 0 0 1px rgba(140, 191, 255, 0.28), 0 22px 48px rgba(0, 0, 0, 0.38);
-    }
-
-    .shell.state-hit {
-      box-shadow: 0 0 0 1px rgba(240, 199, 119, 0.28), 0 24px 52px rgba(0, 0, 0, 0.4);
-    }
-
-    .shell.state-bust {
-      transform: translateY(2px);
-      border-color: rgba(255, 125, 130, 0.35);
-      box-shadow: 0 0 0 1px rgba(255, 125, 130, 0.22), 0 22px 48px rgba(0, 0, 0, 0.42);
-    }
-
-    .shell.state-win {
-      border-color: rgba(124, 224, 170, 0.32);
-      box-shadow: 0 0 0 1px rgba(124, 224, 170, 0.22), 0 24px 52px rgba(0, 0, 0, 0.42);
-    }
-
-    .screen {
-      position: absolute;
-      inset: 0;
-      display: none;
-      flex-direction: column;
-      gap: 18px;
-      padding: 22px;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-    }
-
-    .screen.active { display: flex; }
-
-    .title-screen {
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      background:
-        radial-gradient(circle at top, rgba(240, 199, 119, 0.15), transparent 30%),
-        linear-gradient(180deg, rgba(13, 11, 18, 0.84), rgba(13, 11, 18, 0.98));
-    }
-
-    .eyebrow,
-    .chip,
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 0.74rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      font-weight: 800;
-    }
-
-    .eyebrow {
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--gold-2);
-      border: 1px solid rgba(240, 199, 119, 0.24);
-    }
-
-    .chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-    }
-
-    .chip strong {
-      color: var(--text);
-      font-weight: 900;
-    }
-
-    .hero-chip {
-      color: var(--text);
-      background: rgba(240, 199, 119, 0.11);
-      border-color: rgba(240, 199, 119, 0.22);
-    }
-
-    .minor-chip {
-      opacity: 0.75;
-      font-size: 0.68rem;
-    }
-
-    .logo {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: clamp(3rem, 8vw, 5.5rem);
-      line-height: 0.92;
-      letter-spacing: -0.06em;
-    }
-
-    .subtitle {
-      max-width: 560px;
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 0.98rem;
-    }
-
-    .meta-row,
-    .stats-row,
-    .summary-stats,
-    .tags-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .primary-btn,
-    .secondary-btn,
-    .reward-btn,
-    .die {
-      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, opacity 180ms ease;
-    }
-
-    .primary-btn,
-    .secondary-btn {
-      min-height: 54px;
-      border-radius: 18px;
-      padding: 14px 18px;
-      font-weight: 900;
-    }
-
-    .primary-btn {
-      background: linear-gradient(180deg, #f0c777, #d6a247);
-      color: #24170b;
-      box-shadow: 0 14px 28px rgba(214, 162, 71, 0.25);
-    }
-
-    .secondary-btn {
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-    }
-
-    .push-action {
-      background:
-        linear-gradient(180deg, rgba(140, 191, 255, 0.22), rgba(140, 191, 255, 0.08)),
-        rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(140, 191, 255, 0.3);
-      box-shadow: 0 12px 28px rgba(140, 191, 255, 0.18);
-    }
-
-    .push-action:hover {
-      box-shadow: 0 16px 32px rgba(140, 191, 255, 0.24);
-    }
-
-    .cash-action {
-      background:
-        linear-gradient(180deg, #f0c777, #d6a247);
-      color: #24170b;
-      box-shadow: 0 14px 28px rgba(214, 162, 71, 0.22);
-    }
-
-    button:hover { transform: translateY(-2px); }
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .top-bar h2,
-    .panel h3 {
-      margin: 0;
-      font-family: var(--font-display);
-      letter-spacing: -0.04em;
-    }
-
-    .build-line {
-      margin-top: 8px;
-    }
-
-    .mini-label {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-
-    .hero-decision-strip {
-      display: grid;
-      grid-template-columns: 1.1fr 1.2fr 0.9fr;
-      gap: 12px;
-    }
-
-    .hero-stat {
-      padding: 14px;
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.04);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .hero-stat.primary {
-      background:
-        linear-gradient(180deg, rgba(240, 199, 119, 0.12), rgba(255, 255, 255, 0)),
-        rgba(255, 255, 255, 0.04);
-      border-color: rgba(240, 199, 119, 0.2);
-    }
-
-    .hero-stat.warning {
-      background:
-        linear-gradient(180deg, rgba(255, 125, 130, 0.12), rgba(255, 255, 255, 0)),
-        rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 125, 130, 0.2);
-    }
-
-    .hero-label {
-      color: var(--muted);
-      font-size: 0.76rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .hero-value {
-      font-family: var(--font-display);
-      font-size: 1.6rem;
-      line-height: 1;
-    }
-
-    .hero-copy {
-      color: var(--muted);
-      font-size: 0.82rem;
-      line-height: 1.4;
-    }
-
-    .battle-layout {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr;
-      gap: 18px;
-      flex: 1;
-      min-height: 0;
-    }
-
-    .panel {
-      padding: 18px;
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--line);
-      background: var(--panel);
-      box-shadow: var(--shadow);
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-height: 0;
-    }
-
-    .combatants {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-    }
-
-    .combat-card {
-      padding: 16px;
-      border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .hero-panel {
-      background:
-        linear-gradient(180deg, rgba(124, 224, 170, 0.08), rgba(255, 255, 255, 0)),
-        rgba(255, 255, 255, 0.03);
-    }
-
-    .enemy-panel {
-      background:
-        linear-gradient(180deg, rgba(255, 125, 130, 0.1), rgba(255, 255, 255, 0)),
-        rgba(255, 255, 255, 0.03);
-    }
-
-    .flavor {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 0.92rem;
-    }
-
-    .hp-track {
-      width: 100%;
-      height: 14px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-
-    .hp-fill {
-      height: 100%;
-      width: 0;
-      transition: width 240ms ease;
-      border-radius: inherit;
-    }
-
-    .hp-fill.player { background: linear-gradient(90deg, #79dfac, #49c989); }
-    .hp-fill.enemy { background: linear-gradient(90deg, #ff9a7a, #ff6f78); }
-
-    .dice-row {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .die {
-      min-width: 0;
-      aspect-ratio: 1 / 1.16;
-      padding: 10px;
-      border-radius: 22px;
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      background: linear-gradient(180deg, rgba(255, 250, 240, 0.98), rgba(233, 221, 198, 0.96));
-      color: var(--ink);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.24);
-    }
-
-    .die.locked {
-      border-color: rgba(240, 199, 119, 0.95);
-      box-shadow: 0 0 0 2px rgba(240, 199, 119, 0.2), 0 12px 24px rgba(0, 0, 0, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .die.rolling {
-      animation: rerollPulse 360ms ease;
-    }
-
-    .die.lock-flash {
-      animation: lockPulse 260ms ease;
-    }
-
-    .die-value {
-      font-family: var(--font-display);
-      font-size: clamp(2.2rem, 5vw, 3rem);
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .die-meta {
-      font-size: 0.76rem;
-      color: rgba(35, 23, 13, 0.72);
-      font-weight: 800;
-      letter-spacing: 0.05em;
-    }
-
-    .hand-box,
-    .log-box,
-    .summary-box,
-    .reward-btn,
-    .mini-card {
-      border-radius: var(--radius-lg);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .hand-box {
-      padding: 16px;
-      background:
-        linear-gradient(180deg, rgba(240, 199, 119, 0.1), rgba(255, 255, 255, 0)),
-        rgba(255, 255, 255, 0.04);
-      transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
-    }
-
-    .hand-box.bust {
-      border-color: rgba(255, 125, 130, 0.25);
-      box-shadow: 0 0 0 1px rgba(255, 125, 130, 0.12);
-    }
-
-    .hand-box.hot {
-      border-color: rgba(240, 199, 119, 0.26);
-      box-shadow: 0 0 0 1px rgba(240, 199, 119, 0.16);
-    }
-
-    .hand-box.jackpot {
-      transform: translateY(-2px);
-      box-shadow: 0 0 0 1px rgba(124, 224, 170, 0.16), 0 18px 36px rgba(0, 0, 0, 0.32);
-      border-color: rgba(124, 224, 170, 0.26);
-    }
-
-    .hand-name {
-      margin: 0 0 8px;
-      font-size: 1.6rem;
-      font-family: var(--font-display);
-    }
-
-    .subtext {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 0.92rem;
-    }
-
-    .damage-preview {
-      margin-top: 8px;
-      font-size: 2.2rem;
-      font-weight: 900;
-      color: var(--gold-2);
-    }
-
-    .decision-grid {
-      margin-top: 14px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .decision-card {
-      padding: 12px;
-      border-radius: var(--radius-md);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(255, 255, 255, 0.03);
-      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
-    }
-
-    .decision-card.active {
-      border-color: rgba(240, 199, 119, 0.24);
-      background: rgba(240, 199, 119, 0.08);
-      box-shadow: 0 0 0 1px rgba(240, 199, 119, 0.14);
-    }
-
-    .decision-card.danger {
-      border-color: rgba(255, 125, 130, 0.24);
-      background: rgba(255, 125, 130, 0.08);
-      box-shadow: 0 0 0 1px rgba(255, 125, 130, 0.12);
-    }
-
-    .decision-card.push-bias {
-      transform: translateY(-2px);
-      box-shadow: 0 0 0 1px rgba(140, 191, 255, 0.16), 0 12px 22px rgba(0, 0, 0, 0.16);
-    }
-
-    .decision-card.cash-bias {
-      transform: translateY(-2px);
-      box-shadow: 0 0 0 1px rgba(240, 199, 119, 0.12), 0 10px 18px rgba(0, 0, 0, 0.14);
-    }
-
-    .decision-label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .decision-headline {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 1rem;
-    }
-
-    .decision-copy {
-      margin: 0;
-      color: var(--muted);
-      line-height: 1.4;
-      font-size: 0.86rem;
-    }
-
-    .action-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .action-btn {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 3px;
-      text-align: left;
-    }
-
-    .action-btn span {
-      font-size: 0.78rem;
-      font-weight: 700;
-      opacity: 0.8;
-    }
-
-    .muted-stats {
-      opacity: 0.76;
-    }
-
-    .log-box {
-      position: relative;
-      flex: 1;
-      min-height: 240px;
-      overflow: auto;
-      padding: 16px;
-    }
-
-    .log-entry {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      color: var(--muted);
-      line-height: 1.45;
-      font-size: 0.92rem;
-    }
-
-    .log-entry strong { color: var(--text); }
-
-    .damage-float {
-      position: absolute;
-      right: 18px;
-      top: 18px;
-      font-size: 1.9rem;
-      font-weight: 900;
-      opacity: 0;
-      transform: translateY(10px);
-      pointer-events: none;
-      transition: transform 280ms ease, opacity 280ms ease;
-    }
-
-    .damage-float.show {
-      opacity: 1;
-      transform: translateY(-8px);
-    }
-
-    .reward-grid {
-      display: grid;
-      gap: 12px;
-    }
-
-    .reward-btn {
-      width: 100%;
-      text-align: left;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-    }
-
-    .reward-title {
-      margin: 0;
-      font-size: 1.08rem;
-      font-weight: 900;
-    }
-
-    .reward-hook {
-      margin: 0;
-      color: var(--gold-2);
-      font-size: 0.84rem;
-      font-weight: 800;
-    }
-
-    .reward-type {
-      width: fit-content;
-      background: rgba(240, 199, 119, 0.12);
-      border: 1px solid rgba(240, 199, 119, 0.22);
-      color: var(--gold-2);
-    }
-
-    .tag {
-      padding: 5px 9px;
-      font-size: 0.64rem;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--muted);
-    }
-
-    .summary-panel {
-      width: 100%;
-      max-width: 760px;
-      margin: auto;
-      justify-content: center;
-      text-align: center;
-    }
-
-    .summary-stats {
-      justify-content: center;
-    }
-
-    .summary-box {
-      min-width: 140px;
-      padding: 16px;
-    }
-
-    .summary-box h3 {
-      margin: 0 0 6px;
-      font-size: 2rem;
-      font-family: var(--font-display);
-    }
-
-    .deck-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 10px;
-      text-align: left;
-    }
-
-    .mini-card {
-      padding: 12px;
-    }
-
-    .mini-card strong {
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    @keyframes rerollPulse {
-      0% { transform: translateY(0) scale(1); filter: brightness(1); }
-      40% { transform: translateY(-4px) scale(1.04); filter: brightness(1.08); }
-      100% { transform: translateY(0) scale(1); filter: brightness(1); }
-    }
-
-    @keyframes lockPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.06); }
-      100% { transform: scale(1); }
-    }
-
-    @media (max-width: 860px) {
-      .app { padding: 0; }
-      .shell {
-        width: 100%;
-        height: 100dvh;
-        border-radius: 0;
-      }
-      .screen {
-        padding:
-          max(12px, env(safe-area-inset-top))
-          14px
-          max(16px, env(safe-area-inset-bottom))
-          14px;
-        gap: 14px;
-      }
-      .battle-layout { grid-template-columns: 1fr; }
-      .hero-decision-strip {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
-      .combatants {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-      .panel,
-      .combat-card,
-      .reward-btn,
-      .summary-box,
-      .mini-card,
-      .hand-box { padding: 12px; }
-      .dice-row { gap: 8px; }
-      .die {
-        padding: 8px 6px;
-        border-radius: 18px;
-      }
-      .die-value { font-size: clamp(1.8rem, 8vw, 2.4rem); }
-      .die-meta { font-size: 0.66rem; }
-      .damage-preview { font-size: 1.8rem; }
-      .action-row {
-        position: sticky;
-        bottom: 0;
-        z-index: 2;
-        padding-top: 4px;
-        background: linear-gradient(180deg, rgba(24, 18, 31, 0), rgba(24, 18, 31, 0.92) 30%);
-      }
-      .log-box { min-height: 160px; }
-    }
-
-    @media (max-width: 480px) {
-      .decision-grid,
-      .action-row {
-        grid-template-columns: 1fr;
-      }
-      .chip,
-      .eyebrow,
-      .tag {
-        font-size: 0.66rem;
-        padding: 7px 10px;
-      }
-      .logo { font-size: clamp(2.4rem, 12vw, 3.6rem); }
-      .subtitle,
-      .subtext,
-      .flavor,
-      .log-entry,
-      .decision-copy { font-size: 0.84rem; }
-      .top-bar h2 { font-size: 1.45rem; }
-      .hand-name { font-size: 1.3rem; }
-      .damage-preview { font-size: 1.5rem; }
-      .deck-strip { grid-template-columns: 1fr; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      * {
-        animation: none !important;
-        transition-duration: 0.01ms !important;
-        scroll-behavior: auto !important;
-      }
-    }
+      --bg:#090311; --bg2:#150724; --panel:rgba(24,10,44,.9); --panel2:rgba(37,14,69,.95);
+      --line:rgba(255,255,255,.08); --text:#fdf2ff; --muted:#c7b1dc; --cyan:#62f3ff; --mag:#ff4fd8;
+      --gold:#ffc34d; --gold2:#ffe28a; --orange:#ff944d; --red:#ff547f; --green:#79ffca;
+      --shadow:0 30px 80px rgba(0,0,0,.52); --rx:34px; --rl:22px; --rm:16px;
+      --disp:"Trebuchet MS","Arial Black",sans-serif; --body:"Segoe UI","Microsoft YaHei UI",sans-serif;
+    }
+    *{box-sizing:border-box} html,body{min-height:100%;margin:0}
+    body{font-family:var(--body);color:var(--text);overflow:hidden;background:
+      radial-gradient(circle at 20% 0%,rgba(98,243,255,.12),transparent 24%),
+      radial-gradient(circle at 80% 12%,rgba(255,79,216,.16),transparent 28%),
+      linear-gradient(180deg,var(--bg2),var(--bg) 44%,#04020a)}
+    body.shake{animation:shake .22s linear}
+    button{font:inherit;border:0;background:none;color:inherit;cursor:pointer}
+    .app{min-height:100dvh;display:grid;place-items:center;padding:16px}
+    .cabinet{width:min(100%,1240px);height:min(100dvh - 20px,980px);position:relative;overflow:hidden;border-radius:38px;
+      border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(255,255,255,.05),transparent 18%),linear-gradient(180deg,#10061d,#06020d);
+      box-shadow:var(--shadow)}
+    .screen{position:absolute;inset:0;display:none;flex-direction:column;gap:14px;padding:20px;overflow:auto}
+    .screen.active{display:flex}
+    .title-screen,.summary-screen{justify-content:center;align-items:center;text-align:center;background:
+      radial-gradient(circle at top,rgba(98,243,255,.08),transparent 24%),radial-gradient(circle at bottom,rgba(255,79,216,.08),transparent 34%)}
+    .card{width:min(100%,780px);padding:clamp(28px,5vw,56px);border-radius:34px;background:linear-gradient(180deg,rgba(46,18,78,.92),rgba(18,7,35,.96));border:1px solid var(--line);box-shadow:var(--shadow)}
+    .kicker,.tag,.badge,.pill{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 14px;border-radius:999px;font-size:.76rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .kicker{color:var(--cyan);background:rgba(98,243,255,.1);border:1px solid rgba(98,243,255,.2);box-shadow:0 0 24px rgba(98,243,255,.12)}
+    .logo{margin:12px 0 8px;font:900 clamp(3rem,9vw,6rem)/.9 var(--disp);letter-spacing:-.06em;text-transform:uppercase;text-shadow:0 0 28px rgba(98,243,255,.15),0 0 40px rgba(255,79,216,.15)}
+    .subcopy,.mini-copy{margin:0;color:var(--muted);line-height:1.6}
+    .row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+    .panel{position:relative;border-radius:var(--rl);padding:18px;background:linear-gradient(180deg,rgba(50,18,83,.88),rgba(17,7,32,.94));border:1px solid var(--line);box-shadow:var(--shadow)}
+    .top-rack{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:14px}
+    .battle-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;flex:1;min-height:0}
+    .playfield{display:grid;grid-template-rows:auto auto 1fr auto;gap:14px;min-height:0}
+    .right-rail{display:grid;grid-template-rows:auto auto 1fr;gap:14px;min-height:0}
+    .topline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+    .panel-title{margin:0;font:900 clamp(1.3rem,3vw,2rem)/1 var(--disp);letter-spacing:-.04em}
+    .enemy-core{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin-top:16px}
+    .enemy-avatar{width:92px;aspect-ratio:1;border-radius:24px;display:grid;place-items:center;font-size:2.5rem;background:linear-gradient(145deg,rgba(255,79,216,.4),rgba(98,243,255,.18));box-shadow:0 0 26px rgba(255,79,216,.18)}
+    .enemy-panel.flash{animation:flash .12s linear}
+    .hp-line,.calc-line{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:.86rem;font-weight:800;letter-spacing:.05em}
+    .hp-track{width:100%;height:22px;padding:4px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);box-shadow:inset 0 0 20px rgba(0,0,0,.3)}
+    .hp-fill{height:100%;width:100%;border-radius:999px;transition:width .26s ease}
+    .hp-fill.enemy{background:linear-gradient(90deg,#ff4d7f,#ff9357);box-shadow:0 0 18px rgba(255,81,120,.28)}
+    .hp-fill.player{background:linear-gradient(90deg,#62f3ff,#79ffca);box-shadow:0 0 18px rgba(98,243,255,.24)}
+    .threat-box{min-width:120px;text-align:right;display:grid;gap:8px}
+    .threat{font:900 2rem/1 var(--disp);color:var(--gold2);text-shadow:0 0 18px rgba(255,195,77,.28)}
+    .inventory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+    .relic-slot{min-height:106px;border-radius:20px;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:grid;gap:6px;align-content:start}
+    .relic-slot.empty{opacity:.55;place-items:center;text-align:center}
+    .relic-icon{width:34px;aspect-ratio:1;border-radius:12px;display:grid;place-items:center;background:linear-gradient(180deg,rgba(98,243,255,.18),rgba(255,79,216,.18));box-shadow:0 0 18px rgba(98,243,255,.16)}
+    .hero-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .hero-card{padding:16px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));border:1px solid var(--line);display:grid;gap:7px}
+    .hero-card.primary{box-shadow:0 0 24px rgba(255,195,77,.12)} .hero-card.hot{box-shadow:0 0 24px rgba(255,148,77,.16)}
+    .label{color:var(--muted);font-size:.75rem;letter-spacing:.09em;text-transform:uppercase;font-weight:800}
+    .value{font:900 clamp(1.45rem,2.8vw,2.2rem)/1 var(--disp)}
+    .value.hot{color:var(--gold2);animation:pop .42s ease, flicker 1.4s ease-in-out infinite;text-shadow:0 0 18px rgba(255,195,77,.38)}
+    .detail{color:var(--muted);font-size:.88rem;line-height:1.45;min-height:2.6em}
+    .dice-stage{padding:20px;border-radius:24px;background:radial-gradient(circle at 50% 0%,rgba(98,243,255,.08),transparent 24%),linear-gradient(180deg,rgba(14,5,28,.96),rgba(11,4,20,.96));border:1px solid rgba(98,243,255,.16);box-shadow:inset 0 0 24px rgba(255,255,255,.02),0 0 24px rgba(98,243,255,.12)}
+    .dice-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+    .die{min-height:122px;padding:12px 8px 14px;border-radius:22px;display:grid;place-items:center;gap:8px;text-align:center;position:relative;
+      background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.95),rgba(255,255,255,.72) 35%,rgba(194,199,236,.84) 100%);
+      color:#250a35;border:1px solid rgba(255,255,255,.74);box-shadow:inset 0 1px 0 rgba(255,255,255,.84),inset 0 -10px 18px rgba(76,52,118,.18),0 12px 20px rgba(0,0,0,.34)}
+    .die.locked{box-shadow:inset 0 1px 0 rgba(255,255,255,.84),inset 0 -10px 18px rgba(76,52,118,.18),0 0 0 2px rgba(255,195,77,.25),0 12px 26px rgba(255,195,77,.24)}
+    .die.gold{box-shadow:inset 0 1px 0 rgba(255,255,255,.84),inset 0 -10px 18px rgba(76,52,118,.18),0 0 0 2px rgba(255,195,77,.25),0 12px 26px rgba(255,195,77,.24)}
+    .die.glass{background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.92),rgba(212,255,255,.72) 35%,rgba(137,224,255,.54) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),inset 0 -10px 18px rgba(31,94,128,.16),0 0 0 2px rgba(98,243,255,.22),0 12px 28px rgba(98,243,255,.22)}
+    .die.inactive,.die.shattered{background:linear-gradient(180deg,rgba(28,18,49,.92),rgba(12,8,24,.96));color:rgba(255,255,255,.35);border-color:rgba(255,81,120,.28);box-shadow:inset 0 0 30px rgba(255,81,120,.08)}
+    .die.rolling{animation:roll .52s ease}
+    .die-value{font:900 2.6rem/1 var(--disp)} .die-label,.die-note{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:rgba(39,18,56,.68)}
+    .die.inactive .die-label,.die.inactive .die-note{color:rgba(255,255,255,.4)}
+    .decision-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+    .decision-card{border-radius:22px;padding:16px;border:1px solid var(--line);display:grid;gap:6px;min-height:154px}
+    .decision-card.safe{background:linear-gradient(180deg,rgba(255,195,77,.14),rgba(255,195,77,.04));box-shadow:0 0 24px rgba(255,195,77,.12)}
+    .decision-card.push{background:linear-gradient(180deg,rgba(98,243,255,.12),rgba(255,79,216,.05));box-shadow:0 0 24px rgba(98,243,255,.12)}
+    .decision-card.danger{background:linear-gradient(180deg,rgba(255,81,120,.16),rgba(255,81,120,.05));box-shadow:0 0 24px rgba(255,81,120,.14)}
+    .decision-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .decision-title{margin:0;font:900 1.35rem/1 var(--disp)} .decision-copy{margin:0;color:var(--muted);line-height:1.5;font-size:.92rem}
+    .calc-box{border-radius:18px;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:grid;gap:8px}
+    .action-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;position:sticky;bottom:0;padding-top:4px;background:linear-gradient(180deg,transparent,rgba(7,4,14,.76) 24%,rgba(7,4,14,.96))}
+    .primary-btn,.secondary-btn{min-height:76px;padding:14px 22px;border-radius:18px;font-weight:900;letter-spacing:.02em;position:relative;overflow:hidden;box-shadow:0 14px 28px rgba(0,0,0,.3)}
+    .primary-btn::before,.secondary-btn::before,.offer-btn::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 44%);opacity:.8;pointer-events:none}
+    .primary-btn:hover,.secondary-btn:hover,.offer-btn:hover,.die:hover{transform:translateY(-2px)} .primary-btn:active,.secondary-btn:active{transform:translateY(2px) scale(.99);box-shadow:inset 0 8px 18px rgba(0,0,0,.28)}
+    .primary-btn{color:#2d1100;background:linear-gradient(180deg,#ffd77c,#ff9d3b);box-shadow:0 0 28px rgba(255,158,59,.2),0 14px 32px rgba(255,158,59,.2)}
+    .secondary-btn{background:linear-gradient(180deg,rgba(19,36,73,.96),rgba(14,23,54,.96));border:1px solid rgba(98,243,255,.28);box-shadow:0 0 26px rgba(98,243,255,.14),0 14px 32px rgba(98,243,255,.12)}
+    .action-btn{display:grid;gap:4px;align-content:center;text-align:left} .action-btn strong{font-size:1.02rem} .action-btn span{font-size:.82rem;color:rgba(255,255,255,.86)} .primary-btn.action-btn span{color:rgba(45,17,0,.8)}
+    .info-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    .badge,.pill{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted)} .badge.hot{color:var(--gold2);box-shadow:0 0 22px rgba(255,195,77,.14)}
+    .battle-log{overflow:auto;min-height:0;display:grid;gap:8px}
+    .log-entry{padding:11px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);line-height:1.45;font-size:.88rem}
+    .log-entry strong{color:var(--text)}
+    .pity-chip{display:none;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(255,81,120,.16),rgba(255,81,120,.06));border:1px solid rgba(255,81,120,.24);box-shadow:0 0 22px rgba(255,81,120,.16)}
+    .pity-chip.active{display:block;animation:glitch .42s ease}
+    .damage-float,.damage-missile{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);pointer-events:none;opacity:0;z-index:30;font:900 clamp(2rem,8vw,4rem)/1 var(--disp);text-shadow:0 0 22px currentColor}
+    .damage-float.show{animation:float .72s ease forwards} .damage-missile.show{animation:missile .7s ease forwards}
+    .shop-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .offer-btn{border-radius:24px;padding:18px;text-align:left;display:grid;gap:10px;background:linear-gradient(180deg,rgba(52,19,88,.94),rgba(17,8,32,.96));border:1px solid var(--line);box-shadow:var(--shadow)}
+    .offer-btn.relic-offer{box-shadow:0 0 26px rgba(98,243,255,.14),var(--shadow)} .offer-btn.enchant-offer{box-shadow:0 0 26px rgba(255,195,77,.14),var(--shadow)} .offer-btn.utility-offer{box-shadow:0 0 26px rgba(255,79,216,.14),var(--shadow)}
+    .offer-name{margin:0;font:900 1.45rem/1.02 var(--disp)} .summary-grid{width:min(100%,760px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+    .summary-box{padding:16px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--line)} .summary-box h3{margin:0;font:900 1.8rem/1 var(--disp)}
+    .summary-list{width:min(100%,760px);display:grid;gap:10px;margin-top:18px} .mini-card{padding:14px 16px;border-radius:18px;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    @keyframes roll{0%{transform:rotate(0) scale(1)}30%{transform:rotate(15deg) translateY(-10px) scale(1.08)}60%{transform:rotate(-18deg) translateY(8px) scale(.98)}100%{transform:rotate(0) translateY(0) scale(1)}}
+    @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.22)}100%{transform:scale(1)}} @keyframes flicker{0%,100%{filter:hue-rotate(0)}50%{filter:hue-rotate(-16deg) saturate(1.15)}}
+    @keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(7px,-3px)}60%{transform:translate(-5px,-2px)}80%{transform:translate(4px,3px)}}
+    @keyframes flash{0%,100%{filter:brightness(1)}50%{filter:brightness(2.8) saturate(0)}} @keyframes float{0%{opacity:0;transform:translate(-50%,-20%) scale(.65)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-110%) scale(.92)}}
+    @keyframes missile{0%{opacity:0;transform:translate(-50%,0) scale(.7)}12%{opacity:1}100%{opacity:0;transform:translate(220px,-260px) scale(1.14)}} @keyframes glitch{0%{opacity:0;transform:translateY(8px) skewX(12deg);filter:hue-rotate(50deg)}100%{opacity:1;transform:translateY(0) skewX(0);filter:none}}
+    @media (max-width:1024px){.cabinet{height:min(100dvh - 12px,1280px)}.top-rack,.battle-grid,.shop-grid{grid-template-columns:1fr}.right-rail{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none}}
+    @media (max-width:720px){.screen{padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}.hero-strip,.decision-shell,.action-row,.summary-grid,.right-rail{grid-template-columns:1fr}.inventory-grid{grid-template-columns:1fr}.dice-row{gap:8px}.die{min-height:96px;border-radius:18px}.die-value{font-size:2rem}}
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="shell" id="shell">
+    <main class="cabinet" id="cabinet">
       <section class="screen title-screen active" id="screen-title">
-        <div class="eyebrow">骰子扑克 Roguelike</div>
-        <h1 class="logo">骰命劫局</h1>
-        <p class="subtitle">每回合掷 5 枚骰子。你可以立刻结算，也可以继续重掷、把倍率越顶越高，但如果最后只是散点，这一手会直接爆掉。重点不是内容量，而是这一手要不要贪。</p>
-        <div class="meta-row">
-          <span class="chip">5 场战斗</span>
-          <span class="chip">锁定骰子</span>
-          <span class="chip">最多 2 次重掷</span>
-          <span class="chip">战后 3 选 1</span>
+        <div class="card">
+          <div class="kicker">Neon Arcade Casino Roguelike</div>
+          <h1 class="logo">Dice Heist<br>Neon Break</h1>
+          <p class="subcopy">Roll five dice, lock the hot ones, and decide whether to settle or push for a hand that should not exist.</p>
+          <div class="row" style="margin:20px 0 22px">
+            <span class="tag" style="background:rgba(98,243,255,.1);border:1px solid rgba(98,243,255,.16);color:var(--cyan)">5 Battles</span>
+            <span class="tag" style="background:rgba(255,79,216,.1);border:1px solid rgba(255,79,216,.16);color:#ff99ea">3 Relic Slots</span>
+            <span class="tag" style="background:rgba(255,195,77,.12);border:1px solid rgba(255,195,77,.18);color:var(--gold2)">Gold / Glass Dice</span>
+          </div>
+          <button class="primary-btn" id="start-run-btn">Start the Run</button>
         </div>
-        <button class="primary-btn" id="start-run-btn">开始一局</button>
       </section>
 
       <section class="screen" id="screen-battle">
-        <div class="top-bar">
-          <div>
-            <div class="eyebrow" id="battle-stage">第 1 / 5 战</div>
-            <h2 id="battle-title">鼠巷混混</h2>
-            <div class="build-line"><span class="mini-label" id="build-focus">当前流派：未成型</span></div>
-          </div>
-          <div class="stats-row">
-            <span class="chip minor-chip">金币 <strong id="gold-value">0</strong></span>
-            <span class="chip hero-chip">重掷 <strong id="rerolls-value">2</strong></span>
-            <span class="chip hero-chip">倍率 <strong id="multiplier-value">x1.00</strong></span>
-          </div>
-        </div>
-
-        <div class="combatants">
-          <div class="combat-card hero-panel">
-            <strong>你</strong>
-            <div class="hp-track"><div class="hp-fill player" id="player-hp-fill"></div></div>
-            <div id="player-hp-text">40 / 40 HP</div>
-          </div>
-          <div class="combat-card enemy-panel">
-            <strong id="enemy-name">鼠巷混混</strong>
-            <div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
-            <div id="enemy-hp-text">24 / 24 HP</div>
-            <p class="flavor" id="enemy-flavor"></p>
-          </div>
-        </div>
-
-        <div class="hero-decision-strip">
-          <div class="hero-stat primary">
-            <span class="hero-label">当前牌型</span>
-            <strong class="hero-value" id="hero-hand">散点</strong>
-            <span class="hero-copy" id="hero-hand-copy">这手还不够硬。</span>
-          </div>
-          <div class="hero-stat primary">
-            <span class="hero-label">现在收手</span>
-            <strong class="hero-value" id="hero-damage">0 伤害</strong>
-            <span class="hero-copy" id="hero-damage-copy">当前这一手还不值得结算。</span>
-          </div>
-          <div class="hero-stat warning">
-            <span class="hero-label">还能继续赌</span>
-            <strong class="hero-value" id="hero-rerolls">2 次</strong>
-            <span class="hero-copy" id="hero-rerolls-copy">下一次还能继续拉倍率。</span>
-          </div>
-        </div>
-
-        <div class="battle-layout">
-          <div class="panel">
-            <div class="dice-row" id="dice-row"></div>
-
-            <div class="hand-box" id="hand-box">
-              <div class="eyebrow" id="hand-rank-chip">当前牌型</div>
-              <h3 class="hand-name" id="hand-name">散点</h3>
-              <p class="subtext" id="hand-copy">散点会爆掉。如果现在结算，本回合伤害为 0。</p>
-              <div class="damage-preview" id="damage-preview">0 伤害</div>
-              <div class="decision-grid">
-                <div class="decision-card" id="cash-card">
-                  <span class="decision-label">现在收手</span>
-                  <strong class="decision-headline" id="cash-headline">稳住</strong>
-                  <p class="decision-copy" id="cash-reason">先把这一手兑现。</p>
-                </div>
-                <div class="decision-card" id="push-card">
-                  <span class="decision-label">继续重掷</span>
-                  <strong class="decision-headline" id="push-headline">再赌一手</strong>
-                  <p class="decision-copy" id="push-reason">还有上行空间。</p>
-                </div>
+        <div class="top-rack">
+          <div class="panel enemy-panel" id="enemy-panel">
+            <div class="topline">
+              <div>
+                <div class="kicker" id="battle-stage">Battle 1 / 5</div>
+                <h2 class="panel-title" id="enemy-name">Rat Thug</h2>
+                <p class="subcopy" id="enemy-flavor">A filthy brawler with a cheap grin and a quicker knife.</p>
+              </div>
+              <div class="threat-box">
+                <span class="label">Enemy Damage</span>
+                <strong class="threat" id="enemy-damage">5</strong>
               </div>
             </div>
-
-            <div class="action-row">
-              <button class="secondary-btn action-btn push-action" id="reroll-btn"><span id="reroll-title">继续重掷</span><span id="reroll-subline">赌更高的牌型</span></button>
-              <button class="primary-btn action-btn cash-action" id="cashout-btn"><span id="cashout-title">立即结算</span><span id="cashout-subline">把当前伤害落袋为安</span></button>
-            </div>
-
-            <div class="stats-row muted-stats">
-              <span class="chip">已锁骰子 <strong id="locked-count">0</strong></span>
-              <span class="chip">最高牌型 <strong id="highest-hand">无</strong></span>
-              <span class="chip">构筑数量 <strong id="deck-size">0</strong></span>
+            <div class="enemy-core">
+              <div class="enemy-avatar"><span id="enemy-avatar">🐀</span></div>
+              <div>
+                <div class="hp-line"><span>Target Integrity</span><span id="enemy-hp-text">24 / 24</span></div>
+                <div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+              </div>
+              <div class="badge" id="boss-warning">Normal</div>
             </div>
           </div>
-
           <div class="panel">
-            <div class="log-box" id="battle-log">
-              <div class="damage-float" id="damage-float">-12</div>
+            <div class="topline">
+              <div><div class="kicker">Inventory</div><h3 class="panel-title" style="font-size:1.35rem">Relic Rig</h3></div>
+              <div class="row" style="gap:8px;justify-content:flex-end">
+                <span class="badge" id="coins-chip">Coins 0</span><span class="badge" id="highest-chip">Best High Die</span>
+              </div>
+            </div>
+            <div class="inventory-grid" id="relic-slots"></div>
+          </div>
+        </div>
+        <div class="battle-grid">
+          <div class="playfield">
+            <div class="hero-strip">
+              <div class="hero-card primary"><span class="label">Current Hand</span><strong class="value" id="hero-hand">High Die</strong><span class="detail" id="hero-hand-copy">Nothing made yet.</span></div>
+              <div class="hero-card hot"><span class="label">Settle Now</span><strong class="value" id="hero-damage">0 DMG</strong><span class="detail" id="hero-damage-copy">Busts deal no damage.</span></div>
+              <div class="hero-card" id="multiplier-card"><span class="label">Multiplier / Rerolls</span><strong class="value" id="hero-multiplier">x1.00</strong><span class="detail" id="hero-rerolls-copy">2 rerolls left.</span></div>
+            </div>
+            <div class="dice-stage"><div class="dice-row" id="dice-row"></div></div>
+            <div class="decision-shell">
+              <div class="decision-card safe" id="settle-card">
+                <div class="decision-head"><span class="label">Play It Safe</span><span class="badge">Steady</span></div>
+                <h3 class="decision-title" id="settle-title">Bank the Hand</h3><p class="decision-copy" id="settle-copy">Take the damage on the board.</p>
+                <div class="calc-box"><div class="calc-line"><span>Current score</span><strong id="preview-score">0</strong></div><div class="calc-line"><span>Damage if settled</span><strong id="preview-damage">0</strong></div></div>
+              </div>
+              <div class="decision-card push" id="push-card">
+                <div class="decision-head"><span class="label">Push Your Luck</span><span class="badge">Greed</span></div>
+                <h3 class="decision-title" id="push-title">One More Reroll</h3><p class="decision-copy" id="push-copy">You are chasing something specific.</p>
+                <div class="calc-box"><div class="calc-line"><span>Near miss</span><strong id="near-miss">Looking for shape</strong></div><div class="calc-line"><span>Potential ceiling</span><strong id="potential-hit">Maybe more</strong></div></div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="secondary-btn action-btn" id="reroll-btn"><strong id="reroll-title">Reroll Unlocked Dice</strong><span id="reroll-subline">Go louder. Chase the upgrade.</span></button>
+              <button class="primary-btn action-btn" id="settle-btn"><strong id="settle-btn-title">Settle for 0 Damage</strong><span id="settle-subline">Take what is real before it slips away.</span></button>
+            </div>
+          </div>
+          <div class="right-rail">
+            <div class="panel">
+              <div class="topline"><div><div class="kicker">Player</div><h3 class="panel-title" style="font-size:1.35rem">Crew Status</h3></div><div class="badge" id="battle-index-chip">Fight 1</div></div>
+              <div style="margin-top:16px"><div class="hp-line"><span>Heist Hull</span><span id="player-hp-text">46 / 46</span></div><div class="hp-track"><div class="hp-fill player" id="player-hp-fill"></div></div></div>
+              <div class="info-chips" id="status-chip-row"></div>
+            </div>
+            <div class="panel">
+              <div class="topline"><div><div class="kicker">Impact</div><h3 class="panel-title" style="font-size:1.35rem">Damage Feed</h3></div></div>
+              <div class="calc-box" id="calc-breakdown"></div><div class="pity-chip" id="pity-chip">Pity token armed.</div>
+            </div>
+            <div class="panel">
+              <div class="topline"><div><div class="kicker">Table Talk</div><h3 class="panel-title" style="font-size:1.35rem">Combat Log</h3></div></div>
+              <div class="battle-log" id="battle-log"></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="screen" id="screen-reward">
-        <div class="top-bar">
-          <div>
-            <div class="eyebrow">三选一奖励</div>
-            <h2>构筑转折点</h2>
-            <div class="build-line"><span class="mini-label" id="reward-build-focus">当前流派：未成型</span></div>
-          </div>
-          <div class="stats-row">
-            <span class="chip minor-chip">金币 <strong id="reward-gold">0</strong></span>
-            <span class="chip hero-chip">奖励数 <strong id="reward-count">0</strong></span>
+      <section class="screen" id="screen-shop">
+        <div class="panel">
+          <div class="topline">
+            <div><div class="kicker">Black Market</div><h2 class="panel-title">Choose Your Next Spike</h2><p class="subcopy">Take one thing and skew the whole run.</p></div>
+            <div class="row" style="justify-content:flex-end"><span class="badge" id="shop-relic-count">Relics 0 / 3</span><span class="badge" id="shop-coins">Coins 0</span></div>
           </div>
         </div>
-        <p class="subtitle" style="text-align:left; max-width:none;">选择一张方向牌。奖励会立刻影响下一场战斗，重点是把这局推向一个更明确的玩法流派。</p>
-        <div class="reward-grid" id="reward-grid"></div>
+        <div class="shop-grid" id="shop-grid"></div>
       </section>
 
-      <section class="screen summary-panel" id="screen-summary">
-        <div class="eyebrow">本局结算</div>
-        <h1 class="logo" id="summary-title">爆掉了</h1>
-        <p class="subtitle" id="summary-copy"></p>
-        <div class="summary-stats" id="summary-stats"></div>
-        <div class="deck-strip" id="summary-deck"></div>
-        <button class="primary-btn" id="play-again-btn">再来一局</button>
+      <section class="screen summary-screen" id="screen-summary">
+        <div class="card">
+          <div class="kicker" id="summary-kicker">Run Complete</div>
+          <h1 class="logo" id="summary-title">The House Falls</h1>
+          <p class="subcopy" id="summary-copy">A good run should end with the machine screaming and you reaching for play again.</p>
+          <div class="summary-grid" id="summary-grid"></div>
+          <div class="summary-list" id="summary-list"></div>
+          <div class="row" style="margin-top:22px"><button class="primary-btn" id="play-again-btn">Play Again</button></div>
+        </div>
       </section>
-    </div>
+    </main>
   </div>
-
+  <div class="damage-float" id="damage-float"></div>
+  <div class="damage-missile" id="damage-missile"></div>
   <script>
-    const HAND_RULES = [
-      { key: "fiveKind", name: "五条", baseDamage: 35, rank: 8 },
-      { key: "fourKind", name: "四条", baseDamage: 24, rank: 7 },
-      { key: "fullHouse", name: "葫芦", baseDamage: 18, rank: 6 },
-      { key: "straight", name: "顺子", baseDamage: 14, rank: 5 },
-      { key: "threeKind", name: "三条", baseDamage: 10, rank: 4 },
-      { key: "twoPair", name: "两对", baseDamage: 7, rank: 3 },
-      { key: "pair", name: "一对", baseDamage: 4, rank: 2 },
-      { key: "high", name: "散点", baseDamage: 1, rank: 1 },
-    ];
-
-    const ENEMIES = [
-      { name: "鼠巷混混", hp: 24, damage: 5, flavor: "手气烂，脾气更烂。" },
-      { name: "巷口守卫", hp: 34, damage: 7, flavor: "他会很多招，唯独不会见好就收。" },
-      { name: "鲨牌老千", hp: 42, damage: 9, flavor: "笑得大方，作弊更大方，下手也狠。" },
-      { name: "铁面庄家", hp: 56, damage: 11, flavor: "袖口藏牌，脸上没表情，也没有怜悯。" },
-      { name: "赌场本身", hp: 76, damage: 13, flavor: "整张桌子都在针对你。那就狠狠干碎它。" },
-    ];
-
-    const REWARD_POOL = [
-      { id: "lucky-coin", type: "遗物", name: "好运硬币", text: "一对额外 +3 伤害。", focus: "对子流", tags: ["稳定", "对子"], unique: true, apply: (p) => { p.mods.pairBonus += 3; } },
-      { id: "crooked-die", type: "遗物", name: "偏骰", text: "判定牌型时，点数 1 视为 6。", focus: "高点流", tags: ["变质", "爆发"], unique: true, apply: (p) => { p.mods.onesAreSixes = true; } },
-      { id: "loaded-grip", type: "遗物", name: "灌铅握把", text: "每枚已锁骰子结算时额外 +1 伤害。", focus: "锁骰流", tags: ["锁骰", "稳定"], unique: true, apply: (p) => { p.mods.lockedDieBonus += 1; } },
-      { id: "fever-charm", type: "遗物", name: "发热符咒", text: "顺子额外 +8 伤害。", focus: "顺子流", tags: ["顺子", "爆发"], unique: true, apply: (p) => { p.mods.straightBonus += 8; } },
-      { id: "greedy-ring", type: "遗物", name: "贪婪指环", text: "若本回合用了 2 次重掷，额外获得 +2 金币。", focus: "贪刀流", tags: ["贪刀", "收益"], unique: true, apply: (p) => { p.mods.greedyRing = true; } },
-      { id: "bone-chip", type: "遗物", name: "骨片筹码", text: "葫芦回复 2 点生命。", focus: "续航流", tags: ["葫芦", "续航"], unique: true, apply: (p) => { p.mods.fullHouseHeal += 2; } },
-      { id: "double-down", type: "遗物", name: "孤注一掷", text: "四条额外获得 x1.3 倍率。", focus: "四条流", tags: ["四条", "爆发"], unique: true, apply: (p) => { p.mods.fourKindMultiplier *= 1.3; } },
-      { id: "soft-glove", type: "遗物", name: "软手套", text: "每回合第一次重掷不增加倍率。", focus: "贪刀流", tags: ["贪刀", "容错"], unique: true, apply: (p) => { p.mods.softGlove = true; } },
-      { id: "cold-start", type: "升级", name: "冷开局", text: "每回合开始时随机有 1 枚骰子已锁定。", focus: "锁骰流", tags: ["锁骰", "节奏"], unique: true, apply: (p) => { p.mods.startLockedDie = true; } },
-      { id: "backroom-pass", type: "升级", name: "后门通行证", text: "每场战斗额外获得 1 次重掷。", focus: "贪刀流", tags: ["重掷", "贪刀"], unique: true, apply: (p) => { p.mods.bonusBattleRerolls += 1; } },
-      { id: "stacked-floor", type: "升级", name: "偏斜桌面", text: "一对至少按两对结算。", focus: "对子流", tags: ["对子", "保底"], unique: true, apply: (p) => { p.mods.pairFloorTwoPair = true; } },
-      { id: "brass-knuckles", type: "升级", name: "黄铜指虎", text: "所有已成型牌型额外 +1 伤害。", focus: "通用流", tags: ["通用", "稳定"], unique: true, apply: (p) => { p.mods.flatDamage += 1; } },
-      { id: "odd-job", type: "升级", name: "奇数生意", text: "若 5 枚骰子全为奇数，结算时额外 +3 金币。", focus: "贪刀流", tags: ["奇数", "收益"], unique: true, apply: (p) => { p.mods.oddGoldBonus = true; } },
-      { id: "street-medic", type: "功能", name: "街头医生", text: "立刻回复 5 点生命。", focus: "续航流", tags: ["回复", "保命"], unique: false, apply: (p) => { p.hp = Math.min(p.maxHp, p.hp + 5); } },
-      { id: "stash", type: "功能", name: "暗仓", text: "立刻获得 6 金币。", focus: "收益流", tags: ["金币", "收益"], unique: false, apply: (p) => { p.gold += 6; } },
-      { id: "hot-streak", type: "功能", name: "手热", text: "下一场战斗开局获得 +0.5 倍率。", focus: "爆发流", tags: ["先手", "爆发"], unique: false, apply: (p) => { p.mods.nextBattleBonusMultiplier += 0.5; } },
-    ];
-
-    const ui = {
-      shell: document.getElementById("shell"),
-      screens: {
-        title: document.getElementById("screen-title"),
-        battle: document.getElementById("screen-battle"),
-        reward: document.getElementById("screen-reward"),
-        summary: document.getElementById("screen-summary"),
-      },
-      startRunBtn: document.getElementById("start-run-btn"),
-      playAgainBtn: document.getElementById("play-again-btn"),
-      battleStage: document.getElementById("battle-stage"),
-      battleTitle: document.getElementById("battle-title"),
-      buildFocus: document.getElementById("build-focus"),
-      rewardBuildFocus: document.getElementById("reward-build-focus"),
-      goldValue: document.getElementById("gold-value"),
-      rerollsValue: document.getElementById("rerolls-value"),
-      multiplierValue: document.getElementById("multiplier-value"),
-      playerHpFill: document.getElementById("player-hp-fill"),
-      playerHpText: document.getElementById("player-hp-text"),
-      enemyHpFill: document.getElementById("enemy-hp-fill"),
-      enemyHpText: document.getElementById("enemy-hp-text"),
-      enemyName: document.getElementById("enemy-name"),
-      enemyFlavor: document.getElementById("enemy-flavor"),
-      heroHand: document.getElementById("hero-hand"),
-      heroHandCopy: document.getElementById("hero-hand-copy"),
-      heroDamage: document.getElementById("hero-damage"),
-      heroDamageCopy: document.getElementById("hero-damage-copy"),
-      heroRerolls: document.getElementById("hero-rerolls"),
-      heroRerollsCopy: document.getElementById("hero-rerolls-copy"),
-      diceRow: document.getElementById("dice-row"),
-      handBox: document.getElementById("hand-box"),
-      handRankChip: document.getElementById("hand-rank-chip"),
-      handName: document.getElementById("hand-name"),
-      handCopy: document.getElementById("hand-copy"),
-      damagePreview: document.getElementById("damage-preview"),
-      cashHeadline: document.getElementById("cash-headline"),
-      cashReason: document.getElementById("cash-reason"),
-      pushHeadline: document.getElementById("push-headline"),
-      pushReason: document.getElementById("push-reason"),
-      cashCard: document.getElementById("cash-card"),
-      pushCard: document.getElementById("push-card"),
-      rerollBtn: document.getElementById("reroll-btn"),
-      rerollTitle: document.getElementById("reroll-title"),
-      rerollSubline: document.getElementById("reroll-subline"),
-      cashoutBtn: document.getElementById("cashout-btn"),
-      cashoutTitle: document.getElementById("cashout-title"),
-      cashoutSubline: document.getElementById("cashout-subline"),
-      lockedCount: document.getElementById("locked-count"),
-      highestHand: document.getElementById("highest-hand"),
-      deckSize: document.getElementById("deck-size"),
-      battleLog: document.getElementById("battle-log"),
-      damageFloat: document.getElementById("damage-float"),
-      rewardGrid: document.getElementById("reward-grid"),
-      rewardCount: document.getElementById("reward-count"),
-      rewardGold: document.getElementById("reward-gold"),
-      summaryTitle: document.getElementById("summary-title"),
-      summaryCopy: document.getElementById("summary-copy"),
-      summaryStats: document.getElementById("summary-stats"),
-      summaryDeck: document.getElementById("summary-deck"),
-    };
-
-    let state = null;
-
-    function makeInitialState() {
-      return {
-        screen: "title",
-        player: {
-          maxHp: 40,
-          hp: 40,
-          gold: 0,
-          totalDamage: 0,
-          highestHandRank: 0,
-          highestHandName: "无",
-          rewards: [],
-          ownedRewardIds: new Set(),
-          mods: {
-            pairBonus: 0,
-            onesAreSixes: false,
-            lockedDieBonus: 0,
-            straightBonus: 0,
-            greedyRing: false,
-            fullHouseHeal: 0,
-            fourKindMultiplier: 1,
-            softGlove: false,
-            startLockedDie: false,
-            bonusBattleRerolls: 0,
-            pairFloorTwoPair: false,
-            flatDamage: 0,
-            oddGoldBonus: false,
-            nextBattleBonusMultiplier: 0,
-          },
-        },
-        run: {
-          battleIndex: 0,
-          enemiesDefeated: 0,
-          pendingRewards: [],
-          log: [],
-        },
-        battle: null,
-      };
-    }
-
-    function setScreen(name) {
-      state.screen = name;
-      Object.entries(ui.screens).forEach(([key, el]) => el.classList.toggle("active", key === name));
-    }
-
-    function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-    function rollDie() { return randInt(1, 6); }
-    function makeDiceSet() { return Array.from({ length: 5 }, () => ({ value: rollDie(), locked: false })); }
-    function getEffectiveValues(dice, player) { return dice.map((die) => (player.mods.onesAreSixes && die.value === 1 ? 6 : die.value)); }
-
-    function getCounts(values) {
-      const map = new Map();
-      values.forEach((value) => map.set(value, (map.get(value) || 0) + 1));
-      return [...map.entries()].sort((a, b) => b[1] - a[1] || b[0] - a[0]);
-    }
-
-    function isStraight(values) {
-      const unique = [...new Set(values)].sort((a, b) => a - b);
-      if (unique.length !== 5) return false;
-      const joined = unique.join(",");
-      return joined === "1,2,3,4,5" || joined === "2,3,4,5,6";
-    }
-
-    function evaluateHand(dice, player) {
-      const values = getEffectiveValues(dice, player);
-      const counts = getCounts(values).map((entry) => entry[1]);
-      let hand = HAND_RULES[HAND_RULES.length - 1];
-      if (counts[0] === 5) hand = HAND_RULES[0];
-      else if (counts[0] === 4) hand = HAND_RULES[1];
-      else if (counts[0] === 3 && counts[1] === 2) hand = HAND_RULES[2];
-      else if (isStraight(values)) hand = HAND_RULES[3];
-      else if (counts[0] === 3) hand = HAND_RULES[4];
-      else if (counts[0] === 2 && counts[1] === 2) hand = HAND_RULES[5];
-      else if (counts[0] === 2) hand = HAND_RULES[6];
-      if (player.mods.pairFloorTwoPair && hand.key === "pair") hand = HAND_RULES[5];
-      return { ...hand, values, allOdd: values.every((value) => value % 2 === 1) };
-    }
-
-    function getMultiplierForTurn(battle, player) {
-      const freeOffset = player.mods.softGlove ? 1 : 0;
-      const paidRerolls = Math.max(0, battle.rerollsUsed - freeOffset);
-      return 1 + paidRerolls * 0.25 + battle.bonusMultiplier;
-    }
-
-    function calculateDamagePreview(hand, battle, player) {
-      const multiplier = getMultiplierForTurn(battle, player);
-      const lockedDice = battle.dice.filter((die) => die.locked).length;
-      if (hand.key === "high") {
-        return { hand, multiplier, damage: 0, busted: true, note: "散点会爆掉。如果现在结算，本回合伤害为 0。" };
-      }
-      let damage = hand.baseDamage;
-      if (hand.key === "pair") damage += player.mods.pairBonus;
-      if (hand.key === "straight") damage += player.mods.straightBonus;
-      if (hand.key === "fourKind") damage *= player.mods.fourKindMultiplier;
-      damage += player.mods.lockedDieBonus * lockedDice;
-      damage += player.mods.flatDamage;
-      damage = Math.round(damage * multiplier);
-      return { hand, multiplier, damage, busted: false, note: `基础伤害 ${hand.baseDamage}，当前倍率 x${multiplier.toFixed(2)}。` };
-    }
-
-    function getNearMissText(values) {
-      const countEntries = getCounts(values);
-      const counts = countEntries.map((entry) => entry[1]);
-      const unique = [...new Set(values)].sort((a, b) => a - b);
-
-      if (counts[0] === 4) return "差 1 颗冲五条。";
-      if (counts[0] === 3 && counts[1] === 1) return "差 1 颗冲四条，或补成葫芦。";
-      if (counts[0] === 2 && counts[1] === 2) return "差 1 颗把两对补成葫芦。";
-      if (counts[0] === 2) return "差 1 颗把对子顶成三条。";
-      if (unique.length === 4 && unique[3] - unique[0] <= 4) return "顺子只差 1 点。";
-      return "还有继续上冲的空间。";
-    }
-
-    function getPotentialUpgrade(preview, battle, player) {
-      const counts = getCounts(preview.hand.values).map((entry) => entry[1]);
-      let target = null;
-      let missText = getNearMissText(preview.hand.values);
-
-      if (preview.busted) {
-        if ([...new Set(preview.hand.values)].length === 4) {
-          target = HAND_RULES.find((rule) => rule.key === "pair");
-        } else if ([...new Set(preview.hand.values)].length === 5) {
-          target = HAND_RULES.find((rule) => rule.key === "straight");
-        } else {
-          target = HAND_RULES.find((rule) => rule.key === "pair");
-        }
-      } else if (preview.hand.key === "pair") {
-        target = HAND_RULES.find((rule) => rule.key === "threeKind");
-      } else if (preview.hand.key === "twoPair") {
-        target = HAND_RULES.find((rule) => rule.key === "fullHouse");
-      } else if (preview.hand.key === "threeKind") {
-        target = HAND_RULES.find((rule) => rule.key === "fourKind");
-      } else if (preview.hand.key === "straight") {
-        target = HAND_RULES.find((rule) => rule.key === "straight");
-        missText = "顺子已经成了，再重掷是在赌更高倍率，不是在补牌型。";
-      } else if (preview.hand.key === "fullHouse") {
-        target = HAND_RULES.find((rule) => rule.key === "fourKind");
-      } else if (preview.hand.key === "fourKind") {
-        target = HAND_RULES.find((rule) => rule.key === "fiveKind");
-      }
-
-      if (!target) {
-        return null;
-      }
-
-      let estimate = target.baseDamage + player.mods.flatDamage;
-      if (target.key === "pair") estimate += player.mods.pairBonus;
-      if (target.key === "straight") estimate += player.mods.straightBonus;
-      if (target.key === "fourKind") estimate *= player.mods.fourKindMultiplier;
-      estimate += player.mods.lockedDieBonus * battle.dice.filter((die) => die.locked).length;
-      const low = Math.round(estimate * Math.max(1, preview.multiplier));
-      const high = Math.round(estimate * Math.max(1.2, preview.multiplier + 0.25));
-
-      return {
-        targetName: target.name,
-        missText,
-        damageHint: low === high ? `${low}` : `${low} - ${high}`,
-      };
-    }
-
-    function getStraightWindowText(values) {
-      const unique = [...new Set(values)].sort((a, b) => a - b);
-      if (unique.length < 4) return null;
-
-      for (let start = 1; start <= 2; start += 1) {
-        const needed = [];
-        for (let point = start; point < start + 5; point += 1) {
-          if (!unique.includes(point)) needed.push(point);
-        }
-        if (needed.length === 1) {
-          const keep = unique.filter((point) => point >= start && point < start + 5);
-          return `留住 ${keep.join("-")}，只差 ${needed[0]} 就成顺子`;
-        }
-      }
-
-      if (unique.length === 4 && unique[3] - unique[0] <= 4) {
-        const keep = unique.join("-");
-        const leftNeed = unique[0] > 1 ? unique[0] - 1 : null;
-        const rightNeed = unique[3] < 6 ? unique[3] + 1 : null;
-        if (leftNeed && rightNeed) return `留住 ${keep}，补 ${leftNeed} 或 ${rightNeed} 都能成顺子`;
-        if (leftNeed) return `留住 ${keep}，只差 ${leftNeed} 就成顺子`;
-        if (rightNeed) return `留住 ${keep}，只差 ${rightNeed} 就成顺子`;
-      }
-
-      return null;
-    }
-
-    function getSpecificNearMissText(values) {
-      const countEntries = getCounts(values);
-      const counts = countEntries.map((entry) => entry[1]);
-      const topValue = countEntries[0][0];
-      const secondValue = countEntries[1] ? countEntries[1][0] : null;
-      const straightText = getStraightWindowText(values);
-
-      if (counts[0] === 4) return `留住四颗 ${topValue}，再摸一颗 ${topValue} 就能冲五条`;
-      if (counts[0] === 3 && counts[1] === 2) return `留住三颗 ${topValue}，再摸一颗 ${topValue} 就能把葫芦顶成四条`;
-      if (counts[0] === 3 && counts[1] === 1) return `留住三颗 ${topValue}，补一颗 ${topValue} 冲四条；如果补到 ${secondValue} 也能稳成葫芦`;
-      if (counts[0] === 2 && counts[1] === 2) return `留住两组 ${topValue} / ${secondValue}，再来一颗 ${topValue} 或 ${secondValue} 就成葫芦`;
-      if (counts[0] === 2) return `先抱住一对 ${topValue}，再摸一颗 ${topValue} 就能升成三条`;
-      if (straightText) return straightText;
-      return "这一手还有上冲空间，但还没露出特别明确的牌胚";
-    }
-
-    function getSpecificPotentialUpgrade(preview, battle, player) {
-      const uniqueCount = [...new Set(preview.hand.values)].length;
-      let target = null;
-      let missText = getSpecificNearMissText(preview.hand.values);
-
-      if (preview.busted) {
-        if (getStraightWindowText(preview.hand.values)) {
-          target = HAND_RULES.find((rule) => rule.key === "straight");
-        } else {
-          target = HAND_RULES.find((rule) => rule.key === "pair");
-          if (uniqueCount === 5) missText = "先摸出一对再说，这手还没有真正成型";
-        }
-      } else if (preview.hand.key === "pair") {
-        target = HAND_RULES.find((rule) => rule.key === "threeKind");
-      } else if (preview.hand.key === "twoPair") {
-        target = HAND_RULES.find((rule) => rule.key === "fullHouse");
-      } else if (preview.hand.key === "threeKind") {
-        target = HAND_RULES.find((rule) => rule.key === "fourKind");
-      } else if (preview.hand.key === "straight") {
-        missText = "顺子已经成了，再赌不是补牌型，而是在拿更高倍率换波动";
-      } else if (preview.hand.key === "fullHouse") {
-        target = HAND_RULES.find((rule) => rule.key === "fourKind");
-      } else if (preview.hand.key === "fourKind") {
-        target = HAND_RULES.find((rule) => rule.key === "fiveKind");
-      }
-
-      if (!target) {
-        return {
-          targetName: null,
-          missText,
-          damageHint: null,
-        };
-      }
-
-      let estimate = target.baseDamage + player.mods.flatDamage;
-      if (target.key === "pair") estimate += player.mods.pairBonus;
-      if (target.key === "straight") estimate += player.mods.straightBonus;
-      if (target.key === "fourKind") estimate *= player.mods.fourKindMultiplier;
-      estimate += player.mods.lockedDieBonus * battle.dice.filter((die) => die.locked).length;
-
-      const nextMultiplier = battle.rerollsRemaining > 0
-        ? getMultiplierForTurn({ ...battle, rerollsUsed: battle.rerollsUsed + 1 }, player)
-        : preview.multiplier;
-      const low = Math.round(estimate * nextMultiplier);
-      const high = Math.round(estimate * Math.max(nextMultiplier, preview.multiplier + 0.25));
-
-      return {
-        targetName: target.name,
-        missText,
-        damageHint: low === high ? `${low}` : `${low}-${high}`,
-      };
-    }
-
-    function getBuildFocusLabel(player) {
-      if (!player.rewards.length) return "当前流派：未成型";
-      const counts = new Map();
-      player.rewards.forEach((reward) => {
-        counts.set(reward.focus, (counts.get(reward.focus) || 0) + 1);
-      });
-      const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
-      return `当前流派：${top[0]} (${top[1]})`;
-    }
-
-    function getRewardHook(reward) {
-      const hooks = {
-        "对子流": "把这一把推向稳定保底的对子结算。",
-        "锁骰流": "更强调锁住关键点数，再把收益一点点堆高。",
-        "贪刀流": "鼓励你多按一次重掷，把风险换成更高上限。",
-        "顺子流": "更偏向追连续点数，一旦成型爆发更明显。",
-        "续航流": "让你更敢拖回合，用容错换更多尝试。",
-        "四条流": "朝着大面额、高爆发的四条结算走。",
-        "通用流": "不给你换打法，但会把每一手都抬高一点。",
-        "收益流": "把这局的额外价值拉起来，鼓励更贪的打法。",
-        "爆发流": "让关键一手来得更猛，适合抢节奏。",
-        "高点流": "把低点变成高点，拉高胡牌的上限。",
-      };
-      return hooks[reward.focus] || "这张牌会把你的打法进一步推向一个明确方向。";
-    }
-
-    function getDecisionState(preview, battle, player) {
-      const nextMultiplier = getMultiplierForTurn(
-        {
-          ...battle,
-          rerollsUsed: battle.rerollsUsed + 1,
-          bonusMultiplier: battle.bonusMultiplier,
-        },
-        player
-      );
-      const enemyHp = battle.enemy.hp;
-      const nearMiss = getNearMissText(preview.hand.values);
-      const potential = getPotentialUpgrade(preview, battle, player);
-
-      const result = {
-        cashHeadline: "稳住",
-        cashReason: "先把这一手兑现。",
-        pushHeadline: "再赌一手",
-        pushReason: potential
-          ? `${potential.missText} 如果成 ${potential.targetName}，大概能打 ${potential.damageHint} 伤害。`
-          : `下一次重掷后倍率会到 x${nextMultiplier.toFixed(2)}。`,
-        cashClass: "",
-        pushClass: "",
-        handClass: "",
-      };
-
-      if (preview.damage >= enemyHp && !preview.busted) {
-        result.cashHeadline = "直接斩杀";
-        result.cashReason = `现在结算就能收掉 ${battle.enemy.name}。`;
-        result.cashClass = "active";
-        result.pushHeadline = "再贪就多余";
-        result.pushReason = "这一手已经够了，继续赌是在拿斩杀去换事故。";
-        result.handClass = "hot";
-        return result;
-      }
-
-      if (preview.busted) {
-        result.cashHeadline = "会爆掉";
-        result.cashReason = "现在收手没有伤害，等于白给一回合。";
-        result.pushHeadline = battle.rerollsRemaining > 0 ? "必须再赌" : "已经锁死";
-        result.pushReason = battle.rerollsRemaining > 0 ? nearMiss : "没有重掷了，这手只能硬吃反击。";
-        result.cashClass = "danger";
-        result.pushClass = battle.rerollsRemaining > 0 ? "active" : "danger";
-        result.handClass = "bust";
-        return result;
-      }
-
-      if (battle.rerollsRemaining === 0) {
-        result.cashHeadline = "只能收手";
-        result.cashReason = `没有重掷了，${preview.damage} 伤害就是这手的结果。`;
-        result.pushHeadline = "已经到底";
-        result.pushReason = "这回合没有继续拉高的空间。";
-        result.cashClass = "active";
-        result.pushClass = "danger";
-        return result;
-      }
-
-      if (preview.hand.rank >= 6) {
-        result.cashHeadline = "高质量到手";
-        result.cashReason = `${preview.hand.name} 已经很硬，再贪的风险开始大于收益。`;
-        result.pushHeadline = "还能更胡";
-        result.pushReason = potential
-          ? `${potential.missText} 如果赌成 ${potential.targetName}，伤害会抬到 ${potential.damageHint}。`
-          : `但如果你想赌更夸张的上限，${nearMiss}`;
-        result.cashClass = "active";
-        result.pushClass = "push-bias";
-        result.handClass = preview.hand.rank >= 7 ? "jackpot" : "hot";
-        return result;
-      }
-
-      if (battle.rerollsRemaining >= 2 && preview.hand.rank <= 2) {
-        result.cashHeadline = "先别急";
-        result.cashReason = `这手只有 ${preview.hand.name}，现在收太保守。`;
-        result.pushHeadline = "上行很高";
-        result.pushReason = potential
-          ? `${potential.missText} 继续赌有机会抬到 ${potential.targetName}，大概 ${potential.damageHint} 伤害。`
-          : `${nearMiss}，而且倍率还能继续往上叠。`;
-        result.pushClass = "active push-bias";
-        return result;
-      }
-
-      result.cashHeadline = "有保底";
-      result.cashReason = `现在收手能稳定打出 ${preview.damage} 伤害。`;
-      result.pushHeadline = "可以贪";
-      result.pushReason = potential
-        ? `${potential.missText} 赌成 ${potential.targetName} 约有 ${potential.damageHint} 伤害。`
-        : `${nearMiss} 下一次还能把倍率推到 x${nextMultiplier.toFixed(2)}。`;
-      result.pushClass = "active push-bias";
-      result.cashClass = "cash-bias";
-      return result;
-    }
-
-    function getDecisionStateV2(preview, battle, player) {
-      const nextMultiplier = getMultiplierForTurn(
-        {
-          ...battle,
-          rerollsUsed: battle.rerollsUsed + 1,
-          bonusMultiplier: battle.bonusMultiplier,
-        },
-        player
-      );
-      const enemyHp = battle.enemy.hp;
-      const nearMiss = getSpecificNearMissText(preview.hand.values);
-      const potential = getSpecificPotentialUpgrade(preview, battle, player);
-
-      const result = {
-        cashHeadline: "先稳住",
-        cashReason: `现在收手，至少能稳拿 ${preview.damage} 伤害`,
-        pushHeadline: "再赌一手",
-        pushReason: potential?.targetName
-          ? `${potential.missText}。如果成 ${potential.targetName}，这一手大概能抬到 ${potential.damageHint} 伤害`
-          : `下一次重掷后倍率会到 x${nextMultiplier.toFixed(2)}，还能继续往上赌`,
-        cashClass: "cash-bias",
-        pushClass: "push-bias",
-        handClass: "",
-      };
-
-      if (preview.damage >= enemyHp && !preview.busted) {
-        result.cashHeadline = "直接收掉";
-        result.cashReason = `现在结算就能带走 ${battle.enemy.name}`;
-        result.cashClass = "active cash-bias";
-        result.pushHeadline = "还想更贪";
-        result.pushReason = "这一手已经够赢了，再赌是在拿斩杀去换事故";
-        result.handClass = "hot";
-        return result;
-      }
-
-      if (preview.busted) {
-        result.cashHeadline = "这手收不住";
-        result.cashReason = "现在停手等于空过这一回合";
-        result.pushHeadline = battle.rerollsRemaining > 0 ? "必须再赌" : "已经锁死";
-        result.pushReason = battle.rerollsRemaining > 0
-          ? (potential?.targetName
-            ? `${potential.missText}。只要成 ${potential.targetName}，这手就还能救回来`
-            : nearMiss)
-          : "没有重掷了，这一手只能硬吃反击";
-        result.cashClass = "danger";
-        result.pushClass = battle.rerollsRemaining > 0 ? "active push-bias" : "danger";
-        result.handClass = "bust";
-        return result;
-      }
-
-      if (battle.rerollsRemaining === 0) {
-        result.cashHeadline = "只能收手";
-        result.cashReason = `${preview.damage} 伤害就是这一手的最终结果`;
-        result.pushHeadline = "没得再赌";
-        result.pushReason = "这一回合已经没有继续上冲的机会";
-        result.cashClass = "active cash-bias";
-        result.pushClass = "danger";
-        return result;
-      }
-
-      if (preview.hand.rank >= 6) {
-        result.cashHeadline = "这手已经很硬";
-        result.cashReason = `${preview.hand.name} 已经够痛，收掉会更稳`;
-        result.pushHeadline = "还能更狠";
-        result.pushReason = potential?.targetName
-          ? `${potential.missText}。如果贪成 ${potential.targetName}，伤害会抬到 ${potential.damageHint}`
-          : "这一手已经成了，再赌主要是在拿更高倍率换波动";
-        result.cashClass = "active cash-bias";
-        result.pushClass = "push-bias";
-        result.handClass = preview.hand.rank >= 7 ? "jackpot" : "hot";
-        return result;
-      }
-
-      if (battle.rerollsRemaining >= 2 && preview.hand.rank <= 2) {
-        result.cashHeadline = "现在收太早";
-        result.cashReason = `${preview.hand.name} 还不够值钱，现在收很亏`;
-        result.pushHeadline = "这手很能追";
-        result.pushReason = potential?.targetName
-          ? `${potential.missText}。继续赌，很容易直接抬到 ${potential.targetName} 和 ${potential.damageHint} 伤害`
-          : `${nearMiss}。而且下一次倍率还会继续上涨`;
-        result.cashClass = "cash-bias";
-        result.pushClass = "active push-bias";
-        return result;
-      }
-
-      result.cashHeadline = "先把收益拿下";
-      result.cashReason = `现在收手能稳稳打出 ${preview.damage} 伤害`;
-      result.pushHeadline = "还有机会抬一档";
-      result.pushReason = potential?.targetName
-        ? `${potential.missText}。如果赌成 ${potential.targetName}，这手大概是 ${potential.damageHint} 伤害`
-        : `${nearMiss}。下一次还能把倍率推到 x${nextMultiplier.toFixed(2)}`;
-      result.pushClass = "active push-bias";
-      result.cashClass = "cash-bias";
-      return result;
-    }
-
-    function renderBattleLog() {
-      const floatMarkup = '<div class="damage-float" id="damage-float"></div>';
-      ui.battleLog.innerHTML = floatMarkup + state.run.log.map((entry) => `
-        <div class="log-entry">
-          ${entry.emphasis ? `<strong>${entry.emphasis}</strong> ` : ""}
-          ${entry.text}
-        </div>
-      `).join("");
-      ui.damageFloat = document.getElementById("damage-float");
-    }
-
-    function addLog(text, emphasis = "") {
-      state.run.log.unshift({ text, emphasis });
-      if (state.run.log.length > 24) state.run.log.length = 24;
-      renderBattleLog();
-    }
-
-    function flashDamage(text, tone = "gold") {
-      if (!ui.damageFloat) return;
-      ui.damageFloat.textContent = text;
-      ui.damageFloat.style.color = tone === "red" ? "var(--red)" : tone === "green" ? "var(--green)" : tone === "blue" ? "var(--blue)" : "var(--gold-2)";
-      ui.damageFloat.classList.remove("show");
-      requestAnimationFrame(() => ui.damageFloat.classList.add("show"));
-      setTimeout(() => ui.damageFloat.classList.remove("show"), 700);
-    }
-
-    function pulseShell(stateName) {
-      ui.shell.classList.remove("state-push", "state-hit", "state-bust", "state-win");
-      ui.shell.classList.add(stateName);
-      setTimeout(() => ui.shell.classList.remove(stateName), 480);
-    }
-
-    function drawInitialDice() {
-      state.battle.dice = makeDiceSet();
-      state.battle.justRolled = [];
-      state.battle.justLocked = null;
-      if (state.player.mods.startLockedDie) {
-        const randomIndex = randInt(0, state.battle.dice.length - 1);
-        state.battle.dice[randomIndex].locked = true;
-      }
-    }
-
-    function startBattle(index) {
-      const enemyData = ENEMIES[index];
-      state.run.battleIndex = index;
-      state.battle = {
-        enemy: { ...enemyData, hp: enemyData.hp, maxHp: enemyData.hp },
-        dice: [],
-        rerollsRemaining: 2 + state.player.mods.bonusBattleRerolls,
-        rerollsUsed: 0,
-        bonusMultiplier: state.player.mods.nextBattleBonusMultiplier,
-        preview: null,
-        justRolled: [],
-        justLocked: null,
-      };
-      state.player.mods.nextBattleBonusMultiplier = 0;
-      drawInitialDice();
-      addLog(`你踏上赌桌，对上了 ${enemyData.name}。`, "开局：");
-      renderBattleScreen();
-      setScreen("battle");
-    }
-
-    function startRun() {
-      state = makeInitialState();
-      renderBattleLog();
-      startBattle(0);
-    }
-
-    function toggleDie(index) {
-      state.battle.dice[index].locked = !state.battle.dice[index].locked;
-      state.battle.justLocked = index;
-      renderBattleScreen();
-      flashDamage(state.battle.dice[index].locked ? "LOCK" : "FREE", "blue");
-      addLog(
-        state.battle.dice[index].locked
-          ? `你锁住了第 ${index + 1} 颗骰子，准备围绕它继续赌。`
-          : `你解开了第 ${index + 1} 颗骰子，重新把它交给运气。`,
-        state.battle.dice[index].locked ? "锁骰：" : "松锁："
-      );
-      setTimeout(() => {
-        if (state && state.battle) {
-          state.battle.justLocked = null;
-          renderDice();
-        }
-      }, 240);
-    }
-
-    function rerollUnlockedDice() {
-      const battle = state.battle;
-      if (!battle || battle.rerollsRemaining <= 0) return;
-      const rerolled = [];
-      const unlocked = battle.dice.filter((die) => !die.locked);
-      if (!unlocked.length) {
-        addLog("所有骰子都锁住了，至少解锁 1 枚才能重掷。", "卡住：");
-        return;
-      }
-      battle.dice = battle.dice.map((die, index) => {
-        if (die.locked) return die;
-        rerolled.push(index);
-        return { ...die, value: rollDie() };
-      });
-      battle.rerollsRemaining -= 1;
-      battle.rerollsUsed += 1;
-      battle.justRolled = rerolled;
-      const freshHand = evaluateHand(battle.dice, state.player);
-      const freshPreview = calculateDamagePreview(freshHand, battle, state.player);
-      addLog(`你继续加注，当前还剩 ${battle.rerollsRemaining} 次重掷。`, "继续赌：");
-      addLog(
-        freshPreview.busted
-          ? `结果还是散点，还得继续找出路。`
-          : `现在是 ${freshHand.name}，如果收手可打 ${freshPreview.damage} 伤害。`,
-        freshPreview.hand.rank >= 4 ? "成型：" : "回看："
-      );
-      renderBattleScreen();
-      flashDamage(`x${getMultiplierForTurn(battle, state.player).toFixed(2)}`, "blue");
-      pulseShell("state-push");
-      setTimeout(() => {
-        if (state && state.battle === battle) {
-          battle.justRolled = [];
-          renderDice();
-        }
-      }, 360);
-    }
-
-    function applyOnCashOutEffects(preview) {
-      if (preview.hand.key === "fullHouse" && state.player.mods.fullHouseHeal > 0) {
-        state.player.hp = Math.min(state.player.maxHp, state.player.hp + state.player.mods.fullHouseHeal);
-        addLog(`骨片筹码触发，回复 ${state.player.mods.fullHouseHeal} 点生命。`, "遗物：");
-      }
-      if (state.player.mods.greedyRing && state.battle.rerollsUsed >= 2) {
-        state.player.gold += 2;
-        addLog("贪婪指环触发，额外 +2 金币。", "遗物：");
-      }
-      if (preview.hand.allOdd && state.player.mods.oddGoldBonus) {
-        state.player.gold += 3;
-        addLog("奇数生意触发，额外 +3 金币。", "升级：");
-      }
-    }
-
-    function enemyAttack() {
-      const damage = state.battle.enemy.damage;
-      state.player.hp = Math.max(0, state.player.hp - damage);
-      addLog(`${state.battle.enemy.name} 反击，造成 ${damage} 点伤害。`, "敌方：");
-      flashDamage(`-${damage}`, "red");
-      pulseShell("state-bust");
-    }
-
-    function handleBattleWin() {
-      state.run.enemiesDefeated += 1;
-      state.player.gold += 4 + state.run.battleIndex;
-      addLog(`${state.battle.enemy.name} 倒下了，你把桌上的筹码全收走。`, "胜利：");
-      pulseShell("state-win");
-      if (state.run.battleIndex === ENEMIES.length - 1) {
-        showSummary(true);
-        return;
-      }
-      prepareRewards();
-      setScreen("reward");
-    }
-
-    function cashOut() {
-      const hand = evaluateHand(state.battle.dice, state.player);
-      const preview = calculateDamagePreview(hand, state.battle, state.player);
-      state.battle.preview = preview;
-      applyOnCashOutEffects(preview);
-
-      if (preview.busted) {
-        addLog("你只打出了散点，这手直接爆掉。", "爆掉：");
-        flashDamage("BUST", "red");
-        pulseShell("state-bust");
-      } else {
-        state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - preview.damage);
-        state.player.totalDamage += preview.damage;
-        if (preview.hand.rank >= state.player.highestHandRank) {
-          state.player.highestHandRank = preview.hand.rank;
-          state.player.highestHandName = preview.hand.name;
-        }
-        addLog(`你以 ${preview.hand.name} 结算，造成 ${preview.damage} 点伤害。`, "结算：");
-        flashDamage(`-${preview.damage}`);
-        pulseShell(preview.hand.rank >= 6 ? "state-win" : "state-hit");
-        if (preview.hand.rank >= 6) {
-          addLog(`这是一手高质量 ${preview.hand.name}，赌中了。`, "命中：");
-        }
-      }
-
-      renderBattleScreen();
-
-      if (state.battle.enemy.hp <= 0) {
-        handleBattleWin();
-        return;
-      }
-
-      enemyAttack();
-      if (state.player.hp <= 0) {
-        showSummary(false);
-        return;
-      }
-
-      state.battle.rerollsRemaining = 2 + state.player.mods.bonusBattleRerolls;
-      state.battle.rerollsUsed = 0;
-      state.battle.bonusMultiplier = 0;
-      drawInitialDice();
-      addLog("新的一手开始，继续掷骰。", "下一手：");
-      renderBattleScreen();
-    }
-
-    function getAvailableRewards() {
-      const pool = REWARD_POOL.filter((reward) => !reward.unique || !state.player.ownedRewardIds.has(reward.id));
-      const picks = [];
-      const used = new Set();
-      while (picks.length < 3 && used.size < pool.length) {
-        const candidate = pool[randInt(0, pool.length - 1)];
-        if (used.has(candidate.id)) continue;
-        used.add(candidate.id);
-        picks.push(candidate);
-      }
-      return picks;
-    }
-
-    function prepareRewards() {
-      state.run.pendingRewards = getAvailableRewards();
-      renderRewards();
-    }
-
-    function chooseReward(rewardId) {
-      const reward = state.run.pendingRewards.find((entry) => entry.id === rewardId);
-      if (!reward) return;
-      reward.apply(state.player);
-      state.player.rewards.push({ type: reward.type, name: reward.name, text: reward.text, focus: reward.focus, tags: reward.tags });
-      if (reward.unique) state.player.ownedRewardIds.add(reward.id);
-      addLog(`${reward.name} 已加入你的构筑，方向开始往 ${reward.focus} 倾斜。`, "奖励：");
-      startBattle(state.run.battleIndex + 1);
-    }
-
-    function showSummary(victory) {
-      setScreen("summary");
-      ui.summaryTitle.textContent = victory ? "庄家倒下" : "爆掉了";
-      ui.summaryCopy.textContent = victory
-        ? "你掀翻了整张赌桌，拆穿了这场局，带着所有人的目光走出了门。"
-        : "这局结束了，但下一局已经在耳边低语，再重掷一次说不定就成了。";
-      const stats = [
-        { label: "击败敌人数", value: state.run.enemiesDefeated },
-        { label: "获得奖励数", value: state.player.rewards.length },
-        { label: "最高牌型", value: state.player.highestHandName },
-        { label: "总伤害", value: state.player.totalDamage },
-      ];
-      ui.summaryStats.innerHTML = stats.map((stat) => `
-        <div class="summary-box">
-          <h3>${stat.value}</h3>
-          <div class="subtext">${stat.label}</div>
-        </div>
-      `).join("");
-      ui.summaryDeck.innerHTML = state.player.rewards.length
-        ? state.player.rewards.map((reward) => `
-            <div class="mini-card">
-              <strong>${reward.name}</strong>
-              <div class="subtext">${reward.focus} · ${reward.text}</div>
-            </div>
-          `).join("")
-        : `<div class="mini-card"><strong>没有构筑</strong><div class="subtext">这把还没真正成型，你就先倒在了桌上。</div></div>`;
-    }
-
-    function renderRewards() {
-      const buildLabel = getBuildFocusLabel(state.player);
-      ui.rewardBuildFocus.textContent = buildLabel;
-      ui.rewardCount.textContent = state.player.rewards.length;
-      ui.rewardGold.textContent = state.player.gold;
-      ui.rewardGrid.innerHTML = state.run.pendingRewards.map((reward) => `
-        <button class="reward-btn" data-reward-id="${reward.id}">
-          <span class="eyebrow reward-type">${reward.type}</span>
-          <p class="reward-title">${reward.name}</p>
-          <p class="reward-hook">方向：${reward.focus}</p>
-          <p class="subtext">${reward.text}</p>
-          <p class="subtext">${getRewardHook(reward)}</p>
-          <div class="tags-row">
-            <span class="tag">${reward.focus}</span>
-            ${reward.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}
-          </div>
-        </button>
-      `).join("");
-    }
-
-    function renderDice() {
-      ui.diceRow.innerHTML = state.battle.dice.map((die, index) => {
-        const isRolling = state.battle.justRolled.includes(index);
-        const isLockFlash = state.battle.justLocked === index;
-        return `
-          <button class="die ${die.locked ? "locked" : ""} ${isRolling ? "rolling" : ""} ${isLockFlash ? "lock-flash" : ""}" data-die-index="${index}">
-            <span class="die-meta">${die.locked ? "已锁定" : "点击锁定"}</span>
-            <span class="die-value">${die.value}</span>
-            <span class="die-meta">${state.player.mods.onesAreSixes && die.value === 1 ? "按 6 计算" : "六面骰"}</span>
-          </button>
-        `;
-      }).join("");
-    }
-
-    function renderBattleScreen() {
-      const battle = state.battle;
-      const player = state.player;
-      const hand = evaluateHand(battle.dice, player);
-      const preview = calculateDamagePreview(hand, battle, player);
-      const advice = getDecisionStateV2(preview, battle, player);
-      const potential = getSpecificPotentialUpgrade(preview, battle, player);
-      battle.preview = preview;
-
-      ui.battleStage.textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
-      ui.battleTitle.textContent = battle.enemy.name;
-      ui.buildFocus.textContent = getBuildFocusLabel(player);
-      ui.goldValue.textContent = player.gold;
-      ui.rerollsValue.textContent = battle.rerollsRemaining;
-      ui.multiplierValue.textContent = `x${preview.multiplier.toFixed(2)}`;
-      ui.playerHpFill.style.width = `${(player.hp / player.maxHp) * 100}%`;
-      ui.playerHpText.textContent = `${player.hp} / ${player.maxHp} HP`;
-      ui.enemyHpFill.style.width = `${(battle.enemy.hp / battle.enemy.maxHp) * 100}%`;
-      ui.enemyHpText.textContent = `${battle.enemy.hp} / ${battle.enemy.maxHp} HP`;
-      ui.enemyName.textContent = battle.enemy.name;
-      ui.enemyFlavor.textContent = battle.enemy.flavor;
-
-      renderDice();
-      ui.heroHand.textContent = hand.name;
-      ui.heroHandCopy.textContent = preview.busted
-        ? "这手没成，继续赌才有机会活下来。"
-        : (potential?.targetName
-          ? `再赌是在追 ${potential.targetName}。${potential.missText}`
-          : advice.pushReason);
-      ui.heroDamage.textContent = `${preview.damage} 伤害`;
-      ui.heroDamageCopy.textContent = preview.busted ? "现在收手等于白给这一回合。" : advice.cashReason;
-      ui.heroRerolls.textContent = `${battle.rerollsRemaining} 次`;
-      ui.heroRerollsCopy.textContent = battle.rerollsRemaining > 0
-        ? `现在最值得问的是：这手要不要再赌一次。`
-        : "这回合已经没有继续赌的机会。";
-      ui.handBox.className = `hand-box ${advice.handClass}`.trim();
-      ui.handRankChip.textContent = preview.busted ? "爆点风险" : "当前牌型";
-      ui.handName.textContent = hand.name;
-      ui.handCopy.textContent = preview.note;
-      ui.damagePreview.textContent = `${preview.damage} 伤害`;
-      ui.cashHeadline.textContent = advice.cashHeadline;
-      ui.cashReason.textContent = advice.cashReason;
-      ui.pushHeadline.textContent = advice.pushHeadline;
-      ui.pushReason.textContent = advice.pushReason;
-      ui.cashCard.className = `decision-card ${advice.cashClass}`.trim();
-      ui.pushCard.className = `decision-card ${advice.pushClass}`.trim();
-      ui.lockedCount.textContent = battle.dice.filter((die) => die.locked).length;
-      ui.highestHand.textContent = player.highestHandName;
-      ui.deckSize.textContent = player.rewards.length;
-      ui.heroRerollsCopy.textContent = battle.rerollsRemaining > 0
-        ? (potential?.targetName
-          ? `这手值不值得赌，就看你想不想追 ${potential.targetName}。`
-          : "现在最重要的问题就是：这一手还要不要再赌一次。")
-        : "这一回合已经没有继续再赌的机会。";
-
-      const nextMultiplier = getMultiplierForTurn({ ...battle, rerollsUsed: battle.rerollsUsed + 1 }, player);
-      ui.rerollBtn.textContent = battle.rerollsRemaining > 0
-        ? `继续重掷 ${player.mods.softGlove && battle.rerollsUsed === 0 ? "(本次不涨倍率)" : `(下一次 x${nextMultiplier.toFixed(2)})`}`
-        : "没有重掷了";
-      ui.rerollSubline.textContent = battle.rerollsRemaining > 0
-        ? (preview.busted ? "这手不重掷就会爆掉" : advice.pushReason)
-        : "这回合已经到底";
-      ui.cashoutBtn.textContent = preview.busted ? "现在收手会爆掉" : `立即结算 ${preview.damage} 伤害`;
-      ui.cashoutSubline.textContent = preview.busted ? "稳不住了，这一手不会造成伤害" : advice.cashReason;
-      ui.rerollBtn.innerHTML = '<span id="reroll-title"></span><span id="reroll-subline"></span>';
-      ui.cashoutBtn.innerHTML = '<span id="cashout-title"></span><span id="cashout-subline"></span>';
-      ui.rerollTitle = ui.rerollBtn.querySelector("#reroll-title");
-      ui.rerollSubline = ui.rerollBtn.querySelector("#reroll-subline");
-      ui.cashoutTitle = ui.cashoutBtn.querySelector("#cashout-title");
-      ui.cashoutSubline = ui.cashoutBtn.querySelector("#cashout-subline");
-      ui.rerollTitle.textContent = battle.rerollsRemaining > 0
-        ? `继续重掷 ${player.mods.softGlove && battle.rerollsUsed === 0 ? "(这次不涨倍率)" : `(下一次 x${nextMultiplier.toFixed(2)})`}`
-        : "没有重掷了";
-      ui.rerollSubline.textContent = battle.rerollsRemaining > 0
-        ? (potential?.targetName
-          ? `追 ${potential.targetName} · ${potential.missText}`
-          : (preview.busted ? "这手不重掷就会直接空过" : advice.pushReason))
-        : "这一回合已经到头了";
-      ui.cashoutTitle.textContent = preview.busted ? "现在收手会空过" : `立即结算 ${preview.damage} 伤害`;
-      ui.cashoutSubline.textContent = preview.busted ? "这手根本收不住，停手就是白给" : `稳稳拿下 ${preview.damage} 伤害`;
-      ui.rerollBtn.disabled = battle.rerollsRemaining <= 0;
-      ui.cashoutBtn.disabled = false;
-      renderBattleLog();
-    }
-
-    function bindEvents() {
-      ui.startRunBtn.addEventListener("click", startRun);
-      ui.playAgainBtn.addEventListener("click", startRun);
-      ui.rerollBtn.addEventListener("click", rerollUnlockedDice);
-      ui.cashoutBtn.addEventListener("click", cashOut);
-      ui.diceRow.addEventListener("click", (event) => {
-        const dieButton = event.target.closest("[data-die-index]");
-        if (!dieButton || state.screen !== "battle") return;
-        toggleDie(Number(dieButton.dataset.dieIndex));
-      });
-      ui.rewardGrid.addEventListener("click", (event) => {
-        const rewardButton = event.target.closest("[data-reward-id]");
-        if (!rewardButton || state.screen !== "reward") return;
-        chooseReward(rewardButton.dataset.rewardId);
-      });
-    }
-
-    function primeTitleScreen() {
-      state = makeInitialState();
-      setScreen("title");
-    }
-
-    bindEvents();
-    primeTitleScreen();
+const HAND_RULES=[{key:"fiveKind",name:"Five of a Kind",rank:8,baseDamage:35},{key:"fourKind",name:"Four of a Kind",rank:7,baseDamage:24},{key:"fullHouse",name:"Full House",rank:6,baseDamage:18},{key:"straight",name:"Straight",rank:5,baseDamage:14},{key:"threeKind",name:"Three of a Kind",rank:4,baseDamage:10},{key:"twoPair",name:"Two Pair",rank:3,baseDamage:7},{key:"pair",name:"Pair",rank:2,baseDamage:4},{key:"high",name:"High Die",rank:1,baseDamage:1}];
+const ENEMIES=[{name:"Rat Thug",hp:28,damage:5,avatar:"🐀",flavor:"Cheap blade, filthy grin, zero respect for the odds."},{name:"Alley Guard",hp:40,damage:7,avatar:"🛡️",flavor:"A paid fist with thick armor and thinner patience."},{name:"Card Shark",hp:54,damage:9,avatar:"🦈",flavor:"Every smile means he already thinks he has you."},{name:"Iron Dealer",hp:70,damage:12,avatar:"🤖",flavor:"Cold steel. Cold eyes. Perfect rhythm on every counter-hit."},{name:"The House",hp:92,damage:15,avatar:"🎰",flavor:"The room itself leans against you. Break it anyway.",boss:true}];
+const RELIC_POOL=[{id:"neon-six",type:"Relic",name:"Neon Six",icon:"6",text:"All rolled 6s become wildcards and can count as any number.",summary:"Every six turns slippery. Monster hands arrive from nowhere."},{id:"greedy-multi",type:"Relic",name:"The Greedy Multi",icon:"x",text:"Each reroll adds +0.5x extra multiplier, but all base damage is reduced by 10%.",summary:"Every push gets juicier, every hand gets greedier."},{id:"even-stevens",type:"Relic",name:"Even Stevens",icon:"2",text:"If your final scoring hand uses only even numbers, double the final damage.",summary:"Calm, tidy hands become absurd finishers."},{id:"safety-net",type:"Relic",name:"Safety Net",icon:"∞",text:"The first Bust in every battle is ignored. The dice reroll for free instead.",summary:"The first collapse becomes momentum instead of punishment."}];
+const UTILITY_OFFERS=[{id:"patch-up",type:"Utility",name:"Patch Up",icon:"+",text:"Heal 8 HP right now.",summary:"Not flashy, but dead builds have zero synergy."},{id:"hot-wallet",type:"Utility",name:"Hot Wallet",icon:"$",text:"Gain 6 coins immediately.",summary:"Pure momentum for the stat line."}];
+const ui={cabinet:document.getElementById("cabinet"),screens:{title:document.getElementById("screen-title"),battle:document.getElementById("screen-battle"),shop:document.getElementById("screen-shop"),summary:document.getElementById("screen-summary")},startRunBtn:document.getElementById("start-run-btn"),playAgainBtn:document.getElementById("play-again-btn"),battleStage:document.getElementById("battle-stage"),enemyPanel:document.getElementById("enemy-panel"),enemyName:document.getElementById("enemy-name"),enemyFlavor:document.getElementById("enemy-flavor"),enemyAvatar:document.getElementById("enemy-avatar"),enemyDamage:document.getElementById("enemy-damage"),enemyHpFill:document.getElementById("enemy-hp-fill"),enemyHpText:document.getElementById("enemy-hp-text"),bossWarning:document.getElementById("boss-warning"),relicSlots:document.getElementById("relic-slots"),coinsChip:document.getElementById("coins-chip"),highestChip:document.getElementById("highest-chip"),heroHand:document.getElementById("hero-hand"),heroHandCopy:document.getElementById("hero-hand-copy"),heroDamage:document.getElementById("hero-damage"),heroDamageCopy:document.getElementById("hero-damage-copy"),heroMultiplier:document.getElementById("hero-multiplier"),heroRerollsCopy:document.getElementById("hero-rerolls-copy"),diceRow:document.getElementById("dice-row"),settleTitle:document.getElementById("settle-title"),settleCopy:document.getElementById("settle-copy"),previewScore:document.getElementById("preview-score"),previewDamage:document.getElementById("preview-damage"),pushTitle:document.getElementById("push-title"),pushCopy:document.getElementById("push-copy"),nearMiss:document.getElementById("near-miss"),potentialHit:document.getElementById("potential-hit"),rerollBtn:document.getElementById("reroll-btn"),rerollTitle:document.getElementById("reroll-title"),rerollSubline:document.getElementById("reroll-subline"),settleBtn:document.getElementById("settle-btn"),settleBtnTitle:document.getElementById("settle-btn-title"),settleSubline:document.getElementById("settle-subline"),playerHpFill:document.getElementById("player-hp-fill"),playerHpText:document.getElementById("player-hp-text"),battleIndexChip:document.getElementById("battle-index-chip"),statusChipRow:document.getElementById("status-chip-row"),calcBreakdown:document.getElementById("calc-breakdown"),pityChip:document.getElementById("pity-chip"),battleLog:document.getElementById("battle-log"),damageFloat:document.getElementById("damage-float"),damageMissile:document.getElementById("damage-missile"),shopGrid:document.getElementById("shop-grid"),shopRelicCount:document.getElementById("shop-relic-count"),shopCoins:document.getElementById("shop-coins"),summaryKicker:document.getElementById("summary-kicker"),summaryTitle:document.getElementById("summary-title"),summaryCopy:document.getElementById("summary-copy"),summaryGrid:document.getElementById("summary-grid"),summaryList:document.getElementById("summary-list")};
+let state=null;
+
+function makeInitialState(){return{screen:"title",player:{maxHp:46,hp:46,coins:0,relicIds:new Set(),relics:[],diceMods:Array.from({length:5},()=>({type:null,shattered:false})),pityBaseBonus:0,totalDamage:0,highestHandRank:1,highestHandName:"High Die"},run:{battleIndex:0,enemiesDefeated:0,battleLog:[],offers:[],result:null},battle:null};}
+function setScreen(name){state.screen=name;Object.entries(ui.screens).forEach(([k,v])=>v.classList.toggle("active",k===name));}
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function rollDie(){return randInt(1,6);}
+function hasRelic(id){return state.player.relicIds.has(id);}
+function screenShake(){document.body.classList.remove("shake");void document.body.offsetWidth;document.body.classList.add("shake");setTimeout(()=>document.body.classList.remove("shake"),240);}
+function flashEnemy(){ui.enemyPanel.classList.remove("flash");void ui.enemyPanel.offsetWidth;ui.enemyPanel.classList.add("flash");setTimeout(()=>ui.enemyPanel.classList.remove("flash"),160);}
+function showFloat(text,color){ui.damageFloat.textContent=text;ui.damageFloat.style.color=color;ui.damageFloat.classList.remove("show");void ui.damageFloat.offsetWidth;ui.damageFloat.classList.add("show");}
+function launchMissile(text,color){ui.damageMissile.textContent=text;ui.damageMissile.style.color=color;ui.damageMissile.classList.remove("show");void ui.damageMissile.offsetWidth;ui.damageMissile.classList.add("show");}
+function addLog(title,text){state.run.battleLog.unshift({title,text});if(state.run.battleLog.length>16)state.run.battleLog.length=16;renderLog();}
+function renderLog(){ui.battleLog.innerHTML=state.run.battleLog.map(e=>`<div class="log-entry"><strong>${e.title}</strong><br>${e.text}</div>`).join("");}
+function getDieState(index){const mod=state.player.diceMods[index];if(mod.shattered)return{index,value:null,locked:false,type:mod.type,inactive:true,shattered:true};return{index,value:rollDie(),locked:false,type:mod.type,inactive:false,shattered:false,rolling:false};}
+function createBattleDice(){return Array.from({length:5},(_,i)=>getDieState(i));}
+function getActiveDice(dice){return dice.filter(d=>!d.inactive);}
+function getCounts(values){const map=new Map();values.forEach(v=>map.set(v,(map.get(v)||0)+1));return[...map.entries()].sort((a,b)=>b[1]-a[1]||b[0]-a[0]);}
+function isStraight(values){if(values.length!==5)return false;const unique=[...new Set(values)].sort((a,b)=>a-b);return unique.length===5&&(unique.join(",")==="1,2,3,4,5"||unique.join(",")==="2,3,4,5,6");}
+function scoreResolvedValues(values){const counts=getCounts(values),n=counts.map(e=>e[1]);let hand=HAND_RULES[HAND_RULES.length-1],scoreVals=[];
+if(n[0]===5){hand=HAND_RULES[0];scoreVals=[counts[0][0]];}else if(n[0]===4){hand=HAND_RULES[1];scoreVals=[counts[0][0]];}else if(values.length===5&&n[0]===3&&n[1]===2){hand=HAND_RULES[2];scoreVals=[...new Set(values)];}else if(isStraight(values)){hand=HAND_RULES[3];scoreVals=[...values];}else if(n[0]===3){hand=HAND_RULES[4];scoreVals=[counts[0][0]];}else if(n[0]===2&&n[1]===2){hand=HAND_RULES[5];scoreVals=[counts[0][0],counts[1][0]];}else if(n[0]===2){hand=HAND_RULES[6];scoreVals=[counts[0][0]];}
+const scoringIndices=(hand.key==="straight"||hand.key==="fullHouse")?values.map((_,i)=>i):values.map((v,i)=>scoreVals.includes(v)?i:-1).filter(i=>i>=0);
+return{hand,scoringIndices,resolvedValues:values};}
+function enumerateWildAssignments(values,wilds){const out=[];(function walk(depth,current){if(depth===wilds.length){out.push([...current]);return;}for(let v=1;v<=6;v+=1){current[wilds[depth]]=v;walk(depth+1,current);}})(0,[...values]);return out;}
+function evaluateHand(){const active=getActiveDice(state.battle.dice),values=active.map(d=>d.value);if(!values.length)return{hand:HAND_RULES[HAND_RULES.length-1],scoringIndices:[],resolvedValues:[],allEven:false,activeDice:active};let best=scoreResolvedValues(values);
+const wilds=hasRelic("neon-six")?values.map((v,i)=>v===6?i:-1).filter(i=>i>=0):[];if(wilds.length){enumerateWildAssignments(values,wilds).forEach(candidate=>{const scored=scoreResolvedValues(candidate);if(scored.hand.rank>best.hand.rank||(scored.hand.rank===best.hand.rank&&scored.hand.baseDamage>best.hand.baseDamage))best=scored;});}
+return{...best,activeDice:active,allEven:best.resolvedValues.length>0&&best.resolvedValues.every(v=>v%2===0)};}
+function getMultiplier(){const r=state.battle.rerollsUsed;return 1+r*.25+(hasRelic("greedy-multi")?r*.5:0);}
+function getNearMissHint(info){const values=info.resolvedValues,counts=getCounts(values),unique=[...new Set(values)].sort((a,b)=>a-b),top=counts[0]?counts[0][0]:null,second=counts[1]?counts[1][0]:null;
+if(info.hand.key==="fiveKind")return"This hand is already disgusting. Further greed is pure ego.";if(info.hand.key==="fourKind")return`One more ${top} hits Five of a Kind.`;if(info.hand.key==="fullHouse")return`You already own the room. Another ${top} upgrades the top line.`;if(info.hand.key==="straight")return"The shape is complete. Rerolling now is only about multiplier greed.";if(info.hand.key==="threeKind")return`A single ${top} jumps this into Four of a Kind.`;if(info.hand.key==="twoPair")return`Any extra ${counts[0][0]} or ${counts[1][0]} lands the Full House.`;if(info.hand.key==="pair")return`Another ${top} upgrades the pair into Three of a Kind.`;if(unique.length>=4&&unique.length<=5&&unique[unique.length-1]-unique[0]<=4){const needs=[];for(let s=Math.max(1,unique[0]-1);s<=Math.min(2,unique[0]);s+=1){const target=[s,s+1,s+2,s+3,s+4],missing=target.filter(v=>!unique.includes(v));if(missing.length===1)needs.push(missing[0]);}if(needs.length)return`You are one pip away from a Straight. Hit ${[...new Set(needs)].join(" or ")}.`;}if(counts[0]&&counts[0][1]===1)return"No made hand yet. Chase any pair or a live straight window.";return`The table is hinting at ${top}. One more match changes the whole turn.`;}
+function getPotentialHand(info){return({high:"Pair",pair:"Three of a Kind",twoPair:"Full House",threeKind:"Four of a Kind",straight:"Bigger multiplier",fullHouse:"Four of a Kind",fourKind:"Five of a Kind",fiveKind:"Legendary greed"})[info.hand.key];}
+function calculateDamagePreview(info){const mult=getMultiplier();let base=info.hand.key==="high"?0:info.hand.baseDamage;const notes=[];if(state.player.pityBaseBonus>0){base+=state.player.pityBaseBonus;notes.push(`Pity +${state.player.pityBaseBonus}`);}if(hasRelic("greedy-multi")&&base>0){base=Math.max(1,Math.round(base*.9));notes.push("Greedy Multi -10% base");}let total=info.hand.key==="high"?0:Math.round(base*mult);
+if(hasRelic("even-stevens")&&info.hand.key!=="high"&&info.allEven){total*=2;notes.push("Even Stevens x2");}
+const active=getActiveDice(state.battle.dice),scoring=info.scoringIndices.map(i=>active[i]).filter(Boolean),glass=scoring.filter(d=>d.type==="glass"&&!d.shattered),gold=scoring.filter(d=>d.type==="gold"&&!d.shattered).length;
+if(glass.length&&info.hand.key!=="high"){total=Math.round(total*(1.5**glass.length));notes.push(`Glass x${(1.5**glass.length).toFixed(2)}`);}if(gold)notes.push(`Gold payout +${gold*2} coins`);
+return{handInfo:info,multiplier:mult,baseDamage:base,totalDamage:total,busted:info.hand.key==="high",goldDice:gold,glassDice:glass.length,notes};}
+function getStatusChips(preview){const chips=[`Rerolls ${state.battle.rerollsRemaining}`];if(hasRelic("neon-six"))chips.push("Neon Six online");if(hasRelic("greedy-multi"))chips.push("Greedy Multi live");if(hasRelic("even-stevens"))chips.push(preview.handInfo.allEven?"All even live":"Even Stevens idle");if(hasRelic("safety-net"))chips.push(state.battle.safetyNetUsed?"Safety Net spent":"Safety Net armed");if(state.player.pityBaseBonus>0)chips.push(`Pity +${state.player.pityBaseBonus}`);return chips;}
+function renderRelics(){const slots=[];for(let i=0;i<3;i+=1){const relic=state.player.relics[i];if(!relic){slots.push('<div class="relic-slot empty"><div>Open Slot</div><div class="mini-copy">Find something broken.</div></div>');continue;}slots.push(`<div class="relic-slot"><div class="relic-icon">${relic.icon}</div><strong>${relic.name}</strong><div class="mini-copy">${relic.text}</div></div>`);}ui.relicSlots.innerHTML=slots.join("");ui.coinsChip.textContent=`Coins ${state.player.coins}`;ui.highestChip.textContent=`Best ${state.player.highestHandName}`;}
+function renderDice(){ui.diceRow.innerHTML=state.battle.dice.map(d=>{const cls=["die",d.locked?"locked":"",d.type==="gold"?"gold":"",d.type==="glass"?"glass":"",d.rolling?"rolling":"",d.shattered?"shattered":"",d.inactive?"inactive":""].filter(Boolean).join(" ");const label=d.inactive?"Shattered":d.locked?"Locked":"Tap to Lock";const note=d.type==="gold"?"Gold Die":d.type==="glass"?"Glass Die":"Standard";return`<button class="${cls}" data-die-index="${d.index}" ${d.inactive?"disabled":""}><span class="die-label">${label}</span><span class="die-value">${d.inactive?"✕":d.value}</span><span class="die-note">${note}</span></button>`;}).join("");}
+function renderBreakdown(preview){const lines=[["Hand",preview.handInfo.hand.name],["Base damage",preview.baseDamage],["Multiplier",`x${preview.multiplier.toFixed(2)}`],...preview.notes.map(n=>["Modifier",n]),["Final damage",preview.totalDamage]];ui.calcBreakdown.innerHTML=lines.map(line=>`<div class="calc-line"><span>${line[0]}</span><strong>${line[1]}</strong></div>`).join("");ui.pityChip.classList.toggle("active",state.player.pityBaseBonus>0);ui.pityChip.textContent=`Pity token armed: next scoring hand gets +${state.player.pityBaseBonus} base damage.`;}
+function renderBattle(){const enemy=state.battle.enemy,info=evaluateHand(),preview=calculateDamagePreview(info);state.battle.preview=preview;ui.battleStage.textContent=`Battle ${state.run.battleIndex+1} / ${ENEMIES.length}`;ui.enemyName.textContent=enemy.name;ui.enemyFlavor.textContent=enemy.flavor;ui.enemyAvatar.textContent=enemy.avatar;ui.enemyDamage.textContent=enemy.damage;ui.enemyHpFill.style.width=`${enemy.hp/enemy.maxHp*100}%`;ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;ui.bossWarning.textContent=enemy.boss?"Boss":"Normal";ui.bossWarning.className=`badge ${enemy.boss?"hot":""}`.trim();
+renderRelics();renderDice();renderBreakdown(preview);ui.heroHand.textContent=info.hand.name;ui.heroHandCopy.textContent=preview.busted?"This is a bust unless you keep swinging. The table wants one more click.":getNearMissHint(info);ui.heroDamage.textContent=`${preview.totalDamage} DMG`;ui.heroDamageCopy.textContent=preview.busted?"Settling now whiffs, but it also charges the pity engine.":`You can bank ${preview.totalDamage} damage right now.`;ui.heroMultiplier.textContent=`x${preview.multiplier.toFixed(2)}`;ui.heroMultiplier.classList.toggle("hot",preview.multiplier>=2||info.hand.rank>=6);ui.heroRerollsCopy.textContent=state.battle.rerollsRemaining>0?`Rerolls left: ${state.battle.rerollsRemaining}. ${getPotentialHand(info)} is the temptation.`:"No rerolls left. This is the hand you either trust or suffer with.";
+ui.settleTitle.textContent=preview.busted?"Settle Means Whiff":`Settle ${preview.totalDamage} Damage`;ui.settleCopy.textContent=preview.busted?"This hand does not score. If you settle now, only the pity payout survives.":`Base ${preview.baseDamage} x ${preview.multiplier.toFixed(2)}${preview.notes.length?` with ${preview.notes.join(", ")}`:""}.`;ui.previewScore.textContent=info.hand.name;ui.previewDamage.textContent=`${preview.totalDamage} damage`;ui.pushTitle.textContent=state.battle.rerollsRemaining>0?`Chase ${getPotentialHand(info)}`:"No More Heat";ui.pushCopy.textContent=state.battle.rerollsRemaining>0?getNearMissHint(info):"The greed window is closed. The board is what it is now.";ui.nearMiss.textContent=getNearMissHint(info);ui.potentialHit.textContent=state.battle.rerollsRemaining>0?`${getPotentialHand(info)} with x${(preview.multiplier+.25+(hasRelic("greedy-multi") ? .5 : 0)).toFixed(2)}+`:"No rerolls";
+ui.rerollTitle.textContent=state.battle.rerollsRemaining>0?`Reroll Unlocked Dice (${state.battle.rerollsRemaining} left)`:"No Rerolls Left";ui.rerollSubline.textContent=state.battle.rerollsRemaining>0?getNearMissHint(info):"You pushed as far as this turn allows.";ui.settleBtnTitle.textContent=preview.busted?"Settle the Bust":`Settle for ${preview.totalDamage} Damage`;ui.settleSubline.textContent=preview.busted?"Whiff now, but charge pity for the next made hand.":"Lock in the real damage before greed takes it away.";
+ui.playerHpFill.style.width=`${state.player.hp/state.player.maxHp*100}%`;ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;ui.battleIndexChip.textContent=`Fight ${state.run.battleIndex+1}`;ui.statusChipRow.innerHTML=getStatusChips(preview).map(t=>`<span class="badge">${t}</span>`).join("");ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0;}
+function startBattle(index){const e=ENEMIES[index];state.run.battleIndex=index;state.battle={enemy:{...e,maxHp:e.hp,hp:e.hp},dice:createBattleDice(),rerollsRemaining:2,rerollsUsed:0,safetyNetUsed:false};addLog("New table",`${e.name} sits down. Crack the board before it cracks you.`);renderBattle();setScreen("battle");}
+function startRun(){state=makeInitialState();renderLog();startBattle(0);}
+function toggleDie(index){const die=state.battle.dice[index];if(!die||die.inactive)return;die.locked=!die.locked;renderBattle();addLog(die.locked?"Die locked":"Die freed",die.locked?`Die #${index+1} is now frozen in place for the chase.`:`Die #${index+1} is loose again. Maybe chaos knows better.`);}
+function rerollUnlockedDice(isFree=false){if(!state.battle)return;if(state.battle.rerollsRemaining<=0&&!isFree)return;let unlocked=state.battle.dice.filter(d=>!d.locked&&!d.inactive);if(!unlocked.length)unlocked=state.battle.dice.filter(d=>!d.inactive);const rolled=[];unlocked.forEach(d=>{d.value=rollDie();d.rolling=true;rolled.push(d.index+1);});if(!isFree){state.battle.rerollsRemaining-=1;state.battle.rerollsUsed+=1;}renderBattle();const preview=state.battle.preview;showFloat(`x${preview.multiplier.toFixed(2)}`,hasRelic("greedy-multi")?"var(--orange)":"var(--cyan)");addLog(isFree?"Safety Net":"Reroll",`${isFree?"Emergency reroll.":"You twist the dice again."} Rerolled dice: ${rolled.join(", ")}.`);setTimeout(()=>{state.battle.dice.forEach(d=>d.rolling=false);renderDice();},520);}
+function applyGlassRisk(preview){if(!preview.glassDice)return"";const active=getActiveDice(state.battle.dice),impacted=preview.handInfo.scoringIndices.map(i=>active[i]).filter(d=>d&&d.type==="glass"&&!d.shattered);let text="";impacted.forEach(d=>{if(Math.random()<.1){d.shattered=true;d.inactive=true;state.player.diceMods[d.index].shattered=true;text=`Glass Die #${d.index+1} shattered out of the run.`;}});return text;}
+function payoutCoins(){let coins=4+state.run.battleIndex;state.player.coins+=coins;return coins;}
+function enemyAttack(){const dmg=state.battle.enemy.damage;state.player.hp=Math.max(0,state.player.hp-dmg);showFloat(`-${dmg}`,"var(--red)");screenShake();addLog("Enemy hit",`${state.battle.enemy.name} slams back for ${dmg} damage.`);}
+function consumePity(preview){if(!preview.busted&&state.player.pityBaseBonus>0)state.player.pityBaseBonus=0;}
+function consumeTurn(){enemyAttack();if(state.player.hp<=0){showSummary(false);return;}state.battle.rerollsRemaining=2;state.battle.rerollsUsed=0;state.battle.dice=createBattleDice();addLog("Next turn","Fresh dice hit the felt. Decide whether to spike early or hunt a better ending.");renderBattle();}
+function handleBust(){if(hasRelic("safety-net")&&!state.battle.safetyNetUsed){state.battle.safetyNetUsed=true;addLog("Safety Net","Your first bust is erased. The machine spits the dice back for one free reroll.");rerollUnlockedDice(true);return;}state.player.pityBaseBonus+=20;ui.cabinet.style.filter="hue-rotate(-18deg) saturate(1.25)";setTimeout(()=>ui.cabinet.style.filter="",180);showFloat("BUST","var(--red)");screenShake();addLog("Bust","No score this turn. But you gain a pity token: next scoring hand gets +20 base damage.");consumeTurn();}
+function settleHand(){const preview=state.battle.preview;if(!preview)return;if(preview.busted){handleBust();return;}consumePity(preview);const shatter=applyGlassRisk(preview);state.battle.enemy.hp=Math.max(0,state.battle.enemy.hp-preview.totalDamage);state.player.totalDamage+=preview.totalDamage;if(preview.goldDice){state.player.coins+=preview.goldDice*2;addLog("Gold Die",`${preview.goldDice} scoring gold die${preview.goldDice>1?"s":""} pay out +${preview.goldDice*2} coins.`);}if(preview.handInfo.hand.rank>=state.player.highestHandRank){state.player.highestHandRank=preview.handInfo.hand.rank;state.player.highestHandName=preview.handInfo.hand.name;}launchMissile(`${preview.baseDamage} x ${preview.multiplier.toFixed(2)} = ${preview.totalDamage}`,"var(--gold2)");showFloat(`-${preview.totalDamage}`,preview.handInfo.hand.rank>=6?"var(--orange)":"var(--gold)");flashEnemy();screenShake();addLog("Hit",`You cash out ${preview.handInfo.hand.name} for ${preview.totalDamage} damage.${shatter?` ${shatter}`:""}`);
+if(state.battle.enemy.hp<=0){const coins=payoutCoins();state.run.enemiesDefeated+=1;addLog("Table broken",`${state.battle.enemy.name} folds. You scoop ${coins} coins from the table.`);if(state.run.battleIndex===ENEMIES.length-1){showSummary(true);return;}prepareShop();return;}consumeTurn();}
+function buildRelicOfferPool(){return state.player.relics.length>=3?[]:RELIC_POOL.filter(r=>!state.player.relicIds.has(r.id));}
+function buildEnchantOffer(){const goldTargets=state.player.diceMods.map((m,i)=>({m,i})).filter(x=>!x.m.shattered&&x.m.type!=="gold"),glassTargets=state.player.diceMods.map((m,i)=>({m,i})).filter(x=>!x.m.shattered&&x.m.type!=="glass"),options=[];if(goldTargets.length){const t=goldTargets[randInt(0,goldTargets.length-1)].i;options.push({id:`gold-${t}`,type:"Enchant",name:`Gold Die #${t+1}`,icon:"◎",text:`Die #${t+1} becomes a Gold Die. If it is part of a scoring hand, gain +2 coins.`,summary:"Turns one die into an economy engine.",className:"enchant-offer",apply(){state.player.diceMods[t].type="gold";}});}if(glassTargets.length){const t=glassTargets[randInt(0,glassTargets.length-1)].i;options.push({id:`glass-${t}`,type:"Enchant",name:`Glass Die #${t+1}`,icon:"◇",text:`Die #${t+1} becomes a Glass Die. If it scores, total hand damage is x1.5, but it has a 10% chance to shatter for the run.`,summary:"The greedy option. It literally explodes if you abuse it.",className:"enchant-offer",apply(){state.player.diceMods[t].type="glass";}});}return options;}
+function getShopOffers(){const pool=[...buildRelicOfferPool(),...buildEnchantOffer(),...UTILITY_OFFERS],offers=[],used=new Set();while(offers.length<3&&used.size<pool.length){const pick=pool[randInt(0,pool.length-1)];if(used.has(pick.id))continue;used.add(pick.id);offers.push(pick);}return offers;}
+function prepareShop(){state.run.offers=getShopOffers();renderShop();setScreen("shop");}
+function renderShop(){ui.shopRelicCount.textContent=`Relics ${state.player.relics.length} / 3`;ui.shopCoins.textContent=`Coins ${state.player.coins}`;ui.shopGrid.innerHTML=state.run.offers.map(o=>`<button class="offer-btn ${o.className||(o.type==="Relic"?"relic-offer":o.type==="Enchant"?"enchant-offer":"utility-offer")}" data-offer-id="${o.id}"><span class="pill">${o.type}</span><div class="relic-icon">${o.icon}</div><h3 class="offer-name">${o.name}</h3><p class="subcopy">${o.text}</p><p class="mini-copy">${o.summary}</p></button>`).join("");}
+function claimOffer(id){const offer=state.run.offers.find(o=>o.id===id);if(!offer)return;if(offer.type==="Relic"){state.player.relicIds.add(offer.id);state.player.relics.push(offer);}else{offer.apply();}addLog("Shop pick",`${offer.name} is now part of the run. The build skews harder.`);startBattle(state.run.battleIndex+1);}
+function showSummary(victory){setScreen("summary");ui.summaryKicker.textContent=victory?"Casino Cracked":"Run Over";ui.summaryTitle.textContent=victory?"The House Falls":"The Heist Ends";ui.summaryCopy.textContent=victory?"You turned a few dirty dice into a machine-breaking neon disaster.":"The run died, but the build probably flashed something outrageous first. Good.";const stats=[["Enemies Defeated",state.run.enemiesDefeated],["Relics Collected",state.player.relics.length],["Best Hand",state.player.highestHandName],["Total Damage",state.player.totalDamage]];ui.summaryGrid.innerHTML=stats.map(s=>`<div class="summary-box"><h3>${s[1]}</h3><div class="mini-copy">${s[0]}</div></div>`).join("");
+const items=[];state.player.relics.forEach(r=>items.push(`<div class="mini-card"><strong>${r.name}</strong><div class="mini-copy">${r.text}</div></div>`));state.player.diceMods.forEach((m,i)=>{if(m.type)items.push(`<div class="mini-card"><strong>Die #${i+1} · ${m.type==="gold"?"Gold":"Glass"} Die</strong><div class="mini-copy">${m.shattered?"It shattered before the run ended.":"It survived the run."}</div></div>`);});if(!items.length)items.push('<div class="mini-card"><strong>No permanent spikes</strong><div class="mini-copy">This run never quite found its angle.</div></div>');ui.summaryList.innerHTML=items.join("");}
+function bindEvents(){ui.startRunBtn.addEventListener("click",startRun);ui.playAgainBtn.addEventListener("click",startRun);ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});}
+function primeTitle(){state=makeInitialState();renderLog();setScreen("title");}
+bindEvents();primeTitle();
   </script>
 </body>
 </html>
