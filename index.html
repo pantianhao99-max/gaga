@@ -107,9 +107,22 @@
     .action-btn{display:grid;gap:4px;align-content:center;text-align:left} .action-btn strong{font-size:1.02rem} .action-btn span{font-size:.82rem;color:rgba(255,255,255,.86)} .primary-btn.action-btn span{color:rgba(45,17,0,.8)}
     .info-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
     .badge,.pill{background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--muted)} .badge.hot{color:var(--gold2);box-shadow:0 0 22px rgba(255,195,77,.14)}
+    .badge.state-chip-strong{color:var(--green);border-color:rgba(121,255,202,.3);background:rgba(121,255,202,.1);box-shadow:0 0 18px rgba(121,255,202,.14)}
+    .badge.state-chip-danger{color:#ff9fb5;border-color:rgba(255,84,127,.34);background:rgba(255,84,127,.12);box-shadow:0 0 20px rgba(255,84,127,.18)}
+    .badge.state-chip-laststand{color:#ffd6a8;border-color:rgba(255,148,77,.44);background:rgba(255,148,77,.14);box-shadow:0 0 24px rgba(255,148,77,.2);animation:flicker 1.2s ease-in-out infinite}
+    .badge.state-chip-burst{color:var(--gold2);border-color:rgba(255,195,77,.38);background:rgba(255,195,77,.14);box-shadow:0 0 22px rgba(255,195,77,.2)}
+    .badge.state-chip-chase{color:var(--cyan);border-color:rgba(98,243,255,.32);background:rgba(98,243,255,.12);box-shadow:0 0 20px rgba(98,243,255,.18)}
+    .hero-card.critical{border-color:rgba(255,84,127,.4);background:linear-gradient(180deg,rgba(255,84,127,.16),rgba(255,84,127,.05));box-shadow:0 0 28px rgba(255,84,127,.18)}
+    .hero-card.turning-point{border-color:rgba(255,195,77,.42);box-shadow:0 0 26px rgba(255,195,77,.18);transform:translateY(-2px)}
+    .detail.near-perfect{color:var(--gold2);font-weight:900;text-shadow:0 0 14px rgba(255,195,77,.2)}
+    .detail.crisis-copy{color:#ffd6e1}
     .battle-log{overflow:auto;min-height:0;display:grid;gap:8px}
     .log-entry{padding:11px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--muted);line-height:1.45;font-size:.88rem}
     .log-entry strong{color:var(--text)}
+    .log-entry.summary{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));border-color:rgba(255,255,255,.14)}
+    .log-entry.major{background:linear-gradient(180deg,rgba(255,195,77,.14),rgba(255,195,77,.05));border-color:rgba(255,195,77,.28);box-shadow:0 0 18px rgba(255,195,77,.14)}
+    .log-entry.warning{background:linear-gradient(180deg,rgba(255,84,127,.14),rgba(255,84,127,.05));border-color:rgba(255,84,127,.28);box-shadow:0 0 18px rgba(255,84,127,.12)}
+    .log-entry.swing{background:linear-gradient(180deg,rgba(98,243,255,.14),rgba(98,243,255,.05));border-color:rgba(98,243,255,.26);box-shadow:0 0 18px rgba(98,243,255,.12)}
     .pity-chip{display:none;padding:12px 14px;border-radius:16px;background:linear-gradient(180deg,rgba(255,81,120,.16),rgba(255,81,120,.06));border:1px solid rgba(255,81,120,.24);box-shadow:0 0 22px rgba(255,81,120,.16)}
     .pity-chip.active{display:block;animation:glitch .42s ease}
     .damage-float,.damage-missile{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.8);pointer-events:none;opacity:0;z-index:30;font:900 clamp(2rem,8vw,4rem)/1 var(--disp);text-shadow:0 0 22px currentColor}
@@ -440,6 +453,87 @@ const baseRenderBreakdownPity=renderBreakdown;
 renderBreakdown=function(preview){baseRenderBreakdownPity(preview);ui.pityChip.classList.toggle("active",state.player.pityTokens>0||state.player.pityFloor>0);ui.pityChip.textContent=state.player.pityTokens>0?`怜悯筹码 ${state.player.pityTokens}：高压时可拆 1 枚，立刻锁定最高骰并追加 1 次重掷。${state.player.pityFloor>0?` 下一手第一次成型至少按 ${state.player.pityFloor} 伤害结算。`:""}`:`怜悯已就绪：下一次成型至少按 ${state.player.pityFloor||10} 伤害结算。`;};
 const baseRenderBattlePity=renderBattle;
 renderBattle=function(){baseRenderBattlePity();if(!state?.battle?.preview)return;const pityLine=state.player.pityTokens>0?`你手里有 ${state.player.pityTokens} 枚怜悯筹码，真到没路时可以强拆成翻盘重掷。`:state.player.pityFloor>0?`这手就算只勉强成型，也至少能按 ${state.player.pityFloor} 伤害收手。`:"";if(pityLine){ui.heroDamageCopy.textContent=`${ui.heroDamageCopy.textContent} ${pityLine}`;}if(state.battle.rerollsRemaining<=0&&state.player.pityTokens>0){ui.rerollTitle.textContent="拆怜悯筹码，强行续一手";ui.rerollSubline.textContent=`立刻锁定当前最高骰，并追加 1 次重掷。你虽然输了一手，但没白输。`;}}; 
+function getBattleMoodMeta(preview,info){
+  const hpRatio=state.player.hp/state.player.maxHp;
+  const enemy=state.battle.enemy;
+  const nearMiss=getNearMissHint(info);
+  const oneAway=/只差|再来一颗|补到/.test(nearMiss);
+  const danger=hpRatio<=.28||state.battle.enemyCharge>=2||enemy.intent==="countdown"&&state.battle.turn>=2;
+  const burst=preview.totalDamage>=24||preview.handInfo.hand.rank>=5;
+  const chase=oneAway&&!preview.busted;
+  const turnPoint=danger||burst||chase||state.player.pityTokens>0&&state.battle.rerollsRemaining<=1;
+  let label="顺风",className="state-chip-strong",summary="这手先看质量，局面还在你手里。";
+  if(hpRatio<=.28){label="背水";className="state-chip-laststand";summary=state.player.pityTokens>0?"血线见底，但你手里还有翻盘资本，这一手该认真算账。":"血线已经危险，这一手不是小赚小亏，而是要不要把命续住。";}
+  else if(danger){label="危险";className="state-chip-danger";summary=state.battle.enemyCharge>0?"对面已经在蓄力，你再贪就会把压力喂大。":"局面开始偏向对手，这一手要么稳住，要么一口气翻过去。";}
+  else if(burst){label="爆发窗口";className="state-chip-burst";summary="你已经摸到高质量牌面，这是可以直接打穿节奏的窗口。";}
+  else if(chase){label="追牌窗口";className="state-chip-chase";summary="这手离高阶牌型只差一步，继续赌不是空想，是在追一个具体门槛。";}
+  return{label,className,summary,nearMiss,oneAway,danger,burst,chase,turnPoint};
+}
+function getTurnPivotLine(preview,mood){
+  if(mood.label==="背水")return preview.busted?"这一手再空，局面就会继续往下掉。":"这一手是续命点，收得住就还能反打。";
+  if(mood.label==="危险")return"这是节奏点，收太小会被追上，贪过头会把对面喂大。";
+  if(mood.label==="爆发窗口")return"这一手是转折点，成了就能把局面直接掀回来。";
+  if(mood.label==="追牌窗口")return mood.oneAway?"只差最后一颗，贪这一手是有依据的。":"这手有追牌价值，但别把它当成白给。";
+  return"局势还算健康，这手更像是选择节奏，而不是硬拼命。";
+}
+function getHpWarningLine(){
+  const hpRatio=state.player.hp/state.player.maxHp;
+  if(hpRatio<=.18)return"血线几乎见底，下一次重击就可能崩盘。";
+  if(hpRatio<=.35)return"血线开始发红，这一手的收放会决定后面能不能接着赌。";
+  return"血线还扛得住，你可以把注意力放在这手值不值得追。";
+}
+function classifyLogEntry(entry){
+  const text=`${entry.title} ${entry.text}`;
+  if(/炸|受伤|危险|蓄力|反击|背水|崩/.test(text))return"warning";
+  if(/成了|暴击|赚麻|斩|高伤|爆发|翻盘/.test(text))return"major";
+  if(/追牌|差一|窗口|怜悯|转折|锁住/.test(text))return"swing";
+  return"";
+}
+const baseRenderLogDrama=renderLog;
+renderLog=function(){
+  if(!state?.run?.battleLog){baseRenderLogDrama();return;}
+  const entries=[...state.run.battleLog];
+  if(state.screen==="battle"&&state?.battle?.preview){
+    const info=evaluateHand(),preview=state.battle.preview,mood=getBattleMoodMeta(preview,info);
+    entries.unshift({title:`${mood.label}摘要`,text:`${mood.summary} ${getTurnPivotLine(preview,mood)}`,_kind:"summary"});
+  }
+  ui.battleLog.innerHTML=entries.map(entry=>{
+    const kind=entry._kind||classifyLogEntry(entry);
+    return`<div class="log-entry ${kind}"><strong>${entry.title}</strong><br>${entry.text}</div>`;
+  }).join("");
+};
+const baseRenderBattleEmotion=renderBattle;
+renderBattle=function(){
+  baseRenderBattleEmotion();
+  if(!state?.battle?.preview)return;
+  const info=evaluateHand();
+  const preview=state.battle.preview;
+  const mood=getBattleMoodMeta(preview,info);
+  const playerCard=ui.heroDamage.closest(".hero-card");
+  const handCard=ui.heroHand.closest(".hero-card");
+  const multiplierCard=ui.heroMultiplier.closest(".hero-card");
+  ui.stateChip.textContent=`局势 ${mood.label}`;
+  ui.stateChip.className=`badge ${mood.className}`;
+  ui.heroHandCopy.textContent=mood.oneAway?`高阶牌型近在眼前：${mood.nearMiss}`:mood.summary;
+  ui.heroHandCopy.classList.toggle("near-perfect",mood.oneAway||mood.chase);
+  ui.heroDamageCopy.textContent=`${ui.heroDamageCopy.textContent} ${getHpWarningLine()}`;
+  ui.heroDamageCopy.classList.toggle("crisis-copy",mood.danger||mood.label==="背水");
+  ui.heroRerollsCopy.textContent=`${ui.heroRerollsCopy.textContent} ${getTurnPivotLine(preview,mood)}`;
+  ui.nearMiss.textContent=mood.oneAway?`高阶追牌：${mood.nearMiss}`:`局势判断：${mood.summary}`;
+  ui.bossWarning.textContent=mood.turnPoint?`转折点 · ${mood.label}`:ui.bossWarning.textContent;
+  if(playerCard){
+    playerCard.classList.toggle("critical",mood.danger||mood.label==="背水");
+    playerCard.classList.toggle("turning-point",mood.turnPoint);
+  }
+  if(handCard){
+    handCard.classList.toggle("turning-point",mood.oneAway||mood.chase);
+  }
+  if(multiplierCard){
+    multiplierCard.classList.toggle("critical",mood.burst);
+    multiplierCard.classList.toggle("turning-point",mood.turnPoint&&preview.multiplier>=1.5);
+  }
+  renderLog();
+};
 function bindEvents(){ui.startRunBtn.addEventListener("click",startRun);ui.playAgainBtn.addEventListener("click",startRun);ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});}
 function primeTitle(){state=makeInitialState();renderLog();setScreen("title");}
 bindEvents();primeTitle();
