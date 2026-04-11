@@ -171,7 +171,9 @@ function resolveDice(dice) {
     damage: 0,
     energy: 0,
     armor: 0,
-    triggers: []
+    triggers: [],
+    multiplier: 1,
+    extraBursts: []
   };
 
   dice.filter(die => !die.inactive).forEach(die => {
@@ -210,19 +212,30 @@ function resolveDice(dice) {
 
 function applyBuildEffects(result) {
   const upgrades = state.player.upgrades;
+  const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
+  const count3 = result.triggers.filter(trigger => trigger === "energy_gain").length;
+  const count6 = result.triggers.filter(trigger => trigger === "crit").length;
 
-  if (upgrades.double2) {
-    const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
-    result.damage += count2 * 2;
+  if (upgrades.double2 && count2 > 0) {
+    result.multiplier += count2 * 0.35;
+    result.extraBursts.push(`连击链 x${result.multiplier.toFixed(2)}`);
   }
 
-  if (upgrades.energyBoost) {
-    result.energy *= 2;
+  if (upgrades.energyBoost && count3 > 0) {
+    result.energy += count3;
+    if (result.energy >= 3) {
+      result.damage += 6;
+      result.extraBursts.push("能量溢出 +6");
+    }
   }
 
-  if (upgrades.critBoost) {
-    const critCount = result.triggers.filter(trigger => trigger === "crit").length;
-    result.damage += critCount * 3;
+  if (upgrades.critBoost && count6 > 0) {
+    result.multiplier += count6 * 0.5;
+    result.extraBursts.push(`暴击链 x${result.multiplier.toFixed(2)}`);
+    if (count6 >= 2) {
+      result.damage += 8;
+      result.extraBursts.push("双6暴击 +8");
+    }
   }
 
   return result;
@@ -234,8 +247,12 @@ function calculateRoundResult() {
     damage: base.damage,
     energy: base.energy,
     armor: base.armor,
-    triggers: [...base.triggers]
+    triggers: [...base.triggers],
+    multiplier: base.multiplier,
+    extraBursts: [...base.extraBursts]
   }, state);
+
+  final.damage = Math.floor(final.damage * final.multiplier);
 
   return {
     base,
@@ -243,16 +260,80 @@ function calculateRoundResult() {
   };
 }
 
+function getBuildFocusValue(currentState = state) {
+  const scores = currentState.run.buildScores;
+  const ranked = [
+    { face: 2, score: scores.combo + (currentState.player.upgrades.double2 ? 3 : 0) },
+    { face: 3, score: scores.energy + (currentState.player.upgrades.energyBoost ? 3 : 0) },
+    { face: 6, score: scores.crit + (currentState.player.upgrades.critBoost ? 3 : 0) }
+  ].sort((a, b) => b.score - a.score);
+
+  return ranked[0].score > 0 ? ranked[0].face : null;
+}
+
 function getTargetTip(dice) {
-  const counts = { 2: 0, 3: 0, 6: 0 };
+  const counts = { 2: 0, 3: 0, 5: 0, 6: 0 };
   dice.filter(die => !die.inactive).forEach(die => {
     if (counts[die.value] !== undefined) counts[die.value] += 1;
   });
 
-  if (counts[6] >= 2) return "补 6 做暴击链";
-  if (counts[2] >= 2) return "补 2 做连击链";
-  if (counts[3] >= 2) return "补 3 做能量链";
+  const focus = getBuildFocusValue(currentState);
+  if (focus === 2) return counts[2] >= 2 ? "补 2 拉满连击链" : "找 2 开连击链";
+  if (focus === 3) return counts[3] >= 2 ? "补 3 触发能量溢出" : "找 3 养能量链";
+  if (focus === 6) return counts[6] >= 2 ? "补 6 追双暴击" : "找 6 养暴击链";
   return "补 5 / 6 抬伤害";
+}
+
+function getCurrentTargetText(currentState) {
+  const dice = currentState.battle?.dice || [];
+  const count6 = dice.filter(die => !die.inactive && die.value === 6).length;
+  if (count6 >= 2) return "当前：双6已成 · 可再赌一手";
+
+  const focus = getBuildFocusValue();
+  if (focus === 2) return "当前：连击链 · 优先保留 2";
+  if (focus === 3) return "当前：能量链 · 优先保留 3";
+  if (focus === 6) return "当前：暴击链 · 优先保留 6";
+
+  const round = currentState.battle ? calculateRoundResult() : null;
+  if (round && round.final.damage <= 6) return "当前：这手偏弱 · 可以直接结算";
+  return "当前：补高伤骰 · 优先保留 5 / 6";
+}
+
+function getPreferredFace(currentState) {
+  return getBuildFocusValue(currentState);
+}
+
+function getDieStatus(die, currentState, dice) {
+  if (die.locked) return "locked";
+
+  const preferred = getPreferredFace(currentState);
+
+  if (preferred && die.value === preferred) {
+    const sameFaceUnlocked = dice.filter(item => !item.locked && !item.inactive && item.value === preferred);
+    if (sameFaceUnlocked.length > 0 && sameFaceUnlocked[0].index === die.index) {
+      return "core";
+    }
+    if (sameFaceUnlocked.findIndex(item => item.index === die.index) < 2) {
+      return "recommended";
+    }
+    return "normal";
+  }
+
+  if (!preferred && die.value >= 5) {
+    const highFaces = dice.filter(item => !item.locked && !item.inactive && item.value >= 5);
+    if (highFaces.findIndex(item => item.index === die.index) < 2) {
+      return "recommended";
+    }
+  }
+
+  return "normal";
+}
+
+function getDieTag(status) {
+  if (status === "locked") return "锁定";
+  if (status === "core") return "核心";
+  if (status === "recommended") return "推荐";
+  return "";
 }
 
 function syncBuildType() {
@@ -351,25 +432,23 @@ function buildBattleScreen() {
 
       <section class="enemy-intent">
         <div class="intent-copy">
-          <strong>敌方压制</strong>
+          <strong id="enemy-intent-title"></strong>
           <span id="enemy-intent-copy"></span>
-        </div>
-        <div class="intent-hit">
-          <small>ENEMY HIT</small>
-          <strong id="enemy-hit-value"></strong>
         </div>
       </section>
 
+      <section class="target-bar" id="target-bar"></section>
+
       <div class="drawer-rail">
         <details class="drawer left">
-          <summary>RELICS</summary>
+          <summary>强化</summary>
           <div class="drawer-sheet">
             <p class="drawer-title">强化</p>
             <div class="relic-list" id="relic-list"></div>
           </div>
         </details>
         <details class="drawer right">
-          <summary>LOGS</summary>
+          <summary>记录</summary>
           <div class="drawer-sheet">
             <p class="drawer-title">流派</p>
             <div class="log-list" id="build-list"></div>
@@ -391,10 +470,10 @@ function buildBattleScreen() {
       </section>
 
       <section class="battle-hud">
-        <div class="hud-item"><div class="hud-label">Damage</div><div class="hud-value damage" id="hud-damage"></div></div>
-        <div class="hud-item"><div class="hud-label">Energy</div><div class="hud-value" id="hud-energy"></div></div>
-        <div class="hud-item"><div class="hud-label">Armor</div><div class="hud-value" id="hud-armor"></div></div>
-        <div class="hud-item"><div class="hud-label">Rerolls</div><div class="hud-value" id="hud-rerolls"></div></div>
+        <div class="hud-item"><div class="hud-label">伤害</div><div class="hud-value damage" id="hud-damage"></div></div>
+        <div class="hud-item"><div class="hud-label">能量</div><div class="hud-value" id="hud-energy"></div></div>
+        <div class="hud-item"><div class="hud-label">护甲</div><div class="hud-value" id="hud-armor"></div></div>
+        <div class="hud-item"><div class="hud-label">重掷</div><div class="hud-value" id="hud-rerolls"></div></div>
       </section>
 
       <section class="battle-actions">
@@ -417,7 +496,7 @@ function renderBattle() {
   const preview = calculateRoundResult();
   const enemy = state.battle.enemy;
   const lockedCount = state.battle.dice.filter(die => die.locked && !die.inactive).length;
-  const rerollCount = state.battle.dice.filter(die => !die.locked && !die.inactive).length;
+  const focusValue = getBuildFocusValue(state);
 
   document.getElementById("enemy-title-name").textContent = enemy.name;
   document.getElementById("enemy-stage-copy").textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
@@ -431,50 +510,46 @@ function renderBattle() {
   document.getElementById("player-chip").textContent = `生命 ${state.player.hp}`;
   document.getElementById("player-hp-value").textContent = `${state.player.hp} / ${state.player.maxHp}`;
   document.getElementById("player-hp-fill").style.width = `${Math.max(0, state.player.hp / state.player.maxHp * 100)}%`;
+  document.getElementById("enemy-intent-title").textContent = `本回合敌人攻击 ${getEnemyDamage()}`;
   document.getElementById("enemy-intent-copy").textContent = enemy.flavor;
-  document.getElementById("enemy-hit-value").textContent = String(getEnemyDamage());
-  document.getElementById("dice-lock-summary").textContent = `已锁定 ${lockedCount}/5`;
+  document.getElementById("target-bar").textContent = getCurrentTargetText(state);
+  document.getElementById("dice-lock-summary").textContent = `已锁 ${lockedCount} / 5 · 还可继续选择`;
 
   document.getElementById("hud-damage").textContent = String(preview.final.damage);
   document.getElementById("hud-energy").textContent = String(preview.final.energy);
   document.getElementById("hud-armor").textContent = String(preview.final.armor);
   document.getElementById("hud-rerolls").textContent = String(state.battle.rerollsRemaining);
 
-  document.getElementById("settle-title").textContent = `结算触发 ${preview.final.damage}`;
-  document.getElementById("settle-copy").textContent = preview.final.armor > 0
-    ? `顺手拿 ${preview.final.armor} 护甲`
-    : preview.final.energy > 0
-      ? `顺手拿 ${preview.final.energy} 能量`
-      : "先把这手兑现";
+  document.getElementById("settle-title").textContent = "直接结算";
+  document.getElementById("settle-copy").textContent = `打出 ${preview.final.damage} 伤害`;
 
   const canEmergencyReroll = state.battle.rerollsRemaining <= 0 && state.player.pityTokens > 0;
   document.getElementById("reroll-title").textContent = canEmergencyReroll
-    ? "拆筹码强续"
-    : (state.battle.rerollsRemaining > 0 ? "继续扩链" : "本回合到头");
+    ? "继续重掷"
+    : (state.battle.rerollsRemaining > 0 ? "继续重掷" : "本回合到头");
   document.getElementById("reroll-copy").textContent = canEmergencyReroll
-    ? `强续一手 · ${getTargetTip(state.battle.dice)}`
+    ? "赌一手更大收益"
     : state.battle.rerollsRemaining > 0
-      ? `${getTargetTip(state.battle.dice)} · 重掷 ${rerollCount || 5} 枚`
+      ? (focusValue === 6 ? "再试一手冲暴击" : focusValue === 3 ? "补 3 启动能量" : focusValue === 2 ? "补 2 拉满连击" : "赌一手更大收益")
       : "没有可用重掷";
   document.getElementById("reroll-btn").disabled = state.battle.rerollsRemaining <= 0 && !canEmergencyReroll;
 
   document.getElementById("dice-grid").innerHTML = state.battle.dice.map((die, index) => {
-    const face = DIE_FACE[die.value];
+    const status = getDieStatus(die, state, state.battle.dice);
+    const dieTag = getDieTag(status);
+
     const className = [
       "die",
+      `die-${status}`,
       `pos-${index}`,
-      die.locked ? "locked" : "",
-      die.locked ? "" : (die.value >= 5 ? "recommended" : ""),
       die.rolling ? "rolling" : "",
       die.toggled ? "toggled" : "",
       die.inactive ? "inactive" : ""
     ].filter(Boolean).join(" ");
 
     return `<button class="${className}" type="button" data-die-index="${die.index}" ${die.inactive ? "disabled" : ""}>
-      <span class="die-label">${die.locked ? "LOCKED" : face.label}</span>
-      <span class="die-lock">🔒</span>
-      <span class="die-icon">${die.inactive ? "✕" : face.icon}</span>
-      <span class="die-note">${die.inactive ? "BROKEN" : `D${die.value}`}</span>
+      ${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}
+      <span class="die-value">${die.inactive ? "×" : die.value}</span>
     </button>`;
   }).join("");
 
@@ -489,12 +564,19 @@ function renderBattle() {
     <div class="log-card"><strong>本流派加成</strong><span>${getBuildBonusCopy(preview.final)}</span></div>
   `;
 
-  document.getElementById("calc-list").innerHTML = [
-    ["伤害", String(preview.final.damage)],
-    ["能量", String(preview.final.energy)],
-    ["护甲", String(preview.final.armor)],
-    ["触发", preview.final.triggers.length ? preview.final.triggers.join(" / ") : "无"]
-  ].map(([label, value]) => `<div class="calc-row"><span>${label}</span><strong>${value}</strong></div>`).join("");
+  const burstText = preview.final.extraBursts.length
+    ? preview.final.extraBursts.join(" / ")
+    : "无";
+  document.getElementById("calc-list").innerHTML = `
+    <div class="calc-row calc-row-block">
+      <span>本手伤害 ${preview.final.damage}</span>
+      <strong>护甲 +${preview.final.armor}</strong>
+    </div>
+    <div class="calc-row calc-row-block">
+      <span>原因说明</span>
+      <strong>${burstText}</strong>
+    </div>
+  `;
 
   document.getElementById("log-list").innerHTML = state.run.logs.length
     ? state.run.logs.map(item => `<div class="log-card"><strong>${item.title}</strong><span>${item.text}</span></div>`).join("")
@@ -614,7 +696,7 @@ function settleHand() {
   state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - totalDamage);
 
   addLog("结算触发", `造成 ${totalDamage} 点伤害，同时拿到 ${round.final.energy} 能量、${round.final.armor} 护甲。`);
-  addLog("链式反馈", getBuildBonusCopy(round.final));
+  addLog("链式反馈", round.final.extraBursts.length ? round.final.extraBursts.join(" / ") : getBuildBonusCopy(round.final));
   showFloat(`-${totalDamage}`, "#ffe49e");
 
   state.run.metrics.avg_damage += totalDamage;
