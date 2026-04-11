@@ -133,6 +133,16 @@
     .offer-name{margin:0;font:900 1.45rem/1.02 var(--disp)} .summary-grid{width:min(100%,760px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
     .summary-box{padding:16px;border-radius:20px;background:rgba(255,255,255,.04);border:1px solid var(--line)} .summary-box h3{margin:0;font:900 1.8rem/1 var(--disp)}
     .summary-list{width:min(100%,760px);display:grid;gap:10px;margin-top:18px} .mini-card{padding:14px 16px;border-radius:18px;text-align:left;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .meta-grid{width:min(100%,860px);display:grid;gap:14px;margin-top:18px;text-align:left}
+    .starter-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .starter-btn{padding:16px;border-radius:20px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));display:grid;gap:8px;text-align:left;box-shadow:var(--shadow)}
+    .starter-btn.active{border-color:rgba(255,195,77,.45);box-shadow:0 0 24px rgba(255,195,77,.18),var(--shadow);transform:translateY(-2px)}
+    .starter-btn.locked{opacity:.58;filter:saturate(.8)}
+    .meta-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .meta-item{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:grid;gap:6px}
+    .meta-item.locked{border-color:rgba(255,84,127,.24)}
+    .meta-item.unlocked{border-color:rgba(121,255,202,.24);box-shadow:0 0 18px rgba(121,255,202,.1)}
+    .starter-foot{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
     @keyframes roll{0%{transform:rotate(0) scale(1)}30%{transform:rotate(15deg) translateY(-10px) scale(1.08)}60%{transform:rotate(-18deg) translateY(8px) scale(.98)}100%{transform:rotate(0) translateY(0) scale(1)}}
     @keyframes toggle-pop{0%{transform:scale(.94)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
     @keyframes reroll-pulse{0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.84),inset 0 -10px 18px rgba(76,52,118,.18),0 0 0 2px rgba(98,243,255,.18),0 12px 24px rgba(98,243,255,.14)}50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.84),inset 0 -10px 18px rgba(76,52,118,.18),0 0 0 3px rgba(98,243,255,.28),0 16px 30px rgba(98,243,255,.22)}}
@@ -141,7 +151,7 @@
     @keyframes flash{0%,100%{filter:brightness(1)}50%{filter:brightness(2.8) saturate(0)}} @keyframes float{0%{opacity:0;transform:translate(-50%,-20%) scale(.65)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-110%) scale(.92)}}
     @keyframes missile{0%{opacity:0;transform:translate(-50%,0) scale(.7)}12%{opacity:1}100%{opacity:0;transform:translate(220px,-260px) scale(1.14)}} @keyframes glitch{0%{opacity:0;transform:translateY(8px) skewX(12deg);filter:hue-rotate(50deg)}100%{opacity:1;transform:translateY(0) skewX(0);filter:none}}
     @media (max-width:1024px){.cabinet{height:min(100dvh - 12px,1280px)}.top-rack,.battle-grid,.shop-grid{grid-template-columns:1fr}.right-rail{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:none}}
-    @media (max-width:720px){.screen{padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}.hero-strip,.decision-shell,.action-row,.summary-grid,.right-rail{grid-template-columns:1fr}.inventory-grid{grid-template-columns:1fr}.dice-row{gap:8px}.die{min-height:96px;border-radius:18px}.die-value{font-size:2rem}}
+    @media (max-width:720px){.screen{padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}.hero-strip,.decision-shell,.action-row,.summary-grid,.right-rail,.starter-grid,.meta-list{grid-template-columns:1fr}.inventory-grid{grid-template-columns:1fr}.dice-row{gap:8px}.die{min-height:96px;border-radius:18px}.die-value{font-size:2rem}}
   </style>
 </head>
 <body>
@@ -158,6 +168,28 @@
             <span class="tag" style="background:rgba(255,195,77,.12);border:1px solid rgba(255,195,77,.18);color:var(--gold2)">黄金 / 玻璃骰</span>
           </div>
           <button class="primary-btn" id="start-run-btn">开始这一局</button>
+          <div class="meta-grid">
+            <div class="panel" style="padding:16px">
+              <div class="starter-foot">
+                <div>
+                  <div class="kicker">开局套路</div>
+                  <h3 class="panel-title" style="font-size:1.3rem">选择你的起手</h3>
+                </div>
+                <div class="mini-copy" id="meta-selected-copy">这一把先用默认开局。</div>
+              </div>
+              <div class="starter-grid" id="starter-grid"></div>
+            </div>
+            <div class="panel" style="padding:16px">
+              <div class="starter-foot">
+                <div>
+                  <div class="kicker">长期驱动</div>
+                  <h3 class="panel-title" style="font-size:1.3rem">成就与黑市解锁</h3>
+                </div>
+                <div class="mini-copy" id="meta-progress-copy">重开不是复读，是换另一种开局试套路。</div>
+              </div>
+              <div class="meta-list" id="meta-list"></div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -570,6 +602,51 @@ renderBattle=function(){
     ui.bossWarning.textContent=`终局提问 · ${getBuildFocus().label}`;
   }
 };
+Object.assign(ui,{
+  starterGrid:document.getElementById("starter-grid"),
+  metaList:document.getElementById("meta-list"),
+  metaSelectedCopy:document.getElementById("meta-selected-copy"),
+  metaProgressCopy:document.getElementById("meta-progress-copy")
+});
+const META_STORAGE_KEY="dice-heist-meta-v1";
+const STARTER_LOADOUTS=[
+  {id:"house-edge",name:"街机混子",unlockId:null,tag:"默认",text:"空白开局，纯靠你现场读牌。",detail:"没有起始遗物，适合先学整套节奏。",apply(s){}},
+  {id:"stable-broker",name:"稳桌经纪人",unlockId:"unlock-stable-kit",tag:"保底流",text:"起手带保底协议和 1 颗黄金骰。",detail:"小牌也能滚利润，适合稳扎稳打。",apply(s){const relic=RELIC_POOL.find(r=>r.id==="floor-plan");if(relic){s.player.relicIds.add(relic.id);s.player.relics.push({...relic});}s.player.diceMods[0].type="gold";s.run.buildScores.stable+=2;s.run.buildType="保底流";}},
+  {id:"greed-punk",name:"破庄赌徒",unlockId:"unlock-greed-kit",tag:"贪刀流",text:"起手带贪婪倍率和 1 颗玻璃骰。",detail:"上限高得离谱，适合刷极端爆发。",apply(s){const relic=RELIC_POOL.find(r=>r.id==="greedy-multi");if(relic){s.player.relicIds.add(relic.id);s.player.relics.push({...relic});}s.player.diceMods[1].type="glass";s.run.buildScores.greed+=2;s.run.buildType="贪刀流";}},
+  {id:"redline-runner",name:"红线赖账客",unlockId:"unlock-risk-kit",tag:"受伤流",text:"起手带伤痕赔率和 1 枚怜悯筹码。",detail:"越危险越值钱，适合赌翻盘。",apply(s){const relic=RELIC_POOL.find(r=>r.id==="blood-odds");if(relic){s.player.relicIds.add(relic.id);s.player.relics.push({...relic});}s.player.pityTokens+=1;s.player.pityFloor=Math.max(s.player.pityFloor||0,10);s.run.buildScores.risk+=2;s.run.buildType="受伤流";}}
+];
+const META_BLACK_MARKET_OFFERS=[
+  {id:"vault-slip",unlockId:"unlock-stable-kit",type:"黑市强化",build:"stable",name:"稳桌存票",icon:"▥",text:"收手伤害达到 10 以上时，额外获得 1 枚怜悯筹码。",summary:"把稳收也滚成后手资本。",apply(){state.player.metaSafePity=true;}},
+  {id:"afterburner",unlockId:"unlock-greed-kit",type:"黑市强化",build:"greed",name:"过热加注",icon:"✦",text:"若本手用了 2 次重掷再结算，额外 +6 伤害。",summary:"专门奖励多赌一口。",apply(){state.player.metaGreedBurst=true;}},
+  {id:"mercy-credit",unlockId:"unlock-risk-kit",type:"黑市强化",build:"risk",name:"怜悯透支",icon:"☍",text:"每场战斗首次掉到半血以下时，立刻获得 1 次额外重掷。",summary:"危险时刻直接换翻盘按钮。",apply(){state.player.metaRiskCredit=true;}}
+];
+const META_ACHIEVEMENTS=[
+  {id:"unlock-stable-kit",name:"稳桌老手",goal:"用保底流通关 1 局",reward:"解锁开局「稳桌经纪人」和黑市「稳桌存票」"},
+  {id:"unlock-greed-kit",name:"一把梭哈",goal:"单局打出四条或更高牌型",reward:"解锁开局「破庄赌徒」和黑市「过热加注」"},
+  {id:"unlock-risk-kit",name:"红线翻盘",goal:"以 30% 以下血线通关",reward:"解锁开局「红线赖账客」和黑市「怜悯透支」"}
+];
+function getDefaultMetaProgress(){return{selectedStarterId:"house-edge",unlocks:["house-edge"],achievements:[],runs:0,lastUnlocks:[]};}
+function loadMetaProgress(){try{const raw=localStorage.getItem(META_STORAGE_KEY);if(!raw)return getDefaultMetaProgress();const parsed=JSON.parse(raw);return{...getDefaultMetaProgress(),...parsed,lastUnlocks:parsed.lastUnlocks||[]};}catch{return getDefaultMetaProgress();}}
+function saveMetaProgress(meta){localStorage.setItem(META_STORAGE_KEY,JSON.stringify(meta));}
+let metaProgress=loadMetaProgress();
+function isStarterUnlocked(starter){return !starter.unlockId||metaProgress.unlocks.includes(starter.id)||metaProgress.achievements.includes(starter.unlockId);}
+function getSelectedStarter(){const picked=STARTER_LOADOUTS.find(starter=>starter.id===metaProgress.selectedStarterId&&isStarterUnlocked(starter));return picked||STARTER_LOADOUTS[0];}
+function renderTitleMeta(){metaProgress=loadMetaProgress();const selected=getSelectedStarter();if(ui.metaSelectedCopy)ui.metaSelectedCopy.textContent=`当前起手：${selected.name}。${selected.text}`;if(ui.metaProgressCopy)ui.metaProgressCopy.textContent=`已解锁 ${metaProgress.achievements.length}/${META_ACHIEVEMENTS.length} 项长期目标。重开可以直接换打法。`;if(ui.starterGrid)ui.starterGrid.innerHTML=STARTER_LOADOUTS.map(starter=>`<button class="starter-btn ${starter.id===selected.id?"active":""} ${isStarterUnlocked(starter)?"":"locked"}" data-starter-id="${starter.id}"><div class="starter-foot"><strong>${starter.name}</strong><span class="badge ${isStarterUnlocked(starter)?"hot":""}">${isStarterUnlocked(starter)?starter.tag:"未解锁"}</span></div><div class="mini-copy">${starter.text}</div><div class="mini-copy">${isStarterUnlocked(starter)?starter.detail:`解锁条件：${META_ACHIEVEMENTS.find(a=>a.id===starter.unlockId)?.goal||"完成成就"}`}</div></button>`).join("");if(ui.metaList)ui.metaList.innerHTML=META_ACHIEVEMENTS.map(achievement=>`<div class="meta-item ${metaProgress.achievements.includes(achievement.id)?"unlocked":"locked"}"><strong>${achievement.name}</strong><div class="mini-copy">${achievement.goal}</div><div class="mini-copy">${metaProgress.achievements.includes(achievement.id)?`已解锁：${achievement.reward}`:`奖励：${achievement.reward}`}</div></div>`).join("");}
+function unlockMetaAchievement(id){if(metaProgress.achievements.includes(id))return false;metaProgress.achievements.push(id);const starter=STARTER_LOADOUTS.find(item=>item.unlockId===id);if(starter&&!metaProgress.unlocks.includes(starter.id))metaProgress.unlocks.push(starter.id);metaProgress.lastUnlocks.push(META_ACHIEVEMENTS.find(item=>item.id===id)?.name||id);saveMetaProgress(metaProgress);return true;}
+const baseMakeInitialStateMeta=makeInitialState;
+makeInitialState=function(){const s=baseMakeInitialStateMeta();s.player.lowestHp=s.player.hp;s.player.metaSafePity=false;s.player.metaGreedBurst=false;s.player.metaRiskCredit=false;s.player.metaRiskCreditUsed=false;const starter=getSelectedStarter();starter.apply?.(s);s.run.starterId=starter.id;s.run.starterName=starter.name;return s;};
+const baseGetShopOffersMeta=getShopOffers;
+getShopOffers=function(){const offers=baseGetShopOffersMeta();const unlockedMarket=META_BLACK_MARKET_OFFERS.filter(offer=>metaProgress.achievements.includes(offer.unlockId));const merged=[...offers,...unlockedMarket];const used=new Set();return merged.filter(offer=>{if(used.has(offer.id))return false;used.add(offer.id);return true;}).slice(0,3);};
+const baseClaimOfferMeta=claimOffer;
+claimOffer=function(id){const metaOffer=META_BLACK_MARKET_OFFERS.find(offer=>offer.id===id);if(metaOffer&&state.run.offers.some(offer=>offer.id===id)){metaOffer.apply();state.run.metrics.reward_pick_rate[id]=(state.run.metrics.reward_pick_rate[id]||0)+1;registerBuild(metaOffer.build,2);addLog("黑市私货",`${metaOffer.name} 入袋。这一把已经更像「${getBuildFocus().label}」。`);startBattle(state.run.battleIndex+1);return;}baseClaimOfferMeta(id);};
+const baseEnemyAttackMeta=enemyAttack;
+enemyAttack=function(grantOnHit=true){const dealt=baseEnemyAttackMeta(grantOnHit);if(state?.player){state.player.lowestHp=Math.min(state.player.lowestHp,state.player.hp);if(state.player.metaRiskCredit&&!state.player.metaRiskCreditUsed&&state.player.hp/state.player.maxHp<=.5&&state.player.hp>0){state.player.metaRiskCreditUsed=true;state.battle.rerollsRemaining+=1;addLog("怜悯透支",`血线跌到一半以下，黑市替你硬塞了 1 次重掷。现在还能再赌一口。`);}}return dealt;};
+const baseSettleHandMeta=settleHand;
+settleHand=function(){const preview=state?.battle?.preview;if(preview&&!preview.busted&&state.player.metaGreedBurst&&state.battle.rerollsUsed>=2){preview.totalDamage+=6;preview.notes.push("过热加注 +6");}baseSettleHandMeta();if(preview&&!preview.busted&&state.player.metaSafePity&&preview.totalDamage>=10){state.player.pityTokens+=1;addLog("稳桌存票",`这手收得够厚，额外滚出 1 枚怜悯筹码。`);}};
+const baseStartBattleMeta=startBattle;
+startBattle=function(index){baseStartBattleMeta(index);if(state?.battle){state.battle.metaRiskCreditUsed=false;addLog("起手套路",`${state.run.starterName} 上桌。${getSelectedStarter().detail}`);}};
+const baseShowSummaryMeta=showSummary;
+showSummary=function(victory){metaProgress=loadMetaProgress();metaProgress.runs+=1;metaProgress.lastUnlocks=[];const focus=getBuildFocus().key;if(victory&&focus==="stable")unlockMetaAchievement("unlock-stable-kit");if(state.player.highestHandRank>=7)unlockMetaAchievement("unlock-greed-kit");if(victory&&state.player.lowestHp/state.player.maxHp<=.3)unlockMetaAchievement("unlock-risk-kit");saveMetaProgress(metaProgress);baseShowSummaryMeta(victory);if(metaProgress.lastUnlocks.length){ui.summaryList.innerHTML=`<div class="mini-card"><strong>新解锁</strong><div class="mini-copy">${metaProgress.lastUnlocks.join("、")}</div></div>${ui.summaryList.innerHTML}`;}};
 function classifyLogEntry(entry){
   const text=`${entry.title} ${entry.text}`;
   if(/炸|受伤|危险|蓄力|反击|背水|崩/.test(text))return"warning";
@@ -624,8 +701,8 @@ renderBattle=function(){
   }
   renderLog();
 };
-function bindEvents(){ui.startRunBtn.addEventListener("click",startRun);ui.playAgainBtn.addEventListener("click",startRun);ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});}
-function primeTitle(){state=makeInitialState();renderLog();setScreen("title");}
+function bindEvents(){ui.startRunBtn.addEventListener("click",startRun);ui.playAgainBtn.addEventListener("click",startRun);ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});ui.starterGrid?.addEventListener("click",e=>{const b=e.target.closest("[data-starter-id]");if(!b)return;const starter=STARTER_LOADOUTS.find(item=>item.id===b.dataset.starterId);if(!starter||!isStarterUnlocked(starter))return;metaProgress.selectedStarterId=starter.id;saveMetaProgress(metaProgress);renderTitleMeta();});}
+function primeTitle(){metaProgress=loadMetaProgress();state=makeInitialState();renderLog();setScreen("title");renderTitleMeta();}
 bindEvents();primeTitle();
   </script>
 </body>
