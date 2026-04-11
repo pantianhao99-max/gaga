@@ -1,14 +1,3 @@
-const HAND_RULES = [
-  { key: "fiveKind", name: "五条", rank: 8, baseDamage: 35 },
-  { key: "fourKind", name: "四条", rank: 7, baseDamage: 24 },
-  { key: "fullHouse", name: "葫芦", rank: 6, baseDamage: 18 },
-  { key: "straight", name: "顺子", rank: 5, baseDamage: 14 },
-  { key: "threeKind", name: "三条", rank: 4, baseDamage: 10 },
-  { key: "twoPair", name: "两对", rank: 3, baseDamage: 7 },
-  { key: "pair", name: "一对", rank: 2, baseDamage: 4 },
-  { key: "high", name: "散点", rank: 1, baseDamage: 1 }
-];
-
 const DIE_FACE = {
   1: { label: "ONE", icon: "◆" },
   2: { label: "TWO", icon: "✿" },
@@ -19,75 +8,48 @@ const DIE_FACE = {
 };
 
 const ENEMIES = [
-  { name: "鼠巷混混", hp: 28, damage: 4, avatar: "🐀", intentText: "普通追击", flavor: "笑得很脏，下手更脏。", archetype: "attack" },
-  { name: "巷口守卫", hp: 38, damage: 5, avatar: "🛡️", intentText: "你越贪，它越狠", flavor: "专盯重掷的硬骨头。", archetype: "punish_greed" },
-  { name: "诈牌老千", hp: 52, damage: 7, avatar: "🃏", intentText: "你太稳，它就起势", flavor: "最爱吃你的小收手。", archetype: "punish_low" },
-  { name: "铁面发牌员", hp: 70, damage: 10, avatar: "🎲", intentText: "节奏被它掐得很死", flavor: "又反贪，又反保守。", archetype: "mixed" },
-  { name: "赌桌本身", hp: 96, damage: 13, avatar: "🎰", intentText: "Boss 局：这桌不讲理", flavor: "最后一战，逼你把构筑打满。", archetype: "boss", boss: true }
+  { name: "鼠巷混混", hp: 28, damage: 4, avatar: "🐀", intentText: "直接压血", flavor: "开局先试你一手底子。", archetype: "attack" },
+  { name: "巷口守卫", hp: 38, damage: 5, avatar: "🛡️", intentText: "重掷会蓄力", flavor: "你每多重掷一次，它的下轮伤害就更高。", archetype: "punish_greed" },
+  { name: "诈牌老千", hp: 52, damage: 7, avatar: "🃏", intentText: "低伤会成长", flavor: "这一手打太轻，它会顺势抬高压制。", archetype: "punish_low" },
+  { name: "铁面发牌员", hp: 70, damage: 10, avatar: "🎲", intentText: "低伤 / 高能都吃", flavor: "你打得轻，或者能量滚太快，它都要反制。", archetype: "mixed" },
+  { name: "赌桌本身", hp: 96, damage: 13, avatar: "🎰", intentText: "终局高压", flavor: "伤害不够，或者护甲太厚，它都会继续上压。", archetype: "boss", boss: true }
 ];
 
 const OFFERS = [
   {
-    id: "floor-plan",
-    name: "保底协议",
-    text: "一对和两对伤害提高 50%。",
-    summary: "走保底流，小牌也能稳定收钱。",
+    id: "double2",
+    name: "连击强化",
+    text: "每个 2 额外造成 +2 伤害",
+    summary: "把 2 堆起来，整轮输出会开始连跳。",
     apply(state) {
+      state.player.upgrades.double2 = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.stable += 2;
+      state.run.buildScores.combo += 2;
     }
   },
   {
-    id: "greedy-multi",
-    name: "贪婪倍率",
-    text: "每次重掷额外 +0.5x 倍率，但基础伤害 -10%。",
-    summary: "走贪刀流，越贪倍率越离谱。",
+    id: "energyBoost",
+    name: "能量翻倍",
+    text: "3 提供的能量翻倍",
+    summary: "把能量滚起来，后面每手都更宽裕。",
     apply(state) {
+      state.player.upgrades.energyBoost = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.greed += 2;
+      state.run.buildScores.energy += 2;
     }
   },
   {
-    id: "blood-odds",
-    name: "伤痕赔率",
-    text: "每有 1 枚怜悯筹码，最终伤害 +3。",
-    summary: "走受伤反打流，挨打也在攒爆发。",
+    id: "critBoost",
+    name: "暴击强化",
+    text: "每个 6 额外 +3 伤害",
+    summary: "把 6 养起来，高爆发回合会突然抬头。",
     apply(state) {
+      state.player.upgrades.critBoost = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.risk += 2;
-    }
-  },
-  {
-    id: "safety-net",
-    name: "安全网",
-    text: "每场战斗第一次 Bust 不受伤，并自动免费重掷一次。",
-    summary: "第一次贪过头，不会直接炸穿。",
-    apply(state) {
-      state.player.relics.push(this);
-      state.player.relicIds.add(this.id);
-      state.run.buildScores.stable += 1;
-      state.run.buildScores.greed += 1;
-    }
-  },
-  {
-    id: "heal-up",
-    name: "紧急包扎",
-    text: "回复 8 点生命。",
-    summary: "把血线抬回来，准备继续赌。",
-    apply(state) {
-      state.player.hp = Math.min(state.player.maxHp, state.player.hp + 8);
-    }
-  },
-  {
-    id: "hot-wallet",
-    name: "热钱袋",
-    text: "获得 6 金币。",
-    summary: "纯加速，不解释。",
-    apply(state) {
-      state.player.coins += 6;
+      state.run.buildScores.crit += 2;
     }
   }
 ];
@@ -123,16 +85,22 @@ function makeInitialState() {
       hp: 46,
       coins: 0,
       pityTokens: 0,
+      armor: 0,
+      energy: 0,
       relics: [],
       relicIds: new Set(),
       totalDamage: 0,
-      highestHandName: "散点",
-      highestHandRank: 1
+      highestDamage: 0,
+      upgrades: {
+        double2: false,
+        energyBoost: false,
+        critBoost: false
+      }
     },
     run: {
       battleIndex: 0,
       enemiesDefeated: 0,
-      buildScores: { stable: 0, greed: 0, risk: 0 },
+      buildScores: { combo: 0, energy: 0, crit: 0 },
       buildType: "未成型",
       logs: [],
       metrics: {
@@ -176,10 +144,6 @@ function shakeCabinet() {
   setTimeout(() => ui.cabinet.classList.remove("shake"), 220);
 }
 
-function hasRelic(id) {
-  return state.player.relicIds.has(id);
-}
-
 function rollDie() {
   return Math.floor(Math.random() * 6) + 1;
 }
@@ -202,85 +166,93 @@ function getEnemyDamage() {
   return damage;
 }
 
-function evaluateHand(dice) {
-  const active = dice.filter(die => !die.inactive);
-  const values = active.map(die => die.value);
-  const counts = {};
+function resolveDice(dice) {
+  const result = {
+    damage: 0,
+    energy: 0,
+    armor: 0,
+    triggers: []
+  };
 
-  values.forEach(value => {
-    counts[value] = (counts[value] || 0) + 1;
+  dice.filter(die => !die.inactive).forEach(die => {
+    switch (die.value) {
+      case 1:
+        result.damage += 1;
+        result.triggers.push("light_hit");
+        break;
+      case 2:
+        result.damage += 2;
+        result.triggers.push("multi_hit");
+        break;
+      case 3:
+        result.energy += 1;
+        result.triggers.push("energy_gain");
+        break;
+      case 4:
+        result.armor += 3;
+        result.triggers.push("armor_gain");
+        break;
+      case 5:
+        result.damage += 5;
+        result.triggers.push("heavy_hit");
+        break;
+      case 6:
+        result.damage += 6;
+        result.triggers.push("crit");
+        break;
+      default:
+        break;
+    }
   });
 
-  const amountList = Object.values(counts).sort((a, b) => b - a);
-  const unique = [...new Set(values)].sort((a, b) => a - b);
-  const isStraight = unique.length === 5 && unique[4] - unique[0] === 4;
-
-  let hand = HAND_RULES[7];
-  if (amountList[0] === 5) hand = HAND_RULES[0];
-  else if (amountList[0] === 4) hand = HAND_RULES[1];
-  else if (amountList[0] === 3 && amountList[1] === 2) hand = HAND_RULES[2];
-  else if (isStraight) hand = HAND_RULES[3];
-  else if (amountList[0] === 3) hand = HAND_RULES[4];
-  else if (amountList[0] === 2 && amountList[1] === 2) hand = HAND_RULES[5];
-  else if (amountList[0] === 2) hand = HAND_RULES[6];
-
-  const scoringIndices = [];
-  if (["pair", "threeKind", "fourKind", "fiveKind"].includes(hand.key)) {
-    const target = Number(Object.keys(counts).sort((a, b) => counts[b] - counts[a] || Number(b) - Number(a))[0]);
-    active.forEach(die => {
-      if (die.value === target) scoringIndices.push(die.index);
-    });
-  } else {
-    active.forEach(die => scoringIndices.push(die.index));
-  }
-
-  return { hand, counts, scoringIndices };
+  return result;
 }
 
-function getMultiplier() {
-  let multiplier = 1 + state.battle.rerollsUsed * 0.25;
-  if (hasRelic("greedy-multi")) multiplier += state.battle.rerollsUsed * 0.5;
-  return Number(multiplier.toFixed(2));
+function applyBuildEffects(result) {
+  const upgrades = state.player.upgrades;
+
+  if (upgrades.double2) {
+    const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
+    result.damage += count2 * 2;
+  }
+
+  if (upgrades.energyBoost) {
+    result.energy *= 2;
+  }
+
+  if (upgrades.critBoost) {
+    const critCount = result.triggers.filter(trigger => trigger === "crit").length;
+    result.damage += critCount * 3;
+  }
+
+  return result;
 }
 
-function calculatePreview() {
-  const info = evaluateHand(state.battle.dice);
-  let baseDamage = info.hand.key === "high" ? 0 : info.hand.baseDamage;
-
-  if (hasRelic("floor-plan") && ["pair", "twoPair"].includes(info.hand.key)) {
-    baseDamage = Math.round(baseDamage * 1.5);
-  }
-
-  if (hasRelic("greedy-multi") && baseDamage > 0) {
-    baseDamage = Math.max(1, Math.round(baseDamage * 0.9));
-  }
-
-  let damage = info.hand.key === "high" ? 0 : Math.round(baseDamage * getMultiplier());
-  if (hasRelic("blood-odds") && damage > 0) {
-    damage += state.player.pityTokens * 3;
-  }
+function calculateRoundResult() {
+  const base = resolveDice(state.battle.dice, state);
+  const final = applyBuildEffects({
+    damage: base.damage,
+    energy: base.energy,
+    armor: base.armor,
+    triggers: [...base.triggers]
+  }, state);
 
   return {
-    info,
-    baseDamage,
-    multiplier: getMultiplier(),
-    damage,
-    busted: info.hand.key === "high"
+    base,
+    final
   };
 }
 
-function getTargetHand(info) {
-  const counts = Object.values(info.counts);
-  const maxCount = counts.length ? Math.max(...counts) : 1;
-  if (maxCount === 4) return "五条";
-  if (maxCount === 3) return "四条";
-  if (maxCount === 2 && counts.filter(v => v === 2).length === 2) return "葫芦";
-  if (maxCount === 2) return "三条";
-  return "一对";
-}
+function getTargetTip(dice) {
+  const counts = { 2: 0, 3: 0, 6: 0 };
+  dice.filter(die => !die.inactive).forEach(die => {
+    if (counts[die.value] !== undefined) counts[die.value] += 1;
+  });
 
-function getRecommendedIndices(info) {
-  return new Set(info.scoringIndices);
+  if (counts[6] >= 2) return "补 6 做暴击链";
+  if (counts[2] >= 2) return "补 2 做连击链";
+  if (counts[3] >= 2) return "补 3 做能量链";
+  return "补 5 / 6 抬伤害";
 }
 
 function syncBuildType() {
@@ -289,8 +261,56 @@ function syncBuildType() {
     state.run.buildType = "未成型";
     return;
   }
-  const map = { stable: "保底流", greed: "贪刀流", risk: "受伤反打流" };
+  const map = {
+    combo: "连击链",
+    energy: "能量链",
+    crit: "暴击链"
+  };
   state.run.buildType = map[ranking[0]];
+}
+
+function getBuildBonusCopy(result) {
+  const notes = [];
+  if (state.player.upgrades.double2) {
+    const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
+    if (count2 > 0) notes.push(`连击链 +${count2 * 2}`);
+  }
+  if (state.player.upgrades.energyBoost && result.energy > 0) {
+    notes.push("能量链 x2");
+  }
+  if (state.player.upgrades.critBoost) {
+    const critCount = result.triggers.filter(trigger => trigger === "crit").length;
+    if (critCount > 0) notes.push(`暴击链 +${critCount * 3}`);
+  }
+  return notes.length ? notes.join(" / ") : "当前还没有链式加成";
+}
+
+function applyEnemyPressure(round) {
+  const enemy = state.battle.enemy;
+  if (enemy.archetype === "punish_low" && round.final.damage <= 6) {
+    state.battle.enemyCharge += 1;
+    addLog("敌方成长", "这一手伤害太轻，它顺势涨了 1 层压制。");
+  }
+  if (enemy.archetype === "mixed") {
+    if (round.final.damage <= 6) {
+      state.battle.enemyCharge += 1;
+      addLog("双向压制", "你这轮输出偏轻，它开始抬压制。");
+    }
+    if (round.final.energy >= 2) {
+      state.battle.enemyCharge += 1;
+      addLog("双向压制", "你这一手攒了太多能量，它也跟着提速。");
+    }
+  }
+  if (enemy.archetype === "boss") {
+    if (round.final.damage <= 8) {
+      state.battle.enemyCharge += 1;
+      addLog("终局高压", "Boss 觉得你这手不够狠，继续往上压。");
+    }
+    if (round.final.armor >= 6) {
+      state.battle.enemyCharge += 1;
+      addLog("终局高压", "你想靠护甲拖回合，它也会把压力抬高。");
+    }
+  }
 }
 
 function buildBattleScreen() {
@@ -331,7 +351,7 @@ function buildBattleScreen() {
 
       <section class="enemy-intent">
         <div class="intent-copy">
-          <strong>本回合敌方动作</strong>
+          <strong>敌方压制</strong>
           <span id="enemy-intent-copy"></span>
         </div>
         <div class="intent-hit">
@@ -344,18 +364,18 @@ function buildBattleScreen() {
         <details class="drawer left">
           <summary>RELICS</summary>
           <div class="drawer-sheet">
-            <p class="drawer-title">Relics</p>
+            <p class="drawer-title">强化</p>
             <div class="relic-list" id="relic-list"></div>
           </div>
         </details>
         <details class="drawer right">
           <summary>LOGS</summary>
           <div class="drawer-sheet">
-            <p class="drawer-title">Build</p>
+            <p class="drawer-title">流派</p>
             <div class="log-list" id="build-list"></div>
-            <p class="drawer-title" style="margin-top:12px">Breakdown</p>
+            <p class="drawer-title" style="margin-top:12px">本手结算</p>
             <div class="calc-list" id="calc-list"></div>
-            <p class="drawer-title" style="margin-top:12px">Battle Log</p>
+            <p class="drawer-title" style="margin-top:12px">战斗日志</p>
             <div class="log-list" id="log-list"></div>
           </div>
         </details>
@@ -371,9 +391,9 @@ function buildBattleScreen() {
       </section>
 
       <section class="battle-hud">
-        <div class="hud-item"><div class="hud-label">Combo</div><div class="hud-value" id="hud-combo"></div></div>
         <div class="hud-item"><div class="hud-label">Damage</div><div class="hud-value damage" id="hud-damage"></div></div>
-        <div class="hud-item"><div class="hud-label">Next Target</div><div class="hud-value" id="hud-target"></div></div>
+        <div class="hud-item"><div class="hud-label">Energy</div><div class="hud-value" id="hud-energy"></div></div>
+        <div class="hud-item"><div class="hud-label">Armor</div><div class="hud-value" id="hud-armor"></div></div>
         <div class="hud-item"><div class="hud-label">Rerolls</div><div class="hud-value" id="hud-rerolls"></div></div>
       </section>
 
@@ -394,9 +414,8 @@ function buildBattleScreen() {
 function renderBattle() {
   if (!state.battle) return;
 
-  const preview = calculatePreview();
+  const preview = calculateRoundResult();
   const enemy = state.battle.enemy;
-  const recommended = getRecommendedIndices(preview.info);
   const lockedCount = state.battle.dice.filter(die => die.locked && !die.inactive).length;
   const rerollCount = state.battle.dice.filter(die => !die.locked && !die.inactive).length;
 
@@ -415,19 +434,28 @@ function renderBattle() {
   document.getElementById("enemy-intent-copy").textContent = enemy.flavor;
   document.getElementById("enemy-hit-value").textContent = String(getEnemyDamage());
   document.getElementById("dice-lock-summary").textContent = `已锁定 ${lockedCount}/5`;
-  document.getElementById("hud-combo").textContent = preview.info.hand.name;
-  document.getElementById("hud-damage").textContent = String(preview.damage);
-  document.getElementById("hud-target").textContent = getTargetHand(preview.info);
+
+  document.getElementById("hud-damage").textContent = String(preview.final.damage);
+  document.getElementById("hud-energy").textContent = String(preview.final.energy);
+  document.getElementById("hud-armor").textContent = String(preview.final.armor);
   document.getElementById("hud-rerolls").textContent = String(state.battle.rerollsRemaining);
-  document.getElementById("settle-title").textContent = `收手结算 ${preview.damage}`;
-  document.getElementById("settle-copy").textContent = preview.busted ? "止损，换补偿" : "锁住这手收益";
+
+  document.getElementById("settle-title").textContent = `结算触发 ${preview.final.damage}`;
+  document.getElementById("settle-copy").textContent = preview.final.armor > 0
+    ? `顺手拿 ${preview.final.armor} 护甲`
+    : preview.final.energy > 0
+      ? `顺手拿 ${preview.final.energy} 能量`
+      : "先把这手兑现";
 
   const canEmergencyReroll = state.battle.rerollsRemaining <= 0 && state.player.pityTokens > 0;
-  document.getElementById("reroll-title").textContent = canEmergencyReroll ? "拆筹码继续赌" : (state.battle.rerollsRemaining > 0 ? "继续赌" : "本回合到头");
-  document.getElementById("reroll-copy").textContent =
-    canEmergencyReroll ? `强续一手 · 冲 ${getTargetHand(preview.info)}` :
-    state.battle.rerollsRemaining > 0 ? `冲 ${getTargetHand(preview.info)} · 重掷 ${rerollCount || 5} 枚` :
-    "没有可用重掷";
+  document.getElementById("reroll-title").textContent = canEmergencyReroll
+    ? "拆筹码强续"
+    : (state.battle.rerollsRemaining > 0 ? "继续扩链" : "本回合到头");
+  document.getElementById("reroll-copy").textContent = canEmergencyReroll
+    ? `强续一手 · ${getTargetTip(state.battle.dice)}`
+    : state.battle.rerollsRemaining > 0
+      ? `${getTargetTip(state.battle.dice)} · 重掷 ${rerollCount || 5} 枚`
+      : "没有可用重掷";
   document.getElementById("reroll-btn").disabled = state.battle.rerollsRemaining <= 0 && !canEmergencyReroll;
 
   document.getElementById("dice-grid").innerHTML = state.battle.dice.map((die, index) => {
@@ -436,7 +464,7 @@ function renderBattle() {
       "die",
       `pos-${index}`,
       die.locked ? "locked" : "",
-      recommended.has(die.index) && !die.locked ? "recommended" : "",
+      die.locked ? "" : (die.value >= 5 ? "recommended" : ""),
       die.rolling ? "rolling" : "",
       die.toggled ? "toggled" : "",
       die.inactive ? "inactive" : ""
@@ -452,18 +480,20 @@ function renderBattle() {
 
   document.getElementById("relic-list").innerHTML = state.player.relics.length
     ? state.player.relics.map(relic => `<div class="relic-card"><strong>${relic.name}</strong><span>${relic.text}</span></div>`).join("")
-    : `<div class="relic-card"><strong>空槽位</strong><span>战后拿奖励，构筑会慢慢成型。</span></div>`;
+    : `<div class="relic-card"><strong>空槽位</strong><span>战后拿强化，慢慢把连锁做出来。</span></div>`;
 
   document.getElementById("build-list").innerHTML = `
     <div class="log-card"><strong>当前流派</strong><span>${state.run.buildType}</span></div>
     <div class="log-card"><strong>怜悯筹码</strong><span>${state.player.pityTokens} 枚</span></div>
+    <div class="log-card"><strong>当前护甲</strong><span>${state.player.armor}</span></div>
+    <div class="log-card"><strong>本流派加成</strong><span>${getBuildBonusCopy(preview.final)}</span></div>
   `;
 
   document.getElementById("calc-list").innerHTML = [
-    ["牌型", preview.info.hand.name],
-    ["基础", String(preview.baseDamage)],
-    ["倍率", `x${preview.multiplier.toFixed(2)}`],
-    ["伤害", String(preview.damage)]
+    ["伤害", String(preview.final.damage)],
+    ["能量", String(preview.final.energy)],
+    ["护甲", String(preview.final.armor)],
+    ["触发", preview.final.triggers.length ? preview.final.triggers.join(" / ") : "无"]
   ].map(([label, value]) => `<div class="calc-row"><span>${label}</span><strong>${value}</strong></div>`).join("");
 
   document.getElementById("log-list").innerHTML = state.run.logs.length
@@ -483,7 +513,7 @@ function startBattle(index) {
     failChain: 0,
     safetyUsed: false
   };
-  addLog("新战斗", `${enemy.name} 上桌了。`);
+  addLog("新战斗", `${enemy.name} 上桌了。先看这轮是抢伤害、做能量链，还是立护甲。`);
   setScreen("battle");
   buildBattleScreen();
   renderBattle();
@@ -504,7 +534,7 @@ function chooseOffers() {
 
 function showShop() {
   chooseOffers();
-  ui.shopCopy.textContent = `第 ${state.run.battleIndex + 1} 战结束，选 1 个奖励继续构筑。`;
+  ui.shopCopy.textContent = `第 ${state.run.battleIndex + 1} 战结束，选 1 个强化，把这一局往一个触发方向推。`;
   ui.shopGrid.innerHTML = state.pendingOffers.map(offer => `
     <div class="offer-card">
       <strong>${offer.name}</strong>
@@ -522,11 +552,11 @@ function showSummary(victory) {
   ui.summaryTitle.textContent = victory ? "这一局打穿了" : "这把到此为止";
   ui.summaryCopy.textContent = victory
     ? `你带着 ${state.run.buildType} 走到了最后。`
-    : `这把停在第 ${state.run.battleIndex + 1} 战，但构筑方向已经出来了。`;
+    : `这把停在第 ${state.run.battleIndex + 1} 战，但触发方向已经出来了。`;
 
   ui.summaryGrid.innerHTML = [
     ["已击败", `${state.run.enemiesDefeated}`],
-    ["最高牌型", state.player.highestHandName],
+    ["最高单手伤害", `${state.player.highestDamage}`],
     ["总伤害", `${state.player.totalDamage}`],
     ["流派", state.run.buildType]
   ].map(([label, value]) => `<div class="summary-box"><small>${label}</small><strong>${value}</strong></div>`).join("");
@@ -534,25 +564,29 @@ function showSummary(victory) {
   ui.summaryList.innerHTML = [
     `怜悯筹码：${state.player.pityTokens} 枚`,
     `金币：${state.player.coins}`,
-    `遗物：${state.player.relics.map(relic => relic.name).join("、") || "无"}`
+    `强化：${state.player.relics.map(relic => relic.name).join("、") || "无"}`
   ].map(text => `<div class="summary-item">${text}</div>`).join("");
 
   setScreen("summary");
 }
 
-function updateHighestHand(hand) {
-  if (hand.rank > state.player.highestHandRank) {
-    state.player.highestHandRank = hand.rank;
-    state.player.highestHandName = hand.name;
-  }
-}
-
 function enemyAttack() {
-  const damage = getEnemyDamage();
-  state.player.hp = Math.max(0, state.player.hp - damage);
-  state.player.pityTokens += 1;
-  addLog("敌方反击", `${state.battle.enemy.name} 打了你 ${damage} 点。你拿到 1 枚怜悯筹码。`);
-  showFloat(`-${damage}`, "#ff9aa3");
+  const incoming = getEnemyDamage();
+  const blocked = Math.min(state.player.armor, incoming);
+  const damage = incoming - blocked;
+
+  state.player.armor = Math.max(0, state.player.armor - incoming);
+
+  if (damage > 0) {
+    state.player.hp = Math.max(0, state.player.hp - damage);
+    state.player.pityTokens += 1;
+    addLog("敌方反击", `${state.battle.enemy.name} 打了你 ${damage} 点。你拿到 1 枚怜悯筹码，下一轮还能续。`);
+    showFloat(`-${damage}`, "#ff9aa3");
+  } else {
+    addLog("敌方反击", `这次伤害被护甲吃掉了，节奏还在你手里。`);
+    showFloat("格挡", "#9ee7ff");
+  }
+
   shakeCabinet();
 
   if (state.player.hp <= 0) {
@@ -566,53 +600,25 @@ function enemyAttack() {
   renderBattle();
 }
 
-function handleBust() {
-  state.run.metrics.bust_rate += 1;
-
-  if (hasRelic("safety-net") && !state.battle.safetyUsed) {
-    state.battle.safetyUsed = true;
-    addLog("安全网", "第一次爆掉被安全网接住，免费重掷一次。");
-    rerollUnlockedDice(true);
-    return;
-  }
-
-  state.battle.failChain += 1;
-  if (state.battle.failChain === 1) {
-    addLog("失手", "这一手没成型，先丢收益，不掉血。");
-    showFloat("炸了", "#ffb3ba");
-  } else if (state.battle.failChain === 2) {
-    state.battle.enemyCharge += 1;
-    addLog("局势变坏", "敌人开始蓄力，下一手会更疼。");
-    showFloat("蓄力+1", "#ffcf9d");
-  } else {
-    addLog("贪过头", "这次真的挨打了，但换来 1 枚怜悯筹码。");
-    enemyAttack();
-    return;
-  }
-
-  state.battle.dice = createDice();
-  state.battle.rerollsRemaining = 2;
-  state.battle.rerollsUsed = 0;
-  renderBattle();
-}
-
 function settleHand() {
   if (!state.battle) return;
 
-  const preview = calculatePreview();
-  updateHighestHand(preview.info.hand);
-  state.run.metrics.avg_damage += preview.damage;
+  const round = calculateRoundResult();
+  const totalDamage = round.final.damage;
 
-  if (preview.busted) {
-    handleBust();
-    return;
-  }
+  state.player.totalDamage += totalDamage;
+  state.player.energy += round.final.energy;
+  state.player.armor += round.final.armor;
+  state.player.highestDamage = Math.max(state.player.highestDamage, totalDamage);
 
-  state.battle.failChain = 0;
-  state.player.totalDamage += preview.damage;
-  state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - preview.damage);
-  addLog("收手结算", `${preview.info.hand.name} 打出 ${preview.damage} 点伤害。`);
-  showFloat(`-${preview.damage}`, "#ffe49e");
+  state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - totalDamage);
+
+  addLog("结算触发", `造成 ${totalDamage} 点伤害，同时拿到 ${round.final.energy} 能量、${round.final.armor} 护甲。`);
+  addLog("链式反馈", getBuildBonusCopy(round.final));
+  showFloat(`-${totalDamage}`, "#ffe49e");
+
+  state.run.metrics.avg_damage += totalDamage;
+  applyEnemyPressure(round);
 
   if (state.battle.enemy.hp <= 0) {
     state.run.enemiesDefeated += 1;
@@ -635,7 +641,7 @@ function rerollUnlockedDice(free = false) {
     if (state.player.pityTokens > 0) {
       state.player.pityTokens -= 1;
       state.battle.rerollsRemaining += 1;
-      addLog("拆筹码", "拆 1 枚怜悯筹码，强行续一手。");
+      addLog("拆筹码", "拆 1 枚怜悯筹码，强行把这一轮连锁续下去。");
     } else {
       return;
     }
@@ -658,10 +664,11 @@ function rerollUnlockedDice(free = false) {
     }
   }
 
-  addLog("继续赌", `重掷了 ${actualTargets.length} 枚骰子。`);
+  addLog("继续扩链", `重掷了 ${actualTargets.length} 枚骰子，继续追更大的触发。`);
   renderBattle();
 
   setTimeout(() => {
+    if (!state?.battle) return;
     state.battle.dice.forEach(die => {
       die.rolling = false;
     });
@@ -670,7 +677,7 @@ function rerollUnlockedDice(free = false) {
 }
 
 function toggleDie(index) {
-  if (!state.battle) return;
+  if (!state?.battle) return;
   const die = state.battle.dice[index];
   if (!die || die.inactive) return;
   die.locked = !die.locked;
@@ -710,7 +717,7 @@ function bindEvents() {
 
   ui.shopGrid.addEventListener("click", event => {
     const button = event.target.closest("[data-offer-id]");
-    if (!button) return;
+    if (!button || !state) return;
     const offer = state.pendingOffers.find(item => item.id === button.dataset.offerId);
     if (!offer) return;
     offer.apply(state);
@@ -721,7 +728,3 @@ function bindEvents() {
 }
 
 bindEvents();
-
-if (location.hash === "#autostart") {
-  startRun();
-}
