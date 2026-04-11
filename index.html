@@ -103,6 +103,40 @@
     .battle-side-drawer .drawer-body{display:grid;gap:12px;padding-top:4px}
     .battle-side-drawer .log-panel .battle-log{max-height:180px}
     .battle-side-drawer:not([open]) .drawer-body{display:none}
+    .battle-hud-shell{display:grid;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:12px;min-height:0;flex:1}
+    .battle-topbar{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;align-items:stretch}
+    .battle-mini-card{padding:12px 14px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid var(--line);display:grid;gap:4px}
+    .battle-mini-card .mini-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .battle-mini-card .mini-label{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+    .battle-mini-card .mini-value{font:900 1.05rem/1.1 var(--disp);color:var(--ink)}
+    .battle-mini-card .mini-sub{font-size:.82rem;color:var(--muted)}
+    .battle-mini-card.compact{grid-template-columns:1fr auto;align-items:center}
+    .battle-mini-card.compact .mini-value{font-size:1.25rem}
+    .battle-enemy-stage{padding:16px 18px;border-radius:24px;background:radial-gradient(circle at 50% 0%,rgba(255,77,166,.12),transparent 30%),linear-gradient(180deg,rgba(20,8,36,.96),rgba(10,4,20,.96));border:1px solid rgba(255,255,255,.08);box-shadow:0 20px 44px rgba(0,0,0,.28);display:grid;gap:14px}
+    .battle-enemy-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .battle-enemy-copy{display:grid;gap:4px;min-width:0}
+    .battle-enemy-copy .enemy-name{font:900 clamp(1.3rem,3vw,2rem)/1 var(--disp)}
+    .battle-enemy-copy .enemy-one-liner{font-size:.88rem;color:#edd7ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .battle-threat-chip{padding:10px 12px;border-radius:16px;background:linear-gradient(180deg,rgba(255,104,81,.18),rgba(255,104,81,.08));border:1px solid rgba(255,104,81,.24);display:grid;gap:4px;justify-items:end;min-width:104px}
+    .battle-threat-chip .mini-label{color:#ffc5bf}
+    .battle-threat-chip .mini-value{color:#fff0e8;font-size:1.5rem}
+    .battle-enemy-core{display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:center}
+    .battle-enemy-core .enemy-avatar{width:92px;height:92px;border-radius:26px}
+    .battle-dice-shell{display:grid;gap:12px;min-height:0}
+    .battle-summary-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-radius:20px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.09)}
+    .summary-pill{display:grid;gap:4px;min-width:0}
+    .summary-pill .pill-label{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800}
+    .summary-pill .pill-value{font:900 1.05rem/1.05 var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .summary-pill.damage .pill-value{font-size:1.45rem;color:var(--gold2);text-shadow:0 0 18px rgba(255,195,77,.24)}
+    .battle-bottom-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;position:sticky;bottom:0;padding:10px 0 max(8px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(7,4,14,0),rgba(7,4,14,.82) 22%,rgba(7,4,14,.98))}
+    .battle-action-btn{min-height:82px;border-radius:22px;padding:14px 16px}
+    .battle-action-btn strong{font-size:1.08rem}
+    .battle-action-btn span{font-size:.84rem}
+    .battle-drawer-sheet{display:grid;gap:10px}
+    .battle-drawer-sheet>summary{list-style:none;cursor:pointer;padding:12px 14px;border-radius:18px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);font-weight:900;color:#f4e6ff}
+    .battle-drawer-sheet>summary::-webkit-details-marker{display:none}
+    .battle-drawer-sheet .drawer-grid{display:grid;gap:10px}
+    .battle-drawer-sheet:not([open]) .drawer-grid{display:none}
     .decision-card{border-radius:22px;padding:16px;border:1px solid var(--line);display:grid;gap:6px;min-height:154px}
     .decision-card.safe{background:linear-gradient(180deg,rgba(255,195,77,.14),rgba(255,195,77,.04));box-shadow:0 0 24px rgba(255,195,77,.12)}
     .decision-card.push{background:linear-gradient(180deg,rgba(98,243,255,.12),rgba(255,79,216,.05));box-shadow:0 0 24px rgba(98,243,255,.12)}
@@ -172,8 +206,652 @@
     @keyframes shake{0%,100%{transform:translate(0,0)}20%{transform:translate(-6px,2px)}40%{transform:translate(7px,-3px)}60%{transform:translate(-5px,-2px)}80%{transform:translate(4px,3px)}}
     @keyframes flash{0%,100%{filter:brightness(1)}50%{filter:brightness(2.8) saturate(0)}} @keyframes float{0%{opacity:0;transform:translate(-50%,-20%) scale(.65)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.12)}100%{opacity:0;transform:translate(-50%,-110%) scale(.92)}}
     @keyframes missile{0%{opacity:0;transform:translate(-50%,0) scale(.7)}12%{opacity:1}100%{opacity:0;transform:translate(220px,-260px) scale(1.14)}} @keyframes glitch{0%{opacity:0;transform:translateY(8px) skewX(12deg);filter:hue-rotate(50deg)}100%{opacity:1;transform:translateY(0) skewX(0);filter:none}}
-    @media (max-width:1024px){.cabinet{height:min(100dvh - 12px,1280px)}.top-rack,.battle-grid,.shop-grid{grid-template-columns:1fr}.right-rail{grid-template-columns:1fr}}
-    @media (max-width:720px){.screen{padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}.hero-strip,.battle-focus,.action-row,.summary-grid,.right-rail,.starter-grid,.meta-list{grid-template-columns:1fr}.inventory-grid{grid-template-columns:1fr}.dice-row{gap:8px}.die{min-height:96px;border-radius:18px}.die-value{font-size:2rem}.focus-value.damage{font-size:2.8rem}}
+    @media (max-width:1024px){.cabinet{height:min(100dvh - 12px,1280px)}.top-rack,.battle-grid,.shop-grid{grid-template-columns:1fr}.right-rail{grid-template-columns:1fr}.battle-topbar,.battle-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media (max-width:720px){
+      .screen{padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+      .summary-grid,.right-rail,.starter-grid,.meta-list{grid-template-columns:1fr}
+      #screen-battle{padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+      #screen-battle .top-rack,#screen-battle .battle-grid{display:block}
+      .battle-hud-shell{grid-template-rows:auto auto auto auto auto;gap:10px}
+      .battle-topbar{grid-template-columns:1fr 1fr;gap:8px}
+      .battle-topbar .battle-mini-card:first-child{grid-column:1 / -1}
+      .battle-mini-card{padding:10px 12px;border-radius:16px}
+      .battle-mini-card .mini-value{font-size:1rem}
+      .battle-enemy-stage{padding:14px;border-radius:20px;gap:10px}
+      .battle-enemy-head{align-items:center}
+      .battle-enemy-copy .enemy-name{font-size:1.2rem}
+      .battle-enemy-copy .enemy-one-liner{font-size:.8rem}
+      .battle-threat-chip{min-width:88px;padding:8px 10px;border-radius:14px}
+      .battle-enemy-core{grid-template-columns:80px minmax(0,1fr);gap:10px}
+      .battle-enemy-core .enemy-avatar{width:80px;height:80px;border-radius:22px}
+      .dice-stage{padding:16px;border-radius:22px;gap:12px}
+      .dice-status-bar{padding:10px 12px;border-radius:16px}
+      .dice-row{gap:8px}
+      .die{min-height:116px;padding:10px 6px 12px;border-radius:20px}
+      .die-value{font-size:2.4rem}
+      .die-label,.die-note{font-size:.68rem}
+      .battle-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:10px 12px;border-radius:16px}
+      .summary-pill .pill-label{font-size:.66rem}
+      .summary-pill .pill-value{font-size:.98rem}
+      .summary-pill.damage .pill-value{font-size:1.55rem}
+      .battle-bottom-actions{grid-template-columns:1fr 1fr;gap:10px;padding-top:6px}
+      .battle-action-btn{min-height:78px;border-radius:18px;padding:12px}
+      .battle-action-btn strong{font-size:1rem}
+      .battle-action-btn span{font-size:.8rem}
+      .battle-drawer-sheet>summary{padding:11px 12px;border-radius:16px}
+    }
+    #screen-battle{overflow:hidden;background:
+      radial-gradient(circle at 50% 34%,rgba(87,117,178,.18),transparent 28%),
+      radial-gradient(circle at 50% 64%,rgba(255,176,94,.06),transparent 34%),
+      linear-gradient(180deg,#070b15 0%,#090d18 42%,#05070d 100%)}
+    .battle-hud-shell{
+      position:relative;
+      display:grid;
+      grid-template-rows:auto auto minmax(0,1fr) auto auto;
+      gap:12px;
+      height:100%;
+      min-height:0;
+      padding-inline:6px;
+      isolation:isolate
+    }
+    .battle-glass{
+      background:linear-gradient(180deg,rgba(20,24,34,.82),rgba(10,13,21,.72));
+      border:1px solid rgba(160,180,214,.16);
+      border-radius:22px;
+      box-shadow:0 18px 40px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter:blur(16px)
+    }
+    .battle-topbar{
+      display:grid;
+      grid-template-columns:76px minmax(0,1fr);
+      gap:14px;
+      align-items:center;
+      padding:14px 16px;
+      min-height:102px
+    }
+    .battle-topbar .enemy-avatar{
+      width:76px;
+      height:76px;
+      border-radius:22px;
+      background:
+        radial-gradient(circle at 35% 30%,rgba(255,255,255,.22),transparent 28%),
+        linear-gradient(180deg,rgba(42,47,62,.96),rgba(18,21,31,.96));
+      border:1px solid rgba(255,255,255,.1);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 28px rgba(0,0,0,.36);
+      display:grid;
+      place-items:center;
+      font-size:2rem
+    }
+    .battle-topbar-main{display:grid;gap:10px;min-width:0}
+    .battle-topbar-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+    .battle-topbar-copy{display:grid;gap:4px;min-width:0}
+    .battle-topbar-copy strong{
+      font:900 clamp(1.05rem,4.2vw,1.45rem)/1.02 var(--disp);
+      letter-spacing:.02em;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+    .battle-topbar-copy span{font-size:.82rem;color:var(--muted);font-weight:700}
+    .battle-topbar-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .battle-level-chip,.battle-player-chip,.battle-trait-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid rgba(164,184,218,.16);
+      background:rgba(255,255,255,.04);
+      color:#edf2ff;
+      font-size:.78rem;
+      font-weight:800
+    }
+    .battle-level-chip{color:#cad4ef}
+    .battle-trait-chip{color:#ffb5aa;border-color:rgba(255,118,91,.24);background:rgba(255,94,76,.08)}
+    .topbar-health{display:grid;gap:7px}
+    .topbar-health-row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:.82rem;color:#eff5ff}
+    .topbar-health-row strong{font-size:.9rem}
+    .topbar-health-track,.mini-health-track{
+      width:100%;
+      height:14px;
+      border-radius:999px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05);
+      box-shadow:inset 0 4px 12px rgba(0,0,0,.34)
+    }
+    .topbar-health-track .hp-fill{
+      background:linear-gradient(90deg,#6d0f1d,#cc2e43 42%,#ff7587 100%);
+      box-shadow:0 0 18px rgba(255,88,117,.24)
+    }
+    .topbar-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .topbar-player-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .mini-health-wrap{
+      display:inline-grid;
+      gap:4px;
+      min-width:88px
+    }
+    .mini-health-wrap span{font-size:.7rem;color:var(--muted);font-weight:800;text-align:right}
+    .mini-health-track{height:8px}
+    .mini-health-track .hp-fill{
+      background:linear-gradient(90deg,#2fb87c,#7dffd0);
+      box-shadow:0 0 16px rgba(121,255,202,.2)
+    }
+    .battle-enemy-stage{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
+      padding:14px 16px;
+      min-height:88px
+    }
+    .battle-enemy-stage-copy{display:grid;gap:8px;min-width:0}
+    .battle-enemy-stage-copy .enemy-one-liner{
+      font-size:.84rem;
+      color:#c8d1e7;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+    .enemy-turn-damage{
+      min-width:96px;
+      padding:12px 12px;
+      border-radius:18px;
+      border:1px solid rgba(255,120,98,.18);
+      background:linear-gradient(180deg,rgba(67,28,34,.82),rgba(29,14,20,.82));
+      box-shadow:0 0 24px rgba(255,98,92,.1),inset 0 1px 0 rgba(255,255,255,.04);
+      display:grid;
+      gap:4px;
+      text-align:center
+    }
+    .enemy-turn-damage span{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#ffb3a8;font-weight:800}
+    .enemy-turn-damage strong{font:900 1.55rem/1 var(--disp);color:#fff2ed}
+    .battle-dice-shell{
+      position:relative;
+      min-height:0;
+      display:grid;
+      align-content:center;
+      gap:12px;
+      padding-inline:10px
+    }
+    .battle-hint{
+      margin:0 auto;
+      min-height:28px;
+      padding:7px 12px;
+      border-radius:999px;
+      border:1px solid rgba(160,180,214,.14);
+      background:rgba(255,255,255,.04);
+      color:#c6d0e8;
+      font-size:.76rem;
+      font-weight:700;
+      text-align:center
+    }
+    .battle-hint.hidden{opacity:0;pointer-events:none}
+    .dice-stage{
+      display:grid;
+      gap:14px;
+      padding:0;
+      background:none;
+      border:none;
+      box-shadow:none
+    }
+    .dice-status-bar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 4px
+    }
+    .dice-status-main{display:grid;gap:2px}
+    .dice-status-main strong{font-size:.92rem;color:#f1f5ff}
+    .dice-status-main span,.dice-reroll-preview{font-size:.76rem;color:#95a3c4}
+    .dice-reroll-preview{
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+      white-space:nowrap
+    }
+    .dice-row{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      align-items:flex-end;
+      gap:14px 12px;
+      min-height:0
+    }
+    .die{
+      position:relative;
+      width:92px;
+      height:92px;
+      padding:10px;
+      border-radius:24px;
+      border:1px solid rgba(171,188,216,.14);
+      background:
+        radial-gradient(circle at 28% 18%,rgba(255,255,255,.18),transparent 24%),
+        radial-gradient(circle at 72% 78%,rgba(0,0,0,.22),transparent 38%),
+        linear-gradient(145deg,rgba(54,60,78,.94),rgba(17,21,32,.98));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.1),
+        inset 0 -12px 20px rgba(0,0,0,.34),
+        0 16px 28px rgba(0,0,0,.34),
+        0 0 0 1px rgba(255,255,255,.02);
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      align-items:center;
+      justify-items:center;
+      transform-style:preserve-3d;
+      transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,filter .18s ease
+    }
+    .die:hover{
+      transform:translateY(-4px) rotateX(9deg) rotateY(-7deg) scale(1.02);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -12px 20px rgba(0,0,0,.34),
+        0 22px 34px rgba(0,0,0,.4),
+        0 0 24px rgba(141,164,217,.12)
+    }
+    .die:active{transform:translateY(1px) scale(.98)}
+    .die-label{
+      justify-self:start;
+      font-size:.58rem;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:#8fa0c3
+    }
+    .die-value{
+      font:900 2.3rem/.95 var(--disp);
+      color:#eef4ff;
+      text-shadow:0 10px 18px rgba(0,0,0,.4),0 0 18px rgba(255,255,255,.06)
+    }
+    .die-note{
+      font-size:.62rem;
+      color:#7f92ba;
+      font-weight:800;
+      letter-spacing:.08em;
+      text-transform:uppercase
+    }
+    .die-lock{
+      position:absolute;
+      top:8px;
+      right:8px;
+      width:20px;
+      height:20px;
+      border-radius:999px;
+      display:grid;
+      place-items:center;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      color:#f8fdff;
+      font-size:.72rem;
+      opacity:0;
+      transform:scale(.8);
+      transition:opacity .18s ease,transform .18s ease
+    }
+    .die.locked{
+      border-color:rgba(255,214,120,.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -12px 20px rgba(0,0,0,.3),
+        0 22px 34px rgba(0,0,0,.38),
+        0 0 0 1px rgba(255,214,120,.08),
+        0 0 24px rgba(255,202,90,.18);
+      transform:translateY(-5px) scale(1.04)
+    }
+    .die.locked .die-lock{opacity:1;transform:scale(1)}
+    .die.recommended:not(.locked){
+      border-color:rgba(129,255,210,.32);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.1),
+        inset 0 -12px 20px rgba(0,0,0,.32),
+        0 18px 32px rgba(0,0,0,.34),
+        0 0 22px rgba(121,255,202,.12)
+    }
+    .die.will-reroll{
+      animation:reroll-pulse 1.2s ease-in-out infinite
+    }
+    .die.face-1{color:#d8dcef}
+    .die.face-2{color:#b5f3cf}
+    .die.face-3{color:#ffc39e}
+    .die.face-4{color:#91d8ff}
+    .die.face-5{color:#ffe39b}
+    .die.face-6{color:#d6c1ff}
+    .die.gold{
+      border-color:rgba(255,218,116,.4);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.12),
+        inset 0 -12px 20px rgba(43,28,0,.24),
+        0 18px 34px rgba(0,0,0,.34),
+        0 0 24px rgba(255,195,77,.16)
+    }
+    .die.glass{
+      background:
+        radial-gradient(circle at 28% 18%,rgba(255,255,255,.26),transparent 26%),
+        linear-gradient(145deg,rgba(80,111,151,.62),rgba(17,23,40,.8));
+      border-color:rgba(147,208,255,.3);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.2),
+        inset 0 -12px 18px rgba(0,0,0,.24),
+        0 18px 32px rgba(0,0,0,.32),
+        0 0 22px rgba(125,188,255,.18)
+    }
+    .battle-summary-strip{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:0;
+      padding:0 10px;
+      overflow:hidden
+    }
+    .summary-pill{
+      display:grid;
+      gap:4px;
+      min-width:0;
+      padding:12px 10px;
+      position:relative
+    }
+    .summary-pill + .summary-pill::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:16%;
+      bottom:16%;
+      width:1px;
+      background:linear-gradient(180deg,transparent,rgba(174,190,219,.14),transparent)
+    }
+    .summary-pill .pill-label{
+      font-size:.62rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:#8e9bbe;
+      font-weight:900
+    }
+    .summary-pill .pill-icon{font-size:.9rem;opacity:.78}
+    .summary-pill .pill-value{
+      font:900 1rem/1.02 var(--disp);
+      color:#f2f6ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis
+    }
+    .summary-pill.damage .pill-value{
+      font-size:1.7rem;
+      color:#ffe49a;
+      text-shadow:0 0 20px rgba(255,210,102,.18)
+    }
+    .battle-bottom-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      position:sticky;
+      bottom:0;
+      padding:6px 6px calc(8px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg,rgba(6,8,13,0),rgba(6,8,13,.8) 18%,rgba(6,8,13,.96) 100%)
+    }
+    .battle-action-btn{
+      position:relative;
+      min-height:102px;
+      border-radius:24px;
+      padding:16px 16px 18px;
+      display:grid;
+      gap:8px;
+      text-align:left;
+      align-content:center;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 22px 32px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.08)
+    }
+    .battle-action-btn::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,rgba(255,255,255,.08),transparent 36%);
+      pointer-events:none
+    }
+    .battle-action-btn strong{
+      position:relative;
+      z-index:1;
+      font:900 clamp(1.1rem,4.4vw,1.36rem)/1.02 var(--disp);
+      letter-spacing:.02em
+    }
+    .battle-action-btn span{
+      position:relative;
+      z-index:1;
+      font-size:.82rem;
+      color:rgba(255,255,255,.82);
+      font-weight:800
+    }
+    .battle-action-btn.safe{
+      background:linear-gradient(180deg,rgba(25,58,39,.96),rgba(13,27,21,.98));
+      border-color:rgba(131,255,204,.26);
+      box-shadow:0 18px 34px rgba(0,0,0,.34),0 0 28px rgba(121,255,202,.16),inset 0 1px 0 rgba(255,255,255,.1)
+    }
+    .battle-action-btn.safe strong{color:#f0fff7}
+    .battle-action-btn.safe::before{
+      content:"";
+      position:absolute;
+      inset:8px;
+      border-radius:18px;
+      border:1px solid rgba(151,255,216,.24);
+      box-shadow:0 0 18px rgba(121,255,202,.14) inset
+    }
+    .battle-action-btn.risk{
+      background:linear-gradient(180deg,rgba(83,29,26,.98),rgba(33,15,19,.98));
+      border-color:rgba(255,138,112,.26);
+      box-shadow:0 18px 34px rgba(0,0,0,.34),0 0 28px rgba(255,114,95,.18),inset 0 1px 0 rgba(255,255,255,.08)
+    }
+    .battle-action-btn.risk strong{color:#fff2ee}
+    .battle-action-btn.risk::before{
+      content:"";
+      position:absolute;
+      inset:8px;
+      border-radius:18px;
+      border:1px solid rgba(255,154,112,.24);
+      box-shadow:0 0 18px rgba(255,114,95,.16) inset
+    }
+    .battle-action-btn:disabled{
+      opacity:.48;
+      filter:saturate(.72);
+      box-shadow:0 14px 24px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.04)
+    }
+    .battle-side-tab{
+      position:absolute;
+      top:50%;
+      z-index:4;
+      transform:translateY(-50%);
+      width:34px
+    }
+    .battle-side-tab.left{left:-6px}
+    .battle-side-tab.right{right:-6px}
+    .battle-side-tab summary{
+      list-style:none;
+      writing-mode:vertical-rl;
+      text-orientation:mixed;
+      min-height:110px;
+      display:grid;
+      place-items:center;
+      border-radius:16px;
+      padding:12px 8px;
+      border:1px solid rgba(162,180,216,.14);
+      background:linear-gradient(180deg,rgba(20,24,34,.92),rgba(10,13,21,.9));
+      color:#e9eefb;
+      font-size:.74rem;
+      font-weight:900;
+      letter-spacing:.1em;
+      box-shadow:0 12px 24px rgba(0,0,0,.3);
+      cursor:pointer;
+      user-select:none
+    }
+    .battle-side-tab summary::-webkit-details-marker{display:none}
+    .side-panel{
+      position:absolute;
+      top:50%;
+      width:min(280px,72vw);
+      max-height:min(62vh,520px);
+      overflow:auto;
+      padding:14px;
+      display:grid;
+      gap:12px;
+      transform:translateY(-50%);
+      border-radius:24px;
+      background:linear-gradient(180deg,rgba(19,23,34,.94),rgba(8,11,19,.94));
+      border:1px solid rgba(162,180,216,.16);
+      box-shadow:0 24px 48px rgba(0,0,0,.42);
+      backdrop-filter:blur(18px)
+    }
+    .battle-side-tab.left .side-panel{left:44px}
+    .battle-side-tab.right .side-panel{right:44px}
+    .battle-side-tab:not([open]) .side-panel{display:none}
+    .side-section-title{
+      margin:0;
+      font-size:.72rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:#8e9bbe;
+      font-weight:900
+    }
+    @media (max-width:720px){
+      .battle-hud-shell{gap:10px;padding-inline:0}
+      .battle-topbar{grid-template-columns:64px minmax(0,1fr);gap:12px;padding:12px 14px;min-height:96px}
+      .battle-topbar .enemy-avatar{width:64px;height:64px;border-radius:18px;font-size:1.7rem}
+      .battle-topbar-copy strong{font-size:1rem}
+      .battle-topbar-copy span,.topbar-health-row,.battle-level-chip,.battle-player-chip,.battle-trait-chip{font-size:.72rem}
+      .battle-enemy-stage{padding:12px 14px;min-height:76px}
+      .enemy-turn-damage{min-width:88px;padding:10px 10px}
+      .enemy-turn-damage strong{font-size:1.34rem}
+      .battle-dice-shell{padding-inline:2px;gap:10px}
+      .dice-status-bar{gap:8px;padding:0 2px}
+      .dice-status-main strong{font-size:.84rem}
+      .dice-status-main span,.dice-reroll-preview{font-size:.7rem}
+      .dice-reroll-preview{padding:5px 8px}
+      .dice-row{gap:12px 10px}
+      .die{width:88px;height:88px;border-radius:22px}
+      .die:nth-child(1){transform:translateY(8px)}
+      .die:nth-child(2){transform:translateY(-2px)}
+      .die:nth-child(3){transform:translateY(10px)}
+      .die:nth-child(4){transform:translate(16px,-4px)}
+      .die:nth-child(5){transform:translate(-16px,-4px)}
+      .die.locked{transform:translateY(-4px) scale(1.03)}
+      .summary-pill{padding:11px 8px}
+      .summary-pill .pill-value{font-size:.92rem}
+      .summary-pill.damage .pill-value{font-size:1.45rem}
+      .battle-bottom-actions{gap:10px;padding-inline:2px}
+      .battle-action-btn{min-height:94px;padding:14px 14px 16px;border-radius:22px}
+      .battle-action-btn strong{font-size:1.02rem}
+      .battle-action-btn span{font-size:.76rem}
+      .battle-side-tab{width:30px}
+      .battle-side-tab summary{min-height:96px;border-radius:14px;padding:10px 6px}
+      .battle-side-tab.left{left:-4px}
+      .battle-side-tab.right{right:-4px}
+      .side-panel{width:min(250px,74vw);padding:12px;border-radius:20px}
+    }
+    #screen-battle.screen.active{overflow:hidden}
+    #screen-battle .battle-hud-shell{
+      grid-template-rows:auto auto minmax(240px,1fr) auto auto;
+      padding-block:2px;
+      gap:10px
+    }
+    #screen-battle .battle-topbar{
+      min-height:94px;
+      border-radius:24px
+    }
+    #screen-battle .battle-enemy-stage{
+      min-height:74px;
+      border-radius:20px
+    }
+    #screen-battle .battle-dice-shell{
+      align-content:center;
+      justify-items:center
+    }
+    #screen-battle .dice-stage{
+      width:100%;
+      max-width:560px
+    }
+    #screen-battle .dice-row{
+      max-width:520px;
+      margin-inline:auto
+    }
+    .dice-fallback-layer{
+      width:100%;
+      max-width:520px;
+      margin-inline:auto;
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:12px 10px
+    }
+    .dice-fallback-layer.active{display:grid}
+    #screen-battle .battle-summary-strip{
+      width:100%;
+      border-radius:18px
+    }
+    #screen-battle .battle-bottom-actions{
+      padding-top:4px
+    }
+    #screen-battle .battle-action-btn{
+      min-height:108px;
+      border-radius:26px
+    }
+    #screen-battle .battle-action-btn strong{
+      text-transform:uppercase;
+      letter-spacing:.03em
+    }
+    #screen-battle .battle-action-btn.risk{
+      box-shadow:0 20px 36px rgba(0,0,0,.36),0 0 34px rgba(255,114,95,.2),inset 0 1px 0 rgba(255,255,255,.08)
+    }
+    #screen-battle .battle-action-btn.safe{
+      box-shadow:0 20px 36px rgba(0,0,0,.36),0 0 30px rgba(121,255,202,.18),inset 0 1px 0 rgba(255,255,255,.08)
+    }
+    #screen-battle .battle-side-tab summary{
+      letter-spacing:.16em
+    }
+    @media (max-width:430px){
+      #screen-battle{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))}
+      #screen-battle .battle-hud-shell{
+        grid-template-rows:auto auto minmax(228px,1fr) auto auto;
+        gap:8px
+      }
+      #screen-battle .battle-topbar{
+        min-height:88px;
+        padding:10px 12px;
+        gap:10px
+      }
+      #screen-battle .battle-enemy-stage{
+        min-height:68px;
+        padding:10px 12px
+      }
+      #screen-battle .battle-summary-strip{
+        padding:0 6px
+      }
+      #screen-battle .summary-pill{
+        padding:10px 6px
+      }
+      #screen-battle .battle-action-btn{
+        min-height:96px;
+        padding:12px 12px 14px
+      }
+      #screen-battle .battle-action-btn strong{
+        font-size:.96rem
+      }
+      #screen-battle .battle-action-btn span{
+        font-size:.72rem
+      }
+      #screen-battle .dice-row{
+        gap:10px 8px
+      }
+      .dice-fallback-layer{
+        gap:10px 8px
+      }
+      #screen-battle .die{
+        width:82px;
+        height:82px;
+        border-radius:20px
+      }
+      #screen-battle .die-value{
+        font-size:2.05rem
+      }
+    }
   </style>
 </head>
 <body>
@@ -283,6 +961,14 @@
               var diceRow=document.getElementById('dice-row');
               if(diceRow){
                 diceRow.addEventListener('click',function(e){
+                  var die=e.target&&e.target.closest?e.target.closest('[data-die-index]'):null;
+                  if(!die||!window.toggleDie)return;
+                  window.toggleDie(Number(die.dataset.dieIndex));
+                });
+              }
+              var diceFallback=document.getElementById('dice-fallback-layer');
+              if(diceFallback){
+                diceFallback.addEventListener('click',function(e){
                   var die=e.target&&e.target.closest?e.target.closest('[data-die-index]'):null;
                   if(!die||!window.toggleDie)return;
                   window.toggleDie(Number(die.dataset.dieIndex));
@@ -521,6 +1207,15 @@ const FIRST_HINT_KEY="dice-heist-battle-hint-dismissed";
 
 function syncBattleUiRefs(){
   Object.assign(ui,{
+    battleStage:document.getElementById("battle-stage"),
+    enemyName:document.getElementById("enemy-name"),
+    enemyNameCopy:document.getElementById("enemy-name-copy"),
+    enemyPanel:document.getElementById("enemy-panel"),
+    enemyFlavor:document.getElementById("enemy-flavor"),
+    enemyAvatar:document.getElementById("enemy-avatar"),
+    enemyDamage:document.getElementById("enemy-damage"),
+    enemyHpFill:document.getElementById("enemy-hp-fill"),
+    enemyHpText:document.getElementById("enemy-hp-text"),
     relicSlots:document.getElementById("relic-slots"),
     coinsChip:document.getElementById("coins-chip"),
     highestChip:document.getElementById("highest-chip"),
@@ -529,82 +1224,315 @@ function syncBattleUiRefs(){
     heroHandCopy:document.getElementById("hero-hand-copy"),
     heroDamage:document.getElementById("hero-damage"),
     heroDamageCopy:document.getElementById("hero-damage-copy"),
+    heroMultiplier:document.getElementById("hero-multiplier"),
     heroTarget:document.getElementById("hero-target"),
     heroRerollsCopy:document.getElementById("hero-rerolls-copy"),
     battleHint:document.getElementById("battle-hint"),
     playerHpFill:document.getElementById("player-hp-fill"),
     playerHpText:document.getElementById("player-hp-text"),
+    topbarPlayerHp:document.getElementById("topbar-player-hp"),
     battleIndexChip:document.getElementById("battle-index-chip"),
+    bossWarning:document.getElementById("boss-warning"),
     statusChipRow:document.getElementById("status-chip-row"),
     calcBreakdown:document.getElementById("calc-breakdown"),
     pityChip:document.getElementById("pity-chip"),
-    battleLog:document.getElementById("battle-log")
+    battleLog:document.getElementById("battle-log"),
+    rerollBtn:document.getElementById("reroll-btn"),
+    rerollTitle:document.getElementById("reroll-title"),
+    rerollSubline:document.getElementById("reroll-subline"),
+    settleBtn:document.getElementById("settle-btn"),
+    settleBtnTitle:document.getElementById("settle-btn-title"),
+    settleSubline:document.getElementById("settle-subline")
   });
 }
 
+function ensureLegacyBattleCompatNodes(){
+  const battleScreen=document.getElementById("screen-battle");
+  if(!battleScreen)return;
+  let compat=document.getElementById("battle-legacy-compat");
+  if(!compat){
+    compat=document.createElement("div");
+    compat.id="battle-legacy-compat";
+    compat.style.display="none";
+    compat.innerHTML=`
+      <span id="boss-warning"></span>
+      <span id="hero-hand-copy"></span>
+      <span id="hero-damage-copy"></span>
+      <span id="hero-multiplier">x1.00</span>`;
+    battleScreen.appendChild(compat);
+  }
+}
+
 function normalizeBattleLayout(){
-  if(document.getElementById("hero-target"))return;
-  const heroStrip=document.querySelector("#screen-battle .hero-strip");
-  if(heroStrip){
-    heroStrip.className="battle-focus";
-    heroStrip.innerHTML=`
-      <div class="focus-card">
-        <span class="label">当前牌型</span>
-        <strong class="focus-value" id="hero-hand">散点</strong>
-        <span class="focus-sub" id="hero-hand-copy">当前成型</span>
+  const battleScreen=document.getElementById("screen-battle");
+  if(!battleScreen||battleScreen.dataset.hudRebuilt==="1")return;
+  battleScreen.innerHTML=`
+    <div class="battle-hud-shell">
+      <div class="battle-topbar">
+        <div class="battle-mini-card">
+          <div class="mini-top"><span class="mini-label">战斗</span><span class="badge" id="battle-index-chip">第 1 战</span></div>
+          <strong class="mini-value" id="enemy-name">敌人</strong>
+          <span class="mini-sub" id="battle-stage">第 1 / 5 战</span>
+        </div>
+        <div class="battle-mini-card compact">
+          <div>
+            <div class="mini-label">玩家血量</div>
+            <div class="mini-sub" id="player-hp-text">46 / 46</div>
+          </div>
+          <strong class="mini-value" id="topbar-player-hp">46</strong>
+        </div>
+        <div class="battle-mini-card compact">
+          <div>
+            <div class="mini-label">金币</div>
+            <div class="mini-sub">当前持有</div>
+          </div>
+          <strong class="mini-value" id="coins-chip">0</strong>
+        </div>
       </div>
-      <div class="focus-card damage">
-        <span class="label">现在收手</span>
-        <strong class="focus-value damage" id="hero-damage">0</strong>
-        <span class="focus-sub strong" id="hero-damage-copy">当前可造成伤害</span>
-      </div>
-      <div class="focus-card">
-        <span class="label">建议追牌</span>
-        <strong class="focus-value" id="hero-target">对子</strong>
-        <span class="focus-sub" id="hero-rerolls-copy">剩 2 次重掷</span>
-      </div>`;
-  }
-  const diceStage=document.querySelector("#screen-battle .dice-stage");
-  if(diceStage&&!document.getElementById("battle-hint")){
-    const hint=document.createElement("p");
-    hint.id="battle-hint";
-    hint.className="battle-hint";
-    hint.textContent="点击骰子可锁定，再次点击取消";
-    diceStage.parentNode.insertBefore(hint,diceStage);
-  }
-  const rightRail=document.querySelector("#screen-battle .right-rail");
-  if(rightRail&&!rightRail.querySelector(".battle-side-drawer")){
-    rightRail.innerHTML=`
-      <details class="battle-side-drawer" open>
-        <summary>战斗详情与构筑</summary>
-        <div class="drawer-body">
-          <div class="panel">
-            <div class="topline"><div><div class="kicker">玩家</div><h3 class="panel-title" style="font-size:1.35rem">状态面板</h3></div><div class="badge" id="battle-index-chip">第 1 战</div></div>
-            <div style="margin-top:16px"><div class="hp-line"><span>生命值</span><span id="player-hp-text">46 / 46</span></div><div class="hp-track"><div class="hp-fill player" id="player-hp-fill"></div></div></div>
-            <div class="info-chips" id="status-chip-row"></div>
-            <div class="row" style="gap:8px;justify-content:flex-start;margin-top:12px;flex-wrap:wrap">
-              <span class="badge" id="coins-chip">金币 0</span>
-              <span class="badge" id="highest-chip">流派 未成型</span>
-              <span class="badge" id="state-chip">局势 观察中</span>
+      <section class="battle-enemy-stage panel" id="enemy-panel">
+        <div class="battle-enemy-head">
+          <div class="battle-enemy-copy">
+            <strong class="enemy-name" id="enemy-name-copy">敌人</strong>
+            <span class="enemy-one-liner" id="enemy-flavor">一眼扫过即可</span>
+          </div>
+          <div class="battle-threat-chip">
+            <span class="mini-label">本回合伤害</span>
+            <strong class="mini-value" id="enemy-damage">5</strong>
+          </div>
+        </div>
+        <div class="battle-enemy-core">
+          <div class="enemy-avatar"><span id="enemy-avatar">🎲</span></div>
+          <div>
+            <div class="hp-line"><span>敌人血量</span><span id="enemy-hp-text">24 / 24</span></div>
+            <div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="battle-dice-shell">
+        <p class="battle-hint" id="battle-hint">点击骰子可锁定，再次点击取消</p>
+        <div class="dice-stage">
+          <div class="dice-status-bar">
+            <div class="dice-status-main">
+              <strong id="dice-lock-summary">已锁定 0/5</strong>
+              <span id="dice-lock-copy">继续重掷时，仅会变化未锁定骰子</span>
             </div>
+            <div class="dice-reroll-preview" id="dice-reroll-preview">将重掷 5 枚未锁定骰子</div>
+          </div>
+          <div class="dice-row" id="dice-row"></div>
+        </div>
+      </section>
+      <section class="battle-summary-strip" id="battle-summary-strip">
+        <div class="summary-pill">
+          <span class="pill-label">牌型</span>
+          <strong class="pill-value" id="hero-hand">散点</strong>
+        </div>
+        <div class="summary-pill damage">
+          <span class="pill-label">伤害</span>
+          <strong class="pill-value" id="hero-damage">0</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="pill-label">追牌</span>
+          <strong class="pill-value" id="hero-target">对子</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="pill-label">重掷</span>
+          <strong class="pill-value" id="hero-rerolls-copy">2 次</strong>
+        </div>
+      </section>
+      <div class="battle-bottom-actions">
+        <button class="secondary-btn action-btn battle-action-btn" id="settle-btn" type="button"><strong id="settle-btn-title">收手结算 0</strong><span id="settle-subline">锁住这手收益</span></button>
+        <button class="primary-btn action-btn battle-action-btn" id="reroll-btn" type="button"><strong id="reroll-title">继续赌</strong><span id="reroll-subline">冲更高牌型</span></button>
+      </div>
+      <details class="battle-drawer-sheet" id="battle-drawer">
+        <summary>构筑、筹码与日志</summary>
+        <div class="drawer-grid">
+          <div class="panel">
+            <div class="topline"><div><div class="kicker">构筑</div><h3 class="panel-title" style="font-size:1.1rem">遗物与补偿</h3></div><span class="badge" id="highest-chip">未成型</span></div>
+            <div class="inventory-grid" id="relic-slots"></div>
+            <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
+            <div class="info-chips" id="status-chip-row"></div>
+            <div class="row" style="gap:8px;justify-content:flex-start;margin-top:10px;flex-wrap:wrap"><span class="badge" id="state-chip">局势</span></div>
           </div>
           <div class="panel">
-            <div class="topline"><div><div class="kicker">构筑</div><h3 class="panel-title" style="font-size:1.35rem">遗物与结算</h3></div></div>
-            <div class="inventory-grid" id="relic-slots"></div>
+            <div class="topline"><div><div class="kicker">结算</div><h3 class="panel-title" style="font-size:1.1rem">伤害面板</h3></div></div>
             <div class="calc-box" id="calc-breakdown"></div>
-            <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
           </div>
           <details class="panel log-panel">
             <summary>战斗日志</summary>
             <div class="battle-log" id="battle-log"></div>
           </details>
         </div>
-      </details>`;
-  }
+      </details>
+    </div>`;
+  battleScreen.dataset.hudRebuilt="1";
+  ensureLegacyBattleCompatNodes();
   syncBattleUiRefs();
+  if(window.wireCoreControls)window.wireCoreControls();
 }
 
 normalizeBattleLayout();
+
+function rebuildBattleHudShell(){
+  const battleScreen=document.getElementById("screen-battle");
+  if(!battleScreen)return;
+  battleScreen.innerHTML=`
+    <div class="battle-hud-shell">
+      <section class="battle-topbar battle-glass" id="enemy-panel">
+        <div class="enemy-avatar"><span id="enemy-avatar">🎲</span></div>
+        <div class="battle-topbar-main">
+          <div class="battle-topbar-row">
+            <div class="battle-topbar-copy">
+              <strong id="enemy-name-copy">THE HOUSE</strong>
+              <span id="battle-stage">第 1 / 5 战</span>
+            </div>
+            <div class="battle-topbar-meta">
+              <span class="battle-level-chip" id="battle-index-chip">BATTLE 1</span>
+              <span class="battle-player-chip">金币 <strong id="coins-chip">0</strong></span>
+            </div>
+          </div>
+          <div class="topbar-health">
+            <div class="topbar-health-row"><span id="enemy-name">敌人血量</span><strong id="enemy-hp-text">24 / 24</strong></div>
+            <div class="topbar-health-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+          </div>
+          <div class="topbar-footer">
+            <span class="battle-trait-chip" id="boss-warning">RAGE</span>
+            <div class="topbar-player-meta">
+              <span class="battle-player-chip">生命 <strong id="topbar-player-hp">46</strong></span>
+              <div class="mini-health-wrap">
+                <span id="player-hp-text">46 / 46</span>
+                <div class="mini-health-track"><div class="hp-fill" id="player-hp-fill"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="battle-enemy-stage battle-glass">
+        <div class="battle-enemy-stage-copy">
+          <strong class="enemy-name">本回合敌方动作</strong>
+          <span class="enemy-one-liner" id="enemy-flavor">一眼扫完，不打断决策。</span>
+        </div>
+        <div class="enemy-turn-damage">
+          <span>Enemy Hit</span>
+          <strong id="enemy-damage">5</strong>
+        </div>
+      </section>
+      <section class="battle-dice-shell">
+        <details class="battle-side-tab left" id="relics-drawer">
+          <summary>RELICS</summary>
+          <div class="side-panel">
+            <p class="side-section-title">Relics</p>
+            <div class="inventory-grid" id="relic-slots"></div>
+            <p class="side-section-title">Pity</p>
+            <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
+          </div>
+        </details>
+        <details class="battle-side-tab right" id="logs-drawer">
+          <summary>LOGS</summary>
+          <div class="side-panel">
+            <p class="side-section-title">Build</p>
+            <div class="row" style="gap:8px;justify-content:flex-start;flex-wrap:wrap">
+              <span class="badge" id="highest-chip">未成型</span>
+              <span class="badge" id="state-chip">局势</span>
+            </div>
+            <div class="panel" style="padding:12px">
+              <div class="calc-box" id="calc-breakdown"></div>
+            </div>
+            <p class="side-section-title">Battle Log</p>
+            <div class="battle-log" id="battle-log"></div>
+            <div id="status-chip-row" style="display:none"></div>
+          </div>
+        </details>
+        <p class="battle-hint" id="battle-hint">点击骰子可锁定，再次点击取消</p>
+        <div class="dice-stage">
+          <div class="dice-status-bar">
+            <div class="dice-status-main">
+              <strong id="dice-lock-summary">已锁定 0 / 5</strong>
+              <span id="dice-lock-copy">继续重掷时，仅重掷未锁定骰子</span>
+            </div>
+            <div class="dice-reroll-preview" id="dice-reroll-preview">将重掷 5 枚未锁定骰子</div>
+          </div>
+          <div class="dice-row" id="dice-row"></div>
+          <div class="dice-fallback-layer" id="dice-fallback-layer"></div>
+        </div>
+      </section>
+      <section class="battle-summary-strip battle-glass" id="battle-summary-strip">
+        <div class="summary-pill">
+          <span class="pill-label"><span class="pill-icon">◎</span> Combo</span>
+          <strong class="pill-value" id="hero-hand">散点</strong>
+        </div>
+        <div class="summary-pill damage">
+          <span class="pill-label"><span class="pill-icon">✦</span> Damage</span>
+          <strong class="pill-value" id="hero-damage">0</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="pill-label"><span class="pill-icon">➤</span> Next</span>
+          <strong class="pill-value" id="hero-target">对子</strong>
+        </div>
+        <div class="summary-pill">
+          <span class="pill-label"><span class="pill-icon">🎲</span> Rerolls</span>
+          <strong class="pill-value" id="hero-rerolls-copy">2</strong>
+        </div>
+      </section>
+      <div class="battle-bottom-actions">
+        <button class="battle-action-btn safe" id="settle-btn" type="button"><strong id="settle-btn-title">收手结算 0</strong><span id="settle-subline">锁住这手收益</span></button>
+        <button class="battle-action-btn risk" id="reroll-btn" type="button"><strong id="reroll-title">继续赌</strong><span id="reroll-subline">冲更高牌型</span></button>
+      </div>
+      <div id="battle-legacy-copy" style="display:none">
+        <span id="hero-hand-copy"></span>
+        <span id="hero-damage-copy"></span>
+        <span id="hero-multiplier">x1.00</span>
+        <span id="safe-badge"></span>
+        <span id="risk-badge"></span>
+        <span id="settle-title"></span>
+        <span id="settle-copy"></span>
+        <span id="preview-score"></span>
+        <span id="preview-damage"></span>
+        <span id="settle-real"></span>
+        <span id="settle-style"></span>
+        <span id="settle-reason"></span>
+        <span id="settle-resource"></span>
+        <div id="settle-values"></div>
+        <span id="push-title"></span>
+        <span id="push-copy"></span>
+        <span id="near-miss"></span>
+        <span id="potential-hit"></span>
+        <div id="push-targets"></div>
+        <span id="push-reason"></span>
+        <span id="push-cost"></span>
+      </div>
+    </div>`;
+  ensureLegacyBattleCompatNodes();
+  syncBattleUiRefs();
+  window.__coreControlsWired=false;
+  if(ui.rerollBtn){
+    ui.rerollBtn.onclick=function(event){
+      return window.forceRerollFromButton ? window.forceRerollFromButton(event) : false;
+    };
+  }
+  if(ui.settleBtn){
+    ui.settleBtn.onclick=function(event){
+      return window.forceSettleFromButton ? window.forceSettleFromButton(event) : false;
+    };
+  }
+  if(ui.diceRow){
+    ui.diceRow.onclick=function(e){
+      const die=e.target&&e.target.closest?e.target.closest("[data-die-index]"):null;
+      if(!die||!window.toggleDie||state.screen!=="battle")return;
+      window.toggleDie(Number(die.dataset.dieIndex));
+    };
+  }
+  const fallback=document.getElementById("dice-fallback-layer");
+  if(fallback){
+    fallback.onclick=function(e){
+      const die=e.target&&e.target.closest?e.target.closest("[data-die-index]"):null;
+      if(!die||!window.toggleDie||state.screen!=="battle")return;
+      window.toggleDie(Number(die.dataset.dieIndex));
+    };
+  }
+  if(window.wireCoreControls)window.wireCoreControls();
+}
+
+rebuildBattleHudShell();
 
 function makeInitialState(){return{screen:"title",player:{maxHp:46,hp:46,coins:0,relicIds:new Set(),relics:[],diceMods:Array.from({length:5},()=>({type:null,shattered:false})),pityBaseBonus:0,pityTokens:0,totalDamage:0,highestHandRank:1,highestHandName:"散点"},run:{battleIndex:0,enemiesDefeated:0,battleLog:[],offers:[],result:null,buildType:"未成型",buildScores:{stable:0,greed:0,risk:0},metrics:{reroll_count:0,hold_clicks:0,bust_count:0,total_hands:0,damage_events:0,reward_pick_rate:{},quit_stage:null,restart_count:0}},battle:null};}
 function setScreen(name){state.screen=name;Object.entries(ui.screens).forEach(([k,v])=>v.classList.toggle("active",k===name));}
@@ -682,7 +1610,55 @@ const baseSettleHand=settleHand;
 settleHand=function(){const preview=state&&state.battle?state.battle.preview:null;if(preview&&!preview.busted){const settle=getSettleProfile(preview,preview.handInfo);baseSettleHand();if(settle.bonusCoins>0&&state&&state.player){state.player.coins+=settle.bonusCoins;addLog("稳住兑现",`这次收手额外拿到 +${settle.bonusCoins} 金币。${state.run.buildType==="保底流"?"保底流会把收手本身也变成收益。":""}`);if(state.screen==="battle")renderBattle();if(state.screen==="shop")renderShop();}}else{baseSettleHand();}};
 function startBattle(index){const e=ENEMIES[index];state.run.battleIndex=index;state.battle={enemy:{...e,maxHp:e.hp,hp:e.hp},enemyIntent:e.archetype,dice:createBattleDice(),rerollsRemaining:2,rerollsUsed:0,safetyNetUsed:false,enemyCharge:0,failStreak:0,openingGraceUsed:false,lowDamageRounds:0};addLog("新一桌",`${e.name} 坐上了桌。${e.intentText}。${index<2?"前两战会更宽容一点，你可以先学会怎么贪。":"这次它会逼你换一种打法。"} `);renderBattle();setScreen("battle");}
 function startRun(){const restartCount=state&&state.run&&state.run.metrics?state.run.metrics.restart_count||0:0;state=makeInitialState();state.run.metrics.restart_count=restartCount+1;renderLog();startBattle(0);}
-function ensureBattleDiceVisible(){if(!(state&&state.battle&&ui.diceRow))return;const shouldRebuild=!ui.diceRow.children.length&&Array.isArray(state.battle.dice)&&state.battle.dice.length>0;if(shouldRebuild){renderDice();}}
+function paintFallbackDiceLayer(){
+  syncBattleUiRefs();
+  if(!(state&&state.battle))return;
+  const fallbackLayer=document.getElementById("dice-fallback-layer");
+  if(!fallbackLayer)return;
+  if(ui.diceRow)ui.diceRow.style.display="none";
+  fallbackLayer.style.display="grid";
+  fallbackLayer.classList.add("active");
+  fallbackLayer.innerHTML="";
+  state.battle.dice.forEach(d=>{
+    const btn=document.createElement("button");
+    btn.type="button";
+    btn.className=["die",d.locked?"locked":"",!d.locked&&!d.inactive?"will-reroll":"",d.type==="gold"?"gold":"",d.type==="glass"?"glass":"",d.inactive?"inactive":""].filter(Boolean).join(" ");
+    btn.setAttribute("data-die-index",String(d.index));
+    if(d.inactive)btn.disabled=true;
+
+    const top=document.createElement("span");
+    top.className="die-label";
+    top.textContent=d.locked?"LOCKED":"DIE";
+
+    const lock=document.createElement("span");
+    lock.className="die-lock";
+    lock.textContent="L";
+
+    const value=document.createElement("span");
+    value.className="die-value";
+    value.textContent=d.inactive?"X":String(d.value);
+
+    const note=document.createElement("span");
+    note.className="die-note";
+    note.textContent=d.type==="gold"?"GOLD":d.type==="glass"?"GLASS":`D${d.value}`;
+
+    btn.appendChild(top);
+    btn.appendChild(lock);
+    btn.appendChild(value);
+    btn.appendChild(note);
+    fallbackLayer.appendChild(btn);
+  });
+}
+function ensureBattleDiceVisible(){
+  syncBattleUiRefs();
+  if(!(state&&state.battle))return;
+  try{
+    paintFallbackDiceLayer();
+  }catch(error){
+    return;
+  }
+  if(ui.diceLockSummary)ui.diceLockSummary.textContent=`已锁定 ${state.battle.dice.filter(d=>d.locked&&!d.inactive).length}/${state.battle.dice.filter(d=>!d.inactive).length}`;
+}
 function toggleDie(index){const die=state.battle.dice[index];if(!die||die.inactive)return;state.run.metrics.hold_clicks+=1;die.locked=!die.locked;die.toggled=true;renderBattle();addLog(die.locked?"锁定骰子":"取消锁定",die.locked?`第 ${index+1} 枚骰子已经拿下，下一次重掷不会动它。`:`第 ${index+1} 枚骰子已重新加入下一次重掷。`);setTimeout(()=>{if(state&&state.battle&&state.battle.dice[index]){state.battle.dice[index].toggled=false;renderDice();}},260);}
 function rerollUnlockedDice(isFree=false){if(!state.battle)return;if(state.battle.rerollsRemaining<=0&&!isFree&&!spendPityOnReroll())return;let unlocked=state.battle.dice.filter(d=>!d.locked&&!d.inactive);if(!unlocked.length)unlocked=state.battle.dice.filter(d=>!d.inactive);const rolled=[];unlocked.forEach(d=>{d.value=rollDie();d.rolling=true;rolled.push(d.index+1);});if(!isFree){state.battle.rerollsRemaining-=1;state.battle.rerollsUsed+=1;state.run.metrics.reroll_count+=1;if(state.battle.enemyIntent==="punish_greed"||state.battle.enemyIntent==="mixed"||state.battle.enemyIntent==="boss"){state.battle.enemyCharge+=1;addLog("敌人读牌",`${state.battle.enemy.name} 看你继续贪，顺势把压力抬高了 1 档。`);}}renderBattle();const preview=state.battle.preview;showFloat(`x${preview.multiplier.toFixed(2)}`,hasRelic("greedy-multi")?"var(--orange)":"var(--cyan)");addLog(isFree?"安全网":"重掷",`${isFree?"系统替你兜底重掷了一次。":"你又扭了一次骰子。"} 重新掷出的骰子：${rolled.join("、")}。${state.battle.preview.busted?"这手还悬，但还没到该认输的时候。":"牌型还在上升，别急着松手。"} `);setTimeout(()=>{state.battle.dice.forEach(d=>d.rolling=false);renderDice();},520);}
 function applyGlassRisk(preview){if(!preview.glassDice)return"";const active=getActiveDice(state.battle.dice),impacted=preview.handInfo.scoringIndices.map(i=>active[i]).filter(d=>d&&d.type==="glass"&&!d.shattered);let text="";impacted.forEach(d=>{if(Math.random()<.1){d.shattered=true;d.inactive=true;state.player.diceMods[d.index].shattered=true;text=`第 ${d.index+1} 颗玻璃骰已经碎裂，并永久退出这一局。`;}});return text;}
@@ -724,41 +1700,171 @@ function updateBattleHintVisibility(){
   const dismissed=localStorage.getItem(FIRST_HINT_KEY)==="1";
   ui.battleHint.classList.toggle("hidden",dismissed||state.screen!=="battle");
 }
-const baseRenderDiceCompact=renderDice;
-renderDice=function(){
-  baseRenderDiceCompact();
-  if(!(state&&state.battle&&ui.diceRow))return;
-  const info=evaluateHand();
-  const recommended=new Set(getRecommendedKeepIndices(info));
-  ui.diceRow.querySelectorAll("[data-die-index]").forEach(node=>{
-    const index=Number(node.getAttribute("data-die-index"));
-    node.classList.toggle("recommended",recommended.has(index)&&!node.classList.contains("locked"));
-  });
-};
-const baseRenderBattleCompact=renderBattle;
-renderBattle=function(){
-  baseRenderBattleCompact();
-  if(!(state&&state.battle&&state.battle.preview))return;
-  syncBattleUiRefs();
-  const preview=state.battle.preview;
-  const info=preview.handInfo||evaluateHand();
+function renderTopBar(preview,info){
+  if(ui.battleStage)ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`;
+  if(ui.battleIndexChip)ui.battleIndexChip.textContent=`第 ${state.run.battleIndex+1} 战`;
+  if(ui.enemyName)ui.enemyName.textContent=state.battle.enemy.name;
+  if(ui.topbarPlayerHp)ui.topbarPlayerHp.textContent=String(state.player.hp);
+  if(ui.playerHpText)ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;
+  if(ui.playerHpFill)ui.playerHpFill.style.width=`${state.player.hp/state.player.maxHp*100}%`;
+  if(ui.coinsChip)ui.coinsChip.textContent=String(state.player.coins);
+}
+function renderEnemyStage(preview,info){
+  const enemy=state.battle.enemy;
+  const oneLine=state.run.battleIndex<2?`${enemy.flavor} 前两战更宽容。`:enemy.flavor;
+  if(ui.enemyNameCopy)ui.enemyNameCopy.textContent=enemy.name;
+  if(ui.enemyFlavor)ui.enemyFlavor.textContent=oneLine;
+  if(ui.enemyAvatar)ui.enemyAvatar.textContent=enemy.avatar;
+  if(ui.enemyDamage)ui.enemyDamage.textContent=String(getEnemyDamage());
+  if(ui.enemyHpFill)ui.enemyHpFill.style.width=`${enemy.hp/enemy.maxHp*100}%`;
+  if(ui.enemyHpText)ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;
+}
+function renderDiceStage(preview,info){
+  renderDice();
+}
+function renderBattleHud(preview,info){
+  const target=getCompactTarget(preview,info);
+  if(ui.heroHand)ui.heroHand.textContent=info.hand.name;
+  if(ui.heroDamage)ui.heroDamage.textContent=String(preview.totalDamage);
+  if(ui.heroTarget)ui.heroTarget.textContent=target;
+  if(ui.heroRerollsCopy)ui.heroRerollsCopy.textContent=`${state.battle.rerollsRemaining} 次`;
+  if(ui.highestChip)ui.highestChip.textContent=state.run.buildType||"未成型";
+  if(ui.stateChip)ui.stateChip.textContent=getBattleStateLabel(preview,info);
+}
+function renderBottomActions(preview,info){
+  const target=getCompactTarget(preview,info);
   const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
   const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+  if(ui.settleBtnTitle)ui.settleBtnTitle.textContent=preview.busted?"收手 0":`收手 ${preview.totalDamage}`;
+  if(ui.settleSubline)ui.settleSubline.textContent=preview.busted?"保住节奏":"锁住收益";
+  if(ui.rerollTitle)ui.rerollTitle.textContent=canEmergencyReroll?"继续赌":state.battle.rerollsRemaining>0?"继续赌":"不能再赌";
+  if(ui.rerollSubline)ui.rerollSubline.textContent=canEmergencyReroll?"拆筹再来一手":state.battle.rerollsRemaining>0?`冲${target} · 重掷${rerollCount}枚`:"本回合到头";
+  if(ui.rerollBtn)ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0&&!canEmergencyReroll;
+}
+function renderBattleDrawer(preview,info){
+  renderRelics();
+  renderBreakdown(preview);
+  renderLog();
+  if(ui.pityChip&&state.player.pityTokens>0){
+    ui.pityChip.textContent=`怜悯筹码 ${state.player.pityTokens}`;
+  }
+}
+const DIE_FACE_META={
+  1:{symbol:"◆",tag:"ONE",face:"face-1"},
+  2:{symbol:"✿",tag:"TWO",face:"face-2"},
+  3:{symbol:"✦",tag:"THREE",face:"face-3"},
+  4:{symbol:"⬢",tag:"FOUR",face:"face-4"},
+  5:{symbol:"◉",tag:"FIVE",face:"face-5"},
+  6:{symbol:"✺",tag:"SIX",face:"face-6"}
+};
+const baseRenderDiceHud=renderDice;
+renderDice=function(){
+  if(!(state&&state.battle&&ui.diceRow)){
+    baseRenderDiceHud();
+    return;
+  }
+  const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+  const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+  const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+  const info=evaluateHand();
+  const recommended=new Set(getRecommendedKeepIndices(info));
+  if(ui.diceLockSummary)ui.diceLockSummary.textContent=`已锁定 ${lockedCount}/${activeCount}`;
+  if(ui.diceLockCopy)ui.diceLockCopy.textContent=lockedCount?`继续重掷时，只会变化剩余 ${rerollCount} 枚`:"继续重掷时，5 枚都会变化";
+  if(ui.diceRerollPreview)ui.diceRerollPreview.textContent=rerollCount?`将重掷 ${rerollCount} 枚未锁定骰子`:"当前全部已锁定";
+  ui.diceRow.innerHTML=state.battle.dice.map(d=>{
+    const face=DIE_FACE_META[d.value]||DIE_FACE_META[1];
+    const classes=[
+      "die",
+      face.face,
+      d.locked?"locked":"",
+      !d.locked&&!d.inactive?"will-reroll":"",
+      recommended.has(d.index)&&!d.locked?"recommended":"",
+      d.toggled?"toggle-pop":"",
+      d.type==="gold"?"gold":"",
+      d.type==="glass"?"glass":"",
+      d.rolling?"rolling":"",
+      d.shattered?"shattered":"",
+      d.inactive?"inactive":""
+    ].filter(Boolean).join(" ");
+    return `<button class="${classes}" data-die-index="${d.index}" type="button" ${d.inactive?"disabled":""}>
+      <span class="die-label">${d.locked?"LOCKED":face.tag}</span>
+      <span class="die-lock">🔒</span>
+      <span class="die-value">${d.inactive?"✕":face.symbol}</span>
+      <span class="die-note">${d.inactive?"BROKEN":d.type==="gold"?"GOLD":d.type==="glass"?"GLASS":`D${d.value}`}</span>
+    </button>`;
+  }).join("");
+};
+
+function renderBattleTopbar(preview,info){
+  const enemy=state.battle.enemy;
+  if(ui.enemyNameCopy)ui.enemyNameCopy.textContent=enemy.name.toUpperCase();
+  if(ui.battleStage)ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`;
+  if(ui.battleIndexChip)ui.battleIndexChip.textContent=`Lv.${state.run.battleIndex+1}`;
+  if(ui.coinsChip)ui.coinsChip.textContent=String(state.player.coins);
+  if(ui.enemyName)ui.enemyName.textContent=enemy.name;
+  if(ui.enemyHpText)ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;
+  if(ui.enemyHpFill)ui.enemyHpFill.style.width=`${enemy.hp/enemy.maxHp*100}%`;
+  if(ui.bossWarning)ui.bossWarning.textContent=state.battle.enemyCharge>0?`蓄力 ${state.battle.enemyCharge}`:enemy.intentText;
+  if(ui.topbarPlayerHp)ui.topbarPlayerHp.textContent=String(state.player.hp);
+  if(ui.playerHpText)ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;
+  if(ui.playerHpFill)ui.playerHpFill.style.width=`${state.player.hp/state.player.maxHp*100}%`;
+  if(ui.enemyAvatar)ui.enemyAvatar.textContent=enemy.avatar;
+}
+
+function renderEnemyStage(preview,info){
+  const enemy=state.battle.enemy;
+  if(ui.enemyFlavor)ui.enemyFlavor.textContent=enemy.flavor;
+  if(ui.enemyDamage)ui.enemyDamage.textContent=String(getEnemyDamage());
+}
+
+function renderDiceStage(preview,info){
+  renderDice();
+}
+
+function renderBattleHud(preview,info){
   const target=getCompactTarget(preview,info);
-  const nearMiss=getNearMissHint(info);
-  const stateLabel=getBattleStateLabel(preview,info);
   if(ui.heroHand)ui.heroHand.textContent=info.hand.name;
-  if(ui.heroHandCopy)ui.heroHandCopy.textContent=nearMiss.includes("差")?nearMiss:"当前成型";
   if(ui.heroDamage)ui.heroDamage.textContent=String(preview.totalDamage);
-  if(ui.heroDamageCopy)ui.heroDamageCopy.textContent=preview.busted?"这手收下不打伤害":"当前可造成伤害";
   if(ui.heroTarget)ui.heroTarget.textContent=target;
-  if(ui.heroRerollsCopy)ui.heroRerollsCopy.textContent=`剩 ${state.battle.rerollsRemaining} 次重掷`;
-  if(ui.stateChip)ui.stateChip.textContent=`局势 ${stateLabel}`;
-  if(ui.rerollTitle)ui.rerollTitle.textContent=canEmergencyReroll?"继续赌：拆筹重掷":state.battle.rerollsRemaining>0?`继续赌：冲${target}`:"继续赌：无法重掷";
-  if(ui.rerollSubline)ui.rerollSubline.textContent=state.battle.rerollsRemaining>0?`重掷 ${rerollCount} 枚`:canEmergencyReroll?"消耗 1 枚怜悯筹码":"这回合已到头";
-  if(ui.settleBtnTitle)ui.settleBtnTitle.textContent=preview.busted?"收手结算 0":`收手结算 ${preview.totalDamage}`;
-  if(ui.settleSubline)ui.settleSubline.textContent=preview.busted?"先稳住节奏":"锁住这手收益";
-  if(ui.enemyFlavor)ui.enemyFlavor.textContent=state.run.battleIndex<2?`${state.battle.enemy.flavor} 前两战更宽容。`:state.battle.enemy.flavor;
+  if(ui.heroRerollsCopy)ui.heroRerollsCopy.textContent=String(state.battle.rerollsRemaining);
+  if(ui.highestChip)ui.highestChip.textContent=state.run.buildType||"未成型";
+  if(ui.stateChip)ui.stateChip.textContent=getBattleStateLabel(preview,info);
+}
+
+function renderBottomActions(preview,info){
+  const target=getCompactTarget(preview,info);
+  const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+  const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+  if(ui.settleBtnTitle)ui.settleBtnTitle.textContent=`收手结算 ${preview.totalDamage}`;
+  if(ui.settleSubline)ui.settleSubline.textContent=preview.busted?"止损，换补偿":"锁住这手收益";
+  if(ui.rerollTitle)ui.rerollTitle.textContent=canEmergencyReroll?"拆筹码继续赌":state.battle.rerollsRemaining>0?"继续赌":"本回合到头";
+  if(ui.rerollSubline)ui.rerollSubline.textContent=canEmergencyReroll?`强续一手，继续冲 ${target}`:state.battle.rerollsRemaining>0?`冲 ${target} · 重掷 ${rerollCount} 枚`:"没有可用重掷";
+  if(ui.rerollBtn)ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0&&!canEmergencyReroll;
+}
+
+function renderSideDrawers(preview,info){
+  renderRelics();
+  renderBreakdown(preview);
+  renderLog();
+  if(ui.pityChip&&state.player.pityTokens>0){
+    ui.pityChip.textContent=`怜悯筹码 ${state.player.pityTokens}`;
+    ui.pityChip.classList.add("active");
+  }
+}
+
+renderBattle=function(){
+  if(!(state&&state.battle))return;
+  syncBattleUiRefs();
+  const info=evaluateHand();
+  const preview=calculateDamagePreview(info);
+  state.battle.preview=preview;
+  renderBattleTopbar(preview,info);
+  renderEnemyStage(preview,info);
+  renderDiceStage(preview,info);
+  renderBattleHud(preview,info);
+  renderBottomActions(preview,info);
+  renderSideDrawers(preview,info);
+  ensureBattleDiceVisible();
   updateBattleHintVisibility();
 };
 const baseToggleDieCompact=toggleDie;
@@ -767,9 +1873,19 @@ toggleDie=function(index){
   localStorage.setItem(FIRST_HINT_KEY,"1");
   updateBattleHintVisibility();
 };
+const baseStartBattleDiceSafety=startBattle;
+startBattle=function(index){
+  rebuildBattleHudShell();
+  baseStartBattleDiceSafety(index);
+  setTimeout(()=>{
+    if(window.ensureBattleDiceVisible)window.ensureBattleDiceVisible();
+    if(window.renderBattle)window.renderBattle();
+  },0);
+};
 if(!window.__diceHeistInitDone){
   window.__diceHeistInitDone=true;
   if(!state)state=makeInitialState();
+  ensureLegacyBattleCompatNodes();
   syncBattleUiRefs();
   renderLog();
 }
@@ -1060,6 +2176,105 @@ renderBattle=function(){
   }
   renderLog();
 };
+const FINAL_DIE_FACE_META={
+  1:{symbol:"◆",tag:"ONE",face:"face-1"},
+  2:{symbol:"✿",tag:"TWO",face:"face-2"},
+  3:{symbol:"✦",tag:"THREE",face:"face-3"},
+  4:{symbol:"⬢",tag:"FOUR",face:"face-4"},
+  5:{symbol:"◉",tag:"FIVE",face:"face-5"},
+  6:{symbol:"✺",tag:"SIX",face:"face-6"}
+};
+renderDice=function(){
+  syncBattleUiRefs();
+  if(!(state&&state.battle&&ui.diceRow))return;
+  const fallbackLayer=document.getElementById("dice-fallback-layer");
+  const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+  const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+  const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+  const info=evaluateHand();
+  const recommended=new Set(getRecommendedKeepIndices(info));
+  if(ui.diceLockSummary)ui.diceLockSummary.textContent=`已锁定 ${lockedCount}/${activeCount}`;
+  if(ui.diceLockCopy)ui.diceLockCopy.textContent=lockedCount?`继续重掷时，只会变化剩余 ${rerollCount} 枚`:"继续重掷时，5 枚都会变化";
+  if(ui.diceRerollPreview)ui.diceRerollPreview.textContent=rerollCount?`将重掷 ${rerollCount} 枚未锁定骰子`:"当前全部已锁定";
+  const diceMarkup=state.battle.dice.map(d=>{
+    const face=FINAL_DIE_FACE_META[d.value]||FINAL_DIE_FACE_META[1];
+    const classes=["die",face.face,d.locked?"locked":"",!d.locked&&!d.inactive?"will-reroll":"",recommended.has(d.index)&&!d.locked?"recommended":"",d.toggled?"toggle-pop":"",d.type==="gold"?"gold":"",d.type==="glass"?"glass":"",d.rolling?"rolling":"",d.shattered?"shattered":"",d.inactive?"inactive":""].filter(Boolean).join(" ");
+    return `<button class="${classes}" data-die-index="${d.index}" type="button" ${d.inactive?"disabled":""}>
+      <span class="die-label">${d.locked?"LOCKED":face.tag}</span>
+      <span class="die-lock">🔒</span>
+      <span class="die-value">${d.inactive?"✕":face.symbol}</span>
+      <span class="die-note">${d.inactive?"BROKEN":d.type==="gold"?"GOLD":d.type==="glass"?"GLASS":`D${d.value}`}</span>
+    </button>`;
+  }).join("");
+  ui.diceRow.innerHTML=diceMarkup;
+  if(fallbackLayer){
+    fallbackLayer.innerHTML=diceMarkup;
+    fallbackLayer.classList.toggle("active",!ui.diceRow.children.length);
+  }
+};
+function renderBattleTopbar(preview,info){
+  const enemy=state.battle.enemy;
+  if(ui.enemyNameCopy)ui.enemyNameCopy.textContent=enemy.name.toUpperCase();
+  if(ui.battleStage)ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`;
+  if(ui.battleIndexChip)ui.battleIndexChip.textContent=`Lv.${state.run.battleIndex+1}`;
+  if(ui.coinsChip)ui.coinsChip.textContent=String(state.player.coins);
+  if(ui.enemyName)ui.enemyName.textContent=enemy.name;
+  if(ui.enemyHpText)ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;
+  if(ui.enemyHpFill)ui.enemyHpFill.style.width=`${enemy.hp/enemy.maxHp*100}%`;
+  if(ui.enemyAvatar)ui.enemyAvatar.textContent=enemy.avatar;
+  if(ui.bossWarning)ui.bossWarning.textContent=state.battle.enemyCharge>0?`蓄力 ${state.battle.enemyCharge}`:enemy.intentText;
+  if(ui.topbarPlayerHp)ui.topbarPlayerHp.textContent=String(state.player.hp);
+  if(ui.playerHpText)ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;
+  if(ui.playerHpFill)ui.playerHpFill.style.width=`${state.player.hp/state.player.maxHp*100}%`;
+}
+function renderDiceStage(preview,info){renderDice();}
+function renderBattleHud(preview,info){
+  if(ui.heroHand)ui.heroHand.textContent=info.hand.name;
+  if(ui.heroDamage)ui.heroDamage.textContent=String(preview.totalDamage);
+  if(ui.heroTarget)ui.heroTarget.textContent=getCompactTarget(preview,info);
+  if(ui.heroRerollsCopy)ui.heroRerollsCopy.textContent=String(state.battle.rerollsRemaining);
+}
+function renderBottomActions(preview,info){
+  const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+  const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+  const nextTarget=getCompactTarget(preview,info);
+  if(ui.settleBtnTitle)ui.settleBtnTitle.textContent=`收手兑现 ${preview.totalDamage}`;
+  if(ui.settleSubline)ui.settleSubline.textContent=preview.busted?"止损，换补偿":"锁住这手利润";
+  if(ui.rerollTitle)ui.rerollTitle.textContent=canEmergencyReroll?"拆筹码继续赌":state.battle.rerollsRemaining>0?"继续赌":"本回合到头";
+  if(ui.rerollSubline)ui.rerollSubline.textContent=canEmergencyReroll?`强续一手 · 冲 ${nextTarget}`:state.battle.rerollsRemaining>0?`冲 ${nextTarget} · 重掷 ${rerollCount} 枚`:"没有可用重掷";
+  if(ui.rerollBtn)ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0&&!canEmergencyReroll;
+}
+function renderSideDrawers(preview,info){
+  renderRelics();
+  renderBreakdown(preview);
+  renderLog();
+  if(ui.highestChip)ui.highestChip.textContent=state.run.buildType||"未成型";
+  if(ui.stateChip)ui.stateChip.textContent=getBattleStateLabel(preview,info);
+}
+const baseStartBattleFinalHud=startBattle;
+startBattle=function(index){
+  rebuildBattleHudShell();
+  baseStartBattleFinalHud(index);
+  setTimeout(()=>{
+    syncBattleUiRefs();
+    if(window.ensureBattleDiceVisible)window.ensureBattleDiceVisible();
+    if(window.renderBattle)window.renderBattle();
+  },0);
+};
+renderBattle=function(){
+  if(!(state&&state.battle))return;
+  syncBattleUiRefs();
+  const info=evaluateHand();
+  const preview=calculateDamagePreview(info);
+  state.battle.preview=preview;
+  renderBattleTopbar(preview,info);
+  renderEnemyStage(preview,info);
+  renderDiceStage(preview,info);
+  renderBattleHud(preview,info);
+  renderBottomActions(preview,info);
+  renderSideDrawers(preview,info);
+  updateBattleHintVisibility();
+};
 let startInteractionLock=false;
 let lastStartAttemptAt=0;
 function showStartupError(error){
@@ -1093,7 +2308,7 @@ function triggerStartRun(event){
     setTimeout(()=>{startInteractionLock=false;},360);
   }
 }
-function bindEvents(){["click","pointerup","touchend"].forEach(type=>ui.startRunBtn.addEventListener(type,triggerStartRun,{passive:false}));["click","pointerup","touchend"].forEach(type=>ui.playAgainBtn.addEventListener(type,triggerStartRun,{passive:false}));ui.startRunBtn.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){triggerStartRun(e);}});ui.playAgainBtn.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){triggerStartRun(e);}});ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});if(ui.starterGrid)ui.starterGrid.addEventListener("click",e=>{const b=e.target.closest("[data-starter-id]");if(!b)return;const starter=STARTER_LOADOUTS.find(item=>item.id===b.dataset.starterId);if(!starter||!isStarterUnlocked(starter))return;metaProgress.selectedStarterId=starter.id;saveMetaProgress(metaProgress);renderTitleMeta();});}
+function bindEvents(){["click","pointerup","touchend"].forEach(type=>ui.startRunBtn.addEventListener(type,triggerStartRun,{passive:false}));["click","pointerup","touchend"].forEach(type=>ui.playAgainBtn.addEventListener(type,triggerStartRun,{passive:false}));ui.startRunBtn.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){triggerStartRun(e);}});ui.playAgainBtn.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){triggerStartRun(e);}});ui.rerollBtn.addEventListener("click",()=>rerollUnlockedDice(false));ui.settleBtn.addEventListener("click",settleHand);ui.diceRow.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});const fallback=document.getElementById("dice-fallback-layer");if(fallback)fallback.addEventListener("click",e=>{const b=e.target.closest("[data-die-index]");if(!b||state.screen!=="battle")return;toggleDie(Number(b.dataset.dieIndex));});ui.shopGrid.addEventListener("click",e=>{const b=e.target.closest("[data-offer-id]");if(!b||state.screen!=="shop")return;claimOffer(b.dataset.offerId);});if(ui.starterGrid)ui.starterGrid.addEventListener("click",e=>{const b=e.target.closest("[data-starter-id]");if(!b)return;const starter=STARTER_LOADOUTS.find(item=>item.id===b.dataset.starterId);if(!starter||!isStarterUnlocked(starter))return;metaProgress.selectedStarterId=starter.id;saveMetaProgress(metaProgress);renderTitleMeta();});}
 function primeTitle(){metaProgress=loadMetaProgress();state=makeInitialState();renderLog();setScreen("title");renderTitleMeta();}
 function runSmokeStart(){if(location.hash!=="#smoke-start"&&location.hash!=="#smoke-click")return;try{if(location.hash==="#smoke-click"){ui.startRunBtn.click();}else{triggerStartRun();}document.body.dataset.smokeStart="ok";}catch(error){const errorMessage=error&&error.message?error.message:error;document.body.dataset.smokeStart="error";document.body.dataset.smokeError=String(errorMessage);const smokeNode=document.createElement("div");smokeNode.id="smoke-error";smokeNode.style.cssText="position:fixed;left:12px;right:12px;top:12px;z-index:9999;padding:12px 14px;border-radius:14px;background:#2b0f17;color:#ffd7e2;border:1px solid rgba(255,84,127,.35);font:700 14px/1.4 Segoe UI,Microsoft YaHei UI,sans-serif";smokeNode.textContent=`Smoke start failed: ${String(errorMessage)}`;document.body.appendChild(smokeNode);}}
 */
@@ -1103,6 +2318,2898 @@ if(!window.__diceHeistInitDone){
   primeTitle();
   runSmokeStart();
 }
+  </script>
+  <style id="battle-hud-v2-final">
+    #screen-battle{
+      padding:max(10px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom));
+      overflow:hidden;
+      background:
+        linear-gradient(180deg,rgba(2,4,9,.62),rgba(3,5,10,.88)),
+        radial-gradient(circle at 50% 34%,rgba(118,134,174,.14),transparent 34%),
+        radial-gradient(circle at 50% -10%,rgba(95,63,145,.18),transparent 36%),
+        linear-gradient(180deg,#0a0e18,#06080f 44%,#030507);
+      backdrop-filter:blur(14px);
+    }
+    #screen-battle::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.44) 34%,rgba(0,0,0,.58)),
+        radial-gradient(circle at 50% 30%,rgba(255,255,255,.04),transparent 28%);
+      pointer-events:none;
+    }
+    #screen-battle .battle-hud-shell{
+      position:relative;
+      z-index:1;
+      height:100%;
+      display:grid;
+      grid-template-rows:auto auto minmax(250px,1fr) auto auto;
+      gap:12px;
+      overflow:hidden;
+    }
+    #screen-battle .battle-hud-shell,
+    #screen-battle .battle-hud-shell *{
+      pointer-events:auto;
+    }
+    #screen-battle .battle-glass{
+      background:linear-gradient(180deg,rgba(17,22,33,.9),rgba(10,14,22,.86));
+      border:1px solid rgba(157,174,206,.14);
+      box-shadow:0 18px 42px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter:blur(16px);
+    }
+    #screen-battle .battle-topbar{
+      grid-template-columns:104px minmax(0,1fr);
+      gap:16px;
+      padding:16px;
+      border-radius:24px;
+      min-height:142px;
+      align-items:center;
+    }
+    #screen-battle .enemy-avatar{
+      width:104px;
+      height:104px;
+      border-radius:24px;
+      display:grid;
+      place-items:center;
+      font-size:3.4rem;
+      background:radial-gradient(circle at 32% 20%,rgba(255,255,255,.1),transparent 30%),linear-gradient(180deg,rgba(52,61,79,.94),rgba(20,26,38,.98));
+      border:1px solid rgba(187,203,233,.18);
+      box-shadow:0 18px 36px rgba(0,0,0,.34),0 0 26px rgba(133,153,194,.14);
+    }
+    #screen-battle .battle-topbar-main{
+      display:grid;
+      gap:12px;
+      min-width:0;
+    }
+    #screen-battle .battle-topbar-row,
+    #screen-battle .topbar-footer{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+    }
+    #screen-battle .battle-topbar-copy{
+      display:grid;
+      gap:2px;
+      min-width:0;
+      text-align:left;
+    }
+    #screen-battle .battle-topbar-copy strong{
+      font:900 1.56rem/1 var(--disp);
+      color:#f6f8ff;
+      letter-spacing:-.03em;
+      white-space:normal;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #screen-battle .battle-topbar-copy span{
+      font-size:.98rem;
+      color:#dbe1ef;
+      font-weight:900;
+    }
+    #screen-battle .battle-topbar-meta,
+    #screen-battle .topbar-player-meta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #screen-battle .topbar-title-stack{
+      display:grid;
+      gap:6px;
+      min-width:0;
+    }
+    #screen-battle .topbar-title-meta{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #screen-battle .battle-level-chip,
+    #screen-battle .battle-player-chip,
+    #screen-battle .battle-trait-chip{
+      min-height:38px;
+      padding:0 13px;
+      border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(168,183,213,.16);
+      color:#f1f5ff;
+      font-weight:900;
+      font-size:.9rem;
+      white-space:nowrap;
+    }
+    #screen-battle .battle-player-chip strong,
+    #screen-battle .battle-level-chip strong{
+      margin-left:2px;
+      font:900 1rem/1 var(--disp);
+    }
+    #screen-battle .battle-trait-chip{
+      color:#ffccb8;
+      background:rgba(136,53,42,.22);
+      border-color:rgba(255,145,118,.2);
+    }
+    #screen-battle .topbar-health{
+      display:grid;
+      gap:8px;
+    }
+    #screen-battle .topbar-health-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      align-items:center;
+      gap:12px;
+      font-size:.92rem;
+      color:#d9e1f1;
+      font-weight:800;
+    }
+    #screen-battle .topbar-health-row strong{
+      min-width:98px;
+      text-align:right;
+      font:900 1.04rem/1 var(--disp);
+      color:#f6f8ff;
+    }
+    #screen-battle .topbar-health-track,
+    #screen-battle .mini-health-track{
+      position:relative;
+      overflow:hidden;
+      height:20px;
+      border-radius:999px;
+      background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.28));
+      border:1px solid rgba(190,204,231,.12);
+      box-shadow:inset 0 6px 10px rgba(0,0,0,.22);
+    }
+    #screen-battle .mini-health-track{width:140px;height:16px}
+    #screen-battle .hp-fill{
+      height:100%;
+      border-radius:inherit;
+      position:relative;
+      z-index:1;
+    }
+    #screen-battle .topbar-health-track::after,
+    #screen-battle .mini-health-track::after{
+      content:"";
+      position:absolute;
+      left:3px;
+      right:3px;
+      top:2px;
+      height:42%;
+      border-radius:999px;
+      background:linear-gradient(180deg,rgba(255,255,255,.32),rgba(255,255,255,0));
+      opacity:.8;
+      pointer-events:none;
+    }
+    #screen-battle .topbar-player-meta{
+      justify-content:flex-end;
+      flex-wrap:wrap;
+    }
+    #screen-battle .hp-number{
+      text-align:right;
+      min-width:104px;
+      font:900 1rem/1 var(--disp);
+      color:#f6f8ff;
+    }
+    #screen-battle .battle-enemy-stage{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 110px;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:22px;
+      align-items:center;
+      min-height:88px;
+    }
+    #screen-battle .battle-enemy-stage-copy{
+      display:grid;
+      gap:8px;
+      min-width:0;
+      text-align:left;
+    }
+    #screen-battle .battle-enemy-stage-copy strong{
+      font:900 1.28rem/1 var(--disp);
+      color:#f5f7ff;
+    }
+    #screen-battle .enemy-one-liner{
+      font-size:.92rem;
+      line-height:1.35;
+      color:#cfd8ea;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    #screen-battle .enemy-turn-damage{
+      min-width:110px;
+      min-height:72px;
+      padding:10px 12px;
+      border-radius:20px;
+      justify-items:end;
+      background:linear-gradient(180deg,rgba(93,34,34,.76),rgba(48,20,25,.78));
+      border:1px solid rgba(255,134,118,.16);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    #screen-battle .enemy-turn-damage span{
+      font-size:.8rem;
+      color:#ffcdc4;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:900;
+    }
+    #screen-battle .enemy-turn-damage strong{
+      font:900 2rem/.95 var(--disp);
+      color:#fff5f2;
+      min-width:1.5em;
+      text-align:right;
+    }
+    #screen-battle .battle-dice-shell{
+      position:relative;
+      min-height:0;
+      display:grid;
+      align-content:start;
+      padding:0 2px;
+      z-index:2;
+    }
+    #screen-battle .battle-hint{
+      justify-self:center;
+      padding:10px 16px;
+      min-height:42px;
+      display:flex;
+      align-items:center;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(173,188,216,.12);
+      font-size:.9rem;
+      color:#e7edf9;
+      font-weight:800;
+    }
+    #screen-battle .dice-stage{
+      display:grid;
+      gap:12px;
+      min-height:0;
+      padding:0;
+      background:none;
+      border:none;
+      box-shadow:none;
+    }
+    #screen-battle .dice-status-bar{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      padding:0 2px;
+    }
+    #screen-battle .dice-status-main{
+      display:grid;
+      gap:4px;
+      text-align:left;
+    }
+    #screen-battle .dice-status-main strong{
+      font-size:1rem;
+      color:#f3f7ff;
+    }
+    #screen-battle .dice-status-main span,
+    #screen-battle .dice-reroll-preview{
+      font-size:.8rem;
+      color:#a8b4cf;
+    }
+    #screen-battle #dice-row{display:none !important}
+    #screen-battle .dice-fallback-layer{
+      display:grid !important;
+      grid-template-columns:repeat(3,minmax(84px,98px));
+      grid-auto-rows:98px;
+      justify-content:center;
+      gap:16px 14px;
+      min-height:236px;
+      padding:10px 0 2px;
+      width:100%;
+      margin:0 auto;
+    }
+    #screen-battle .dice-fallback-layer .die{
+      width:98px;
+      height:98px;
+      margin:0;
+      pointer-events:auto;
+    }
+    #screen-battle .dice-fallback-layer .die:nth-child(4){
+      grid-column:1 / span 2;
+      justify-self:end;
+    }
+    #screen-battle .dice-fallback-layer .die:nth-child(5){
+      grid-column:2 / span 2;
+      justify-self:start;
+    }
+    #screen-battle .battle-summary-strip{
+      padding:0 10px;
+      border-radius:22px;
+      gap:0;
+      position:relative;
+      z-index:3;
+    }
+    #screen-battle .summary-pill{
+      padding:12px 10px;
+      position:relative;
+    }
+    #screen-battle .summary-pill+.summary-pill::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:16%;
+      bottom:16%;
+      width:1px;
+      background:linear-gradient(180deg,transparent,rgba(174,190,219,.14),transparent);
+    }
+    #screen-battle .summary-pill .pill-label{
+      font-size:.66rem;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:#8f9cbc;
+      font-weight:900;
+    }
+    #screen-battle .summary-pill .pill-value{
+      font:900 1.04rem/1 var(--disp);
+      color:#f4f7ff;
+      text-align:right;
+    }
+    #screen-battle .summary-pill.damage .pill-value{
+      font-size:1.82rem;
+      color:#ffe7a5;
+      text-shadow:0 0 18px rgba(255,218,112,.2);
+    }
+    #screen-battle .battle-bottom-actions{
+      position:relative;
+      bottom:auto;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      padding:6px 2px calc(8px + env(safe-area-inset-bottom));
+      background:none;
+      z-index:4;
+    }
+    #screen-battle .battle-action-btn{
+      min-height:108px;
+      border-radius:24px;
+      padding:16px 16px 18px;
+      pointer-events:auto;
+    }
+    #screen-battle .battle-action-btn strong{
+      font:900 1.22rem/1.02 var(--disp);
+      letter-spacing:.01em;
+    }
+    #screen-battle .battle-action-btn span{
+      font-size:.82rem;
+      font-weight:800;
+    }
+    #screen-battle .battle-side-tab{
+      position:absolute;
+      top:50%;
+      width:34px;
+      transform:translateY(-50%);
+      z-index:4;
+    }
+    #screen-battle .battle-side-tab.left{left:-8px}
+    #screen-battle .battle-side-tab.right{right:-8px}
+    #screen-battle .battle-side-tab summary{
+      min-height:126px;
+      border-radius:18px;
+      padding:12px 6px;
+      background:linear-gradient(180deg,rgba(20,24,35,.94),rgba(9,12,20,.9));
+      border:1px solid rgba(168,183,213,.16);
+      box-shadow:0 14px 30px rgba(0,0,0,.34);
+    }
+    #screen-battle .side-panel{
+      width:min(270px,74vw);
+      max-height:min(62vh,520px);
+      padding:14px;
+      border-radius:22px;
+    }
+    @media (max-width:430px){
+      #screen-battle{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))}
+      #screen-battle .battle-hud-shell.mobile-hud{
+        gap:6px;
+        grid-template-rows:auto auto auto auto;
+      }
+      #screen-battle .battle-mobile-header{
+        display:grid;
+        gap:8px;
+        padding:10px;
+        border-radius:18px;
+        background:linear-gradient(180deg,rgba(16,19,29,.96),rgba(10,12,20,.96));
+      }
+      #screen-battle .mobile-header-top{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:8px;
+        align-items:start;
+      }
+      #screen-battle .mobile-header-copy{
+        display:grid;
+        gap:2px;
+        min-width:0;
+      }
+      #screen-battle .mobile-header-copy strong{
+        font-size:.9rem;
+        line-height:1;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+      }
+      #screen-battle .mobile-header-copy span{
+        font-size:.62rem;
+        color:#c7d0e4;
+      }
+      #screen-battle .mobile-header-chips{
+        display:grid;
+        gap:4px;
+        justify-items:end;
+      }
+      #screen-battle .mobile-enemy-row{
+        display:grid;
+        grid-template-columns:54px minmax(0,1fr);
+        gap:10px;
+        align-items:center;
+      }
+      #screen-battle .mobile-enemy-core{
+        display:grid;
+        gap:5px;
+        min-width:0;
+      }
+      #screen-battle .mobile-enemy-line{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+      }
+      #screen-battle .mobile-enemy-line #enemy-name{
+        font-size:.8rem;
+        font-weight:900;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+      }
+      #screen-battle .mobile-enemy-line #enemy-hp-text{
+        font-size:.72rem;
+        min-width:52px;
+        text-align:right;
+      }
+      #screen-battle .mobile-intent-row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+      }
+      #screen-battle .mobile-hit-chip{
+        display:grid;
+        gap:0;
+        justify-items:end;
+        min-width:52px;
+      }
+      #screen-battle .mobile-hit-chip span{
+        font-size:.5rem;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        color:#ffcdc4;
+      }
+      #screen-battle .mobile-hit-chip strong{
+        font-size:1rem;
+        line-height:1;
+      }
+      #screen-battle .mobile-player-row{
+        display:grid;
+        grid-template-columns:auto auto minmax(0,1fr);
+        gap:8px;
+        align-items:center;
+      }
+      #screen-battle .battle-mobile-drawers{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:8px;
+        padding:0 2px;
+      }
+      #screen-battle .battle-mobile-drawers .battle-side-tab{
+        position:static;
+        width:auto;
+        transform:none;
+      }
+      #screen-battle .battle-mobile-drawers .battle-side-tab summary{
+        min-height:20px;
+        min-width:38px;
+        border-radius:999px;
+        padding:2px 6px;
+        font-size:.34rem;
+        letter-spacing:.08em;
+        writing-mode:horizontal-tb;
+        text-orientation:mixed;
+        opacity:.72;
+      }
+      #screen-battle .battle-hud-shell{
+        gap:4px;
+        grid-template-rows:auto auto auto auto auto;
+        min-height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+      }
+      #screen-battle .battle-topbar{
+        grid-template-columns:54px minmax(0,1fr);
+        gap:8px;
+        padding:8px;
+        border-radius:16px;
+        min-height:78px;
+        background:linear-gradient(180deg,rgba(17,20,31,.96),rgba(11,14,22,.96));
+      }
+      #screen-battle .enemy-avatar{width:54px;height:54px;border-radius:15px;font-size:1.72rem}
+      #screen-battle .battle-topbar-row{align-items:flex-start}
+      #screen-battle .battle-topbar-copy{gap:4px}
+      #screen-battle .battle-topbar-copy strong{
+        font-size:.86rem;
+        line-height:1;
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+      }
+      #screen-battle .battle-topbar-copy span{font-size:.62rem;line-height:1.02}
+      #screen-battle .battle-topbar-meta{
+        display:grid;
+        justify-items:end;
+        gap:4px;
+        flex:0 0 auto;
+      }
+      #screen-battle .battle-level-chip,#screen-battle .battle-player-chip,#screen-battle .battle-trait-chip{
+        min-height:24px;
+        padding:0 8px;
+        font-size:.6rem;
+      }
+      #screen-battle .topbar-title-meta{gap:4px}
+      #screen-battle .topbar-health{gap:4px}
+      #screen-battle .topbar-health-row{font-size:.62rem;gap:4px}
+      #screen-battle .topbar-health-row strong{min-width:54px}
+      #screen-battle .topbar-health-track{height:10px}
+      #screen-battle .topbar-player-meta{
+        gap:4px;
+        align-items:center;
+      }
+      #screen-battle .mini-health-track{width:68px;height:8px}
+      #screen-battle .hp-number{min-width:54px;font-size:.68rem}
+      #screen-battle .battle-enemy-stage{
+        grid-template-columns:minmax(0,1fr) 68px;
+        min-height:44px;
+        padding:6px 8px;
+        border-radius:14px;
+        align-items:center;
+        background:linear-gradient(180deg,rgba(15,18,28,.9),rgba(10,12,20,.92));
+      }
+      #screen-battle .battle-enemy-stage-copy{gap:2px}
+      #screen-battle .battle-enemy-stage-copy strong{
+        font-size:.58rem;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        color:#aebad6;
+      }
+      #screen-battle .enemy-one-liner{
+        font-size:.62rem;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        color:#d9e0f0;
+      }
+      #screen-battle .enemy-turn-damage{
+        min-width:68px;
+        min-height:40px;
+        padding:5px 6px;
+        border-radius:14px;
+        gap:2px;
+      }
+      #screen-battle .enemy-turn-damage span{font-size:.52rem}
+      #screen-battle .enemy-turn-damage strong{font-size:1.06rem}
+      #screen-battle .battle-dice-shell{gap:4px}
+      #screen-battle .battle-hint{
+        padding:4px 8px;
+        min-height:22px;
+        font-size:.56rem;
+        justify-self:flex-start;
+        border-radius:999px;
+      }
+      #screen-battle .dice-stage{
+        gap:4px;
+        padding:0;
+      }
+      #screen-battle .dice-status-bar{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:2px;
+        align-items:center;
+        justify-items:stretch;
+      }
+      #screen-battle .dice-status-main{
+        display:flex;
+        align-items:center;
+        gap:6px;
+      }
+      #screen-battle .dice-status-main strong{font-size:.72rem}
+      #screen-battle .dice-status-main span{display:none}
+      #screen-battle .dice-reroll-preview{font-size:.52rem}
+      #screen-battle .dice-reroll-preview{padding:2px 6px}
+      #screen-battle .dice-fallback-layer{
+        grid-template-columns:repeat(5,46px);
+        grid-auto-rows:46px;
+        gap:4px;
+        min-height:46px;
+        padding:0;
+        align-content:start;
+        justify-content:center;
+      }
+      #screen-battle .dice-fallback-layer .die{
+        width:46px;
+        height:46px;
+        border-radius:13px;
+        justify-self:center;
+        transform:none !important;
+      }
+      #screen-battle .dice-fallback-layer .die:nth-child(4),
+      #screen-battle .dice-fallback-layer .die:nth-child(5){
+        grid-column:auto;
+        justify-self:center;
+        transform:none !important;
+      }
+      #screen-battle .die-label{font-size:.32rem}
+      #screen-battle .die-value{font-size:.84rem}
+      #screen-battle .die-note{display:none}
+      #screen-battle .battle-side-tab{
+        top:-4px;
+        transform:none;
+        width:auto;
+        z-index:2;
+      }
+      #screen-battle .battle-side-tab.left{left:0}
+      #screen-battle .battle-side-tab.right{right:0}
+      #screen-battle .battle-side-tab summary{
+        min-height:20px;
+        min-width:36px;
+        border-radius:999px;
+        padding:2px 5px;
+        font-size:.34rem;
+        letter-spacing:.08em;
+        opacity:.7;
+        writing-mode:horizontal-tb;
+        text-orientation:mixed;
+      }
+      #screen-battle .side-panel{width:min(240px,76vw);padding:12px;border-radius:18px}
+      #screen-battle .battle-summary-strip{
+        padding:0 2px;
+        border-radius:16px;
+        background:linear-gradient(180deg,rgba(15,18,28,.96),rgba(10,12,20,.96));
+      }
+      #screen-battle .summary-pill{padding:6px 3px}
+      #screen-battle .summary-pill .pill-label{font-size:.46rem;letter-spacing:.05em}
+      #screen-battle .summary-pill .pill-value{font-size:.68rem}
+      #screen-battle .summary-pill.damage .pill-value{font-size:.88rem}
+      #screen-battle .battle-bottom-actions{gap:8px;padding:4px 0 calc(6px + env(safe-area-inset-bottom))}
+      #screen-battle .battle-action-btn{
+        min-height:58px;
+        padding:8px;
+        border-radius:16px;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 20px rgba(0,0,0,.2);
+      }
+      #screen-battle .battle-action-btn strong{font-size:.8rem}
+      #screen-battle .battle-action-btn span{font-size:.52rem}
+    }
+  </style>
+  <script id="battle-hud-v2-final">
+    (function(){
+      function ensureBattleHudV2Shell(){
+        const battleScreen=document.getElementById("screen-battle");
+        if(!battleScreen) return;
+        const isMobile=window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+        const desiredVersion=isMobile ? "v2-mobile" : "v2-final";
+        if(battleScreen.dataset.hudVersion===desiredVersion) return;
+        battleScreen.dataset.hudVersion=desiredVersion;
+        battleScreen.innerHTML = isMobile ? `
+          <div class="battle-hud-shell mobile-hud">
+            <section class="battle-mobile-header battle-glass" id="enemy-panel">
+              <div class="mobile-header-top">
+                <div class="mobile-header-copy">
+                  <strong id="enemy-name-copy">鼠巷混混</strong>
+                  <span id="battle-stage">第 1 / 5 战</span>
+                </div>
+                <div class="mobile-header-chips">
+                  <span class="battle-level-chip" id="battle-index-chip">Lv 1</span>
+                  <span class="battle-player-chip" id="topbar-coins-chip">金币 0</span>
+                </div>
+              </div>
+              <div class="mobile-enemy-row">
+                <div class="enemy-avatar"><span id="enemy-avatar">馃悁</span></div>
+                <div class="mobile-enemy-core">
+                  <div class="mobile-enemy-line">
+                  <span id="enemy-name">鼠巷混混</span>
+                    <strong id="enemy-hp-text">28 / 28</strong>
+                  </div>
+                  <div class="mobile-intent-row">
+                    <span id="boss-warning" class="battle-trait-chip">普通追击</span>
+                    <div class="mobile-hit-chip">
+                      <span>Enemy Hit</span>
+                      <strong id="enemy-damage">3</strong>
+                    </div>
+                  </div>
+                  <div class="topbar-health-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+                </div>
+              </div>
+              <div class="mobile-player-row">
+                <span class="battle-player-chip" id="topbar-player-hp">生命 46</span>
+                <span class="hp-number" id="player-hp-text">46 / 46</span>
+                <div class="mini-health-track"><div class="hp-fill player" id="player-hp-fill"></div></div>
+              </div>
+              <span id="enemy-flavor" style="display:none"></span>
+            </section>
+            <div class="battle-mobile-drawers">
+              <details class="battle-side-tab left" id="relics-drawer">
+                <summary>RELICS</summary>
+                <div class="side-panel">
+                  <p class="side-section-title">Relics</p>
+                  <div class="inventory-grid" id="relic-slots"></div>
+                  <p class="side-section-title">Pity</p>
+                  <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
+                </div>
+              </details>
+              <details class="battle-side-tab right" id="logs-drawer">
+                <summary>LOGS</summary>
+                <div class="side-panel">
+                  <p class="side-section-title">Build</p>
+                  <div class="row" style="gap:8px;justify-content:flex-start;flex-wrap:wrap">
+                    <span class="badge" id="highest-chip">未成型</span>
+                    <span class="badge" id="state-chip">局势</span>
+                  </div>
+                  <div class="panel" style="padding:12px">
+                    <div class="calc-box" id="calc-breakdown"></div>
+                  </div>
+                  <p class="side-section-title">Battle Log</p>
+                  <div class="battle-log" id="battle-log"></div>
+                  <div id="status-chip-row" style="display:none"></div>
+                </div>
+              </details>
+            </div>
+            <section class="battle-dice-shell">
+              <p class="battle-hint" id="battle-hint">点击骰子可锁定，再次点击取消</p>
+              <div class="dice-stage">
+                <div class="dice-status-bar">
+                  <div class="dice-status-main">
+                    <strong id="dice-lock-summary">已锁定 0 / 5</strong>
+                    <span id="dice-lock-copy">继续重掷时，仅重掷未锁定骰子</span>
+                  </div>
+                  <div class="dice-reroll-preview" id="dice-reroll-preview">将重掷 5 枚未锁定骰子</div>
+                </div>
+                <div class="dice-row" id="dice-row"></div>
+                <div class="dice-fallback-layer" id="dice-fallback-layer"></div>
+              </div>
+            </section>
+            <section class="battle-summary-strip battle-glass" id="battle-summary-strip">
+              <div class="summary-pill">
+                <span class="pill-label">Combo</span>
+                <strong class="pill-value" id="hero-hand">一对</strong>
+              </div>
+              <div class="summary-pill damage">
+                <span class="pill-label">Damage</span>
+                <strong class="pill-value" id="hero-damage">4</strong>
+              </div>
+              <div class="summary-pill">
+                <span class="pill-label">Next Target</span>
+                <strong class="pill-value" id="hero-target">三条</strong>
+              </div>
+              <div class="summary-pill">
+                <span class="pill-label">Rerolls</span>
+                <strong class="pill-value" id="hero-rerolls-copy">2</strong>
+              </div>
+            </section>
+            <div class="battle-bottom-actions">
+              <button class="battle-action-btn safe" id="settle-btn" type="button" onclick="window.__battleHudV2Settle && window.__battleHudV2Settle()"><strong id="settle-btn-title">收手结算 4</strong><span id="settle-subline">锁住这手收益</span></button>
+              <button class="battle-action-btn risk" id="reroll-btn" type="button" onclick="window.__battleHudV2Reroll && window.__battleHudV2Reroll()"><strong id="reroll-title">继续赌</strong><span id="reroll-subline">冲三条</span></button>
+            </div>
+            <div id="battle-legacy-copy" style="display:none">
+              <span id="coins-chip"></span>
+              <span id="hero-hand-copy"></span>
+              <span id="hero-damage-copy"></span>
+              <span id="hero-multiplier">x1.00</span>
+              <span id="safe-badge"></span>
+              <span id="risk-badge"></span>
+              <span id="settle-title"></span>
+              <span id="settle-copy"></span>
+              <span id="preview-score"></span>
+              <span id="preview-damage"></span>
+              <span id="settle-real"></span>
+              <span id="settle-style"></span>
+              <span id="settle-reason"></span>
+              <span id="settle-resource"></span>
+              <div id="settle-values"></div>
+              <span id="push-title"></span>
+              <span id="push-copy"></span>
+              <span id="near-miss"></span>
+              <span id="potential-hit"></span>
+              <div id="push-targets"></div>
+              <span id="push-reason"></span>
+              <span id="push-cost"></span>
+            </div>
+          </div>` : `
+          <div class="battle-hud-shell">
+            <section class="battle-topbar battle-glass" id="enemy-panel">
+              <div class="enemy-avatar"><span id="enemy-avatar">🐀</span></div>
+              <div class="battle-topbar-main">
+                <div class="battle-topbar-row">
+                  <div class="battle-topbar-copy">
+                    <strong id="enemy-name-copy">鼠巷混混</strong>
+                    <span id="battle-stage">第 1 / 5 战</span>
+                  </div>
+                  <div class="battle-topbar-meta">
+                    <span class="battle-level-chip" id="battle-index-chip">Lv 1</span>
+                    <span class="battle-player-chip" id="topbar-coins-chip">金币 0</span>
+                  </div>
+                </div>
+                <div class="topbar-health">
+                  <div class="topbar-health-row">
+                    <div class="topbar-title-stack">
+                      <span id="enemy-name">鼠巷混混</span>
+                      <div class="topbar-title-meta">
+                        <span id="boss-warning" class="battle-trait-chip">普通追击</span>
+                      </div>
+                    </div>
+                    <strong id="enemy-hp-text">28 / 28</strong>
+                  </div>
+                  <div class="topbar-health-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+                </div>
+                <div class="topbar-footer">
+                  <div></div>
+                  <div class="topbar-player-meta">
+                    <span class="battle-player-chip" id="topbar-player-hp">生命 46</span>
+                    <span class="hp-number" id="player-hp-text">46 / 46</span>
+                    <div class="mini-health-track"><div class="hp-fill player" id="player-hp-fill"></div></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+            <section class="battle-enemy-stage battle-glass">
+              <div class="battle-enemy-stage-copy">
+                <strong>本回合敌方动作</strong>
+                <span class="enemy-one-liner" id="enemy-flavor">一句话看懂，不抢操作视线</span>
+              </div>
+              <div class="enemy-turn-damage">
+                <span>Enemy Hit</span>
+                <strong id="enemy-damage">3</strong>
+              </div>
+            </section>
+            <section class="battle-dice-shell">
+              <details class="battle-side-tab left" id="relics-drawer">
+                <summary>RELICS</summary>
+                <div class="side-panel">
+                  <p class="side-section-title">Relics</p>
+                  <div class="inventory-grid" id="relic-slots"></div>
+                  <p class="side-section-title">Pity</p>
+                  <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
+                </div>
+              </details>
+              <details class="battle-side-tab right" id="logs-drawer">
+                <summary>LOGS</summary>
+                <div class="side-panel">
+                  <p class="side-section-title">Build</p>
+                  <div class="row" style="gap:8px;justify-content:flex-start;flex-wrap:wrap">
+                    <span class="badge" id="highest-chip">未成型</span>
+                    <span class="badge" id="state-chip">局势</span>
+                  </div>
+                  <div class="panel" style="padding:12px">
+                    <div class="calc-box" id="calc-breakdown"></div>
+                  </div>
+                  <p class="side-section-title">Battle Log</p>
+                  <div class="battle-log" id="battle-log"></div>
+                  <div id="status-chip-row" style="display:none"></div>
+                </div>
+              </details>
+              <p class="battle-hint" id="battle-hint">点击骰子可锁定，再次点击取消</p>
+              <div class="dice-stage">
+                <div class="dice-status-bar">
+                  <div class="dice-status-main">
+                    <strong id="dice-lock-summary">已锁定 0 / 5</strong>
+                    <span id="dice-lock-copy">继续重掷时，仅重掷未锁定骰子</span>
+                  </div>
+                  <div class="dice-reroll-preview" id="dice-reroll-preview">将重掷 5 枚未锁定骰子</div>
+                </div>
+                <div class="dice-row" id="dice-row"></div>
+                <div class="dice-fallback-layer" id="dice-fallback-layer">
+                  <button type="button" class="die" data-die-index="0" onclick="window.__battleHudV2ClickDie && window.__battleHudV2ClickDie(0)"><span class="die-label">LOAD</span><span class="die-lock">·</span><span class="die-value">1</span><span class="die-note">D1</span></button>
+                  <button type="button" class="die" data-die-index="1" onclick="window.__battleHudV2ClickDie && window.__battleHudV2ClickDie(1)"><span class="die-label">LOAD</span><span class="die-lock">·</span><span class="die-value">2</span><span class="die-note">D2</span></button>
+                  <button type="button" class="die" data-die-index="2" onclick="window.__battleHudV2ClickDie && window.__battleHudV2ClickDie(2)"><span class="die-label">LOAD</span><span class="die-lock">·</span><span class="die-value">3</span><span class="die-note">D3</span></button>
+                  <button type="button" class="die" data-die-index="3" style="grid-column:1 / span 2;justify-self:end;" onclick="window.__battleHudV2ClickDie && window.__battleHudV2ClickDie(3)"><span class="die-label">LOAD</span><span class="die-lock">·</span><span class="die-value">4</span><span class="die-note">D4</span></button>
+                  <button type="button" class="die" data-die-index="4" style="grid-column:2 / span 2;justify-self:start;" onclick="window.__battleHudV2ClickDie && window.__battleHudV2ClickDie(4)"><span class="die-label">LOAD</span><span class="die-lock">·</span><span class="die-value">5</span><span class="die-note">D5</span></button>
+                </div>
+              </div>
+            </section>
+            <section class="battle-summary-strip battle-glass" id="battle-summary-strip">
+              <div class="summary-pill">
+                <span class="pill-label">Combo</span>
+                <strong class="pill-value" id="hero-hand">一对</strong>
+              </div>
+              <div class="summary-pill damage">
+                <span class="pill-label">Damage</span>
+                <strong class="pill-value" id="hero-damage">4</strong>
+              </div>
+              <div class="summary-pill">
+                <span class="pill-label">Next Target</span>
+                <strong class="pill-value" id="hero-target">三条</strong>
+              </div>
+              <div class="summary-pill">
+                <span class="pill-label">Rerolls</span>
+                <strong class="pill-value" id="hero-rerolls-copy">2</strong>
+              </div>
+            </section>
+            <div class="battle-bottom-actions">
+              <button class="battle-action-btn safe" id="settle-btn" type="button" onclick="window.__battleHudV2Settle && window.__battleHudV2Settle()"><strong id="settle-btn-title">收手结算 4</strong><span id="settle-subline">锁住这手收益</span></button>
+              <button class="battle-action-btn risk" id="reroll-btn" type="button" onclick="window.__battleHudV2Reroll && window.__battleHudV2Reroll()"><strong id="reroll-title">继续赌</strong><span id="reroll-subline">冲三条</span></button>
+            </div>
+            <div id="battle-legacy-copy" style="display:none">
+              <span id="coins-chip"></span>
+              <span id="hero-hand-copy"></span>
+              <span id="hero-damage-copy"></span>
+              <span id="hero-multiplier">x1.00</span>
+              <span id="safe-badge"></span>
+              <span id="risk-badge"></span>
+              <span id="settle-title"></span>
+              <span id="settle-copy"></span>
+              <span id="preview-score"></span>
+              <span id="preview-damage"></span>
+              <span id="settle-real"></span>
+              <span id="settle-style"></span>
+              <span id="settle-reason"></span>
+              <span id="settle-resource"></span>
+              <div id="settle-values"></div>
+              <span id="push-title"></span>
+              <span id="push-copy"></span>
+              <span id="near-miss"></span>
+              <span id="potential-hit"></span>
+              <div id="push-targets"></div>
+              <span id="push-reason"></span>
+              <span id="push-cost"></span>
+            </div>
+          </div>`;
+        if(window.ensureLegacyBattleCompatNodes) window.ensureLegacyBattleCompatNodes();
+        if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+        wireBattleHudV2();
+        setTimeout(function(){
+          try{ paintVisibleDice(); }catch(_error){}
+        },0);
+      }
+
+      function v2RefreshBattle(){
+        if(!(typeof state!=="undefined" && state && state.battle)) return;
+        if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+        const info=evaluateHand();
+        const preview=calculateDamagePreview(info);
+        state.battle.preview=preview;
+        renderBattleTopbarV2(preview,info);
+        renderEnemyStageV2(preview,info);
+        paintVisibleDice();
+        renderBattleHudV2(preview,info);
+        renderBottomActionsV2(preview,info);
+        renderSideDrawersV2(preview,info);
+        if(window.updateBattleHintVisibility) updateBattleHintVisibility();
+      }
+
+      function attachTap(node, handler){
+        if(!node) return;
+        node.onclick=function(event){
+          if(event) event.preventDefault();
+          handler(event);
+          return false;
+        };
+        node.onpointerup=function(event){
+          if(event) event.preventDefault();
+          handler(event);
+          return false;
+        };
+        node.ontouchend=function(event){
+          if(event) event.preventDefault();
+          handler(event);
+          return false;
+        };
+      }
+
+      function wireBattleHudV2(){
+        if(!window.ui) return;
+        if(ui.rerollBtn){
+          attachTap(ui.rerollBtn,function(){ if(window.__battleHudV2Reroll) window.__battleHudV2Reroll(); });
+        }
+        if(ui.settleBtn){
+          attachTap(ui.settleBtn,function(){ if(window.__battleHudV2Settle) window.__battleHudV2Settle(); });
+        }
+        const clickDice=function(e){
+          const die=e && e.target && e.target.closest ? e.target.closest("[data-die-index]") : null;
+          if(!die || state.screen!=="battle") return;
+          if(window.__battleHudV2ClickDie) window.__battleHudV2ClickDie(Number(die.dataset.dieIndex));
+        };
+        if(ui.diceRow) ui.diceRow.onclick=clickDice;
+        const fallback=document.getElementById("dice-fallback-layer");
+        if(fallback) fallback.onclick=clickDice;
+      }
+
+      function paintVisibleDice(){
+        if(!(typeof state!=="undefined" && state && state.battle)) return;
+        if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+        const host=document.getElementById("dice-fallback-layer");
+        if(!host) return;
+        const info=evaluateHand();
+        const recommended=new Set(window.getRecommendedKeepIndices ? getRecommendedKeepIndices(info) : []);
+        const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+        const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+        const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+        if(ui.diceLockSummary) ui.diceLockSummary.textContent=`已锁定 ${lockedCount} / ${activeCount}`;
+        if(ui.diceLockCopy) ui.diceLockCopy.textContent=lockedCount ? `继续重掷时，仅重掷剩余 ${rerollCount} 枚` : "继续重掷时，仅重掷未锁定骰子";
+        if(ui.diceRerollPreview) ui.diceRerollPreview.textContent=rerollCount ? `将重掷 ${rerollCount} 枚未锁定骰子` : "当前全部已锁定";
+        const faceMap={
+          1:{label:"ONE",symbol:"◆",note:"D1"},
+          2:{label:"TWO",symbol:"✿",note:"D2"},
+          3:{label:"THREE",symbol:"✦",note:"D3"},
+          4:{label:"FOUR",symbol:"⬢",note:"D4"},
+          5:{label:"FIVE",symbol:"◉",note:"D5"},
+          6:{label:"SIX",symbol:"✺",note:"D6"}
+        };
+        host.innerHTML=state.battle.dice.map(d=>{
+          const face=faceMap[d.value] || faceMap[1];
+          const classes=[
+            "die",
+            d.locked?"locked":"",
+            (!d.locked&&!d.inactive)?"will-reroll":"",
+            (recommended.has(d.index)&&!d.locked)?"recommended":"",
+            d.type==="gold"?"gold":"",
+            d.type==="glass"?"glass":"",
+            d.inactive?"inactive":""
+          ].filter(Boolean).join(" ");
+          const top=d.locked ? "LOCKED" : face.label;
+          const note=d.inactive ? "BROKEN" : (d.type==="gold" ? "GOLD" : d.type==="glass" ? "GLASS" : face.note);
+          return `<button type="button" class="${classes}" data-die-index="${d.index}" ${d.inactive?"disabled":""}>
+            <span class="die-label">${top}</span>
+            <span class="die-lock">🔒</span>
+            <span class="die-value">${d.inactive?"✕":face.symbol}</span>
+            <span class="die-note">${note}</span>
+          </button>`;
+        }).join("");
+        if(ui.diceRow) ui.diceRow.innerHTML="";
+        host.style.outline="none";
+        host.style.background="";
+        host.querySelectorAll("[data-die-index]").forEach(function(btn){
+          attachTap(btn,function(){
+            if(window.__battleHudV2ClickDie) window.__battleHudV2ClickDie(Number(btn.dataset.dieIndex));
+          });
+        });
+      }
+
+      window.paintVisibleDice = paintVisibleDice;
+      window.__battleHudV2ClickDie = function(index){
+        if(!(typeof state!=="undefined" && state && state.battle) || state.screen!=="battle") return;
+        const die=state.battle.dice[index];
+        if(!die || die.inactive) return;
+        die.locked=!die.locked;
+        if(state.run && state.run.metrics) state.run.metrics.hold_clicks=(state.run.metrics.hold_clicks||0)+1;
+        try{ localStorage.setItem(FIRST_HINT_KEY,"1"); }catch(_error){}
+        v2RefreshBattle();
+      };
+      window.__battleHudV2Reroll = function(){
+        if(!(typeof state!=="undefined" && state && state.battle) || state.screen!=="battle") return;
+        const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+        if(state.battle.rerollsRemaining<=0 && !canEmergencyReroll) return;
+        let targets=state.battle.dice.filter(function(d){ return !d.inactive && !d.locked; });
+        if(!targets.length) targets=state.battle.dice.filter(function(d){ return !d.inactive; });
+        targets.forEach(function(d){
+          d.value=rollDie();
+        });
+        if(state.battle.rerollsRemaining>0){
+          state.battle.rerollsRemaining-=1;
+          state.battle.rerollsUsed=(state.battle.rerollsUsed||0)+1;
+          if(state.run && state.run.metrics) state.run.metrics.reroll_count=(state.run.metrics.reroll_count||0)+1;
+        }else if(canEmergencyReroll && state.player.pityTokens>0){
+          state.player.pityTokens-=1;
+        }
+        v2RefreshBattle();
+      };
+      window.__battleHudV2Settle = function(){
+        if(!(typeof state!=="undefined" && state && state.battle) || state.screen!=="battle") return;
+        settleHand();
+        v2RefreshBattle();
+      };
+      window.renderDice=function(){
+        paintVisibleDice();
+      };
+      window.ensureBattleDiceVisible=function(){
+        paintVisibleDice();
+      };
+
+      function renderBattleTopbarV2(preview,info){
+        const enemy=state.battle.enemy;
+        const topbarCoinsChip=document.getElementById("topbar-coins-chip");
+        if(ui.enemyNameCopy) ui.enemyNameCopy.textContent=enemy.name;
+        if(ui.battleStage) ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`;
+        if(ui.battleIndexChip) ui.battleIndexChip.textContent=`Lv ${state.run.battleIndex+1}`;
+        if(topbarCoinsChip) topbarCoinsChip.textContent=`金币 ${state.player.coins}`;
+        if(ui.enemyName) ui.enemyName.textContent=enemy.name;
+        if(ui.enemyHpText) ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;
+        if(ui.enemyHpFill) ui.enemyHpFill.style.width=`${Math.max(0, enemy.hp/enemy.maxHp*100)}%`;
+        if(ui.enemyAvatar) ui.enemyAvatar.textContent=enemy.avatar;
+        if(ui.bossWarning) ui.bossWarning.textContent=enemy.intentText || "普通追击";
+        if(ui.topbarPlayerHp) ui.topbarPlayerHp.textContent=`生命 ${state.player.hp}`;
+        if(ui.playerHpText) ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;
+        if(ui.playerHpFill) ui.playerHpFill.style.width=`${Math.max(0, state.player.hp/state.player.maxHp*100)}%`;
+      }
+
+      function renderEnemyStageV2(){
+        const enemy=state.battle.enemy;
+        if(ui.enemyFlavor) ui.enemyFlavor.textContent=enemy.flavor || enemy.intentText || "";
+        if(ui.enemyDamage) ui.enemyDamage.textContent=String(getEnemyDamage());
+      }
+
+      function renderBattleHudV2(preview,info){
+        if(ui.heroHand) ui.heroHand.textContent=info.hand.name;
+        if(ui.heroDamage) ui.heroDamage.textContent=String(preview.totalDamage);
+        if(ui.heroTarget) ui.heroTarget.textContent=window.getCompactTarget ? getCompactTarget(preview,info) : "更高牌型";
+        if(ui.heroRerollsCopy) ui.heroRerollsCopy.textContent=String(state.battle.rerollsRemaining);
+      }
+
+      function renderBottomActionsV2(preview,info){
+        const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+        const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+        const target=window.getCompactTarget ? getCompactTarget(preview,info) : "高阶牌型";
+        if(ui.settleBtnTitle) ui.settleBtnTitle.textContent=`收手结算 ${preview.totalDamage}`;
+        if(ui.settleSubline) ui.settleSubline.textContent=preview.busted ? "止损，换补偿" : "锁住这手收益";
+        if(ui.rerollTitle) ui.rerollTitle.textContent=canEmergencyReroll ? "拆筹码继续赌" : state.battle.rerollsRemaining>0 ? "继续赌" : "本回合到头";
+        if(ui.rerollSubline) ui.rerollSubline.textContent=canEmergencyReroll ? `强续一手 · 冲 ${target}` : state.battle.rerollsRemaining>0 ? `冲 ${target} · 重掷 ${rerollCount} 枚` : "没有可用重掷";
+        if(ui.rerollBtn) ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0&&!canEmergencyReroll;
+      }
+
+      function renderSideDrawersV2(preview,info){
+        if(window.renderRelics) renderRelics();
+        if(window.renderBreakdown) renderBreakdown(preview);
+        if(window.renderLog) renderLog();
+        if(ui.highestChip) ui.highestChip.textContent=state.run.buildType||"未成型";
+        if(ui.stateChip && window.getBattleStateLabel) ui.stateChip.textContent=getBattleStateLabel(preview,info);
+        if(ui.pityChip){
+          ui.pityChip.textContent=state.player.pityTokens>0 ? `怜悯筹码 ${state.player.pityTokens}` : "怜悯筹码待命";
+          ui.pityChip.classList.toggle("active",state.player.pityTokens>0||state.player.pityBaseBonus>0);
+        }
+      }
+
+      window.renderBattle=function(){
+        if(!(typeof state!=="undefined" && state && state.battle)) return;
+        ensureBattleHudV2Shell();
+        v2RefreshBattle();
+      };
+
+      const previousStartBattle=window.startBattle;
+      window.startBattle=function(index){
+        previousStartBattle(index);
+        ensureBattleHudV2Shell();
+        if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+        wireBattleHudV2();
+        if(window.paintVisibleDice) window.paintVisibleDice();
+        window.renderBattle();
+        if(window.paintVisibleDice) window.paintVisibleDice();
+        if(window.setScreen) setScreen("battle");
+      };
+
+      const previousToggleDie = window.toggleDie;
+      window.toggleDie = function(index){
+        previousToggleDie(index);
+        if(window.paintVisibleDice) window.paintVisibleDice();
+      };
+
+      const previousRerollUnlockedDice = window.rerollUnlockedDice;
+      window.rerollUnlockedDice = function(isFree){
+        previousRerollUnlockedDice(isFree);
+        if(window.paintVisibleDice) window.paintVisibleDice();
+        setTimeout(function(){
+          if(window.paintVisibleDice) window.paintVisibleDice();
+        }, 560);
+      };
+
+      const previousSettleHand = window.settleHand;
+      window.settleHand = function(){
+        previousSettleHand();
+        if(window.paintVisibleDice) window.paintVisibleDice();
+      };
+
+      if(typeof state!=="undefined" && state && state.screen==="battle" && state.battle){
+        ensureBattleHudV2Shell();
+        window.renderBattle();
+      }
+    })();
+  </script>
+  <style id="battle-mobile-hotfix-final">
+    @media (max-width:430px){
+      #screen-battle .battle-hud-shell.mobile-hud{
+        display:flex !important;
+        flex-direction:column;
+        gap:8px;
+        min-height:calc(100dvh - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));
+        height:100%;
+        flex:1 1 auto;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud > *{
+        flex:0 0 auto;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-mobile-header{
+        margin-bottom:2px;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-mobile-drawers{
+        margin:0;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-dice-shell{
+        gap:6px;
+        margin:0;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-hint{
+        display:none;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-stage{
+        gap:6px;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-status-bar{
+        display:flex !important;
+        align-items:center;
+        justify-content:space-between;
+        gap:6px;
+        padding:0 2px !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-status-main{
+        display:flex !important;
+        align-items:center;
+        gap:6px;
+        min-width:0;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-status-main span{
+        display:none;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-status-main strong{
+        font-size:.7rem !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-reroll-preview{
+        flex:0 0 auto;
+        max-width:48%;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        white-space:nowrap;
+        font-size:.5rem !important;
+        padding:2px 6px !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-fallback-layer{
+        margin-top:0;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-fallback-layer .die{
+        min-height:46px !important;
+        height:46px !important;
+        width:46px !important;
+        padding:4px 2px !important;
+        gap:2px !important;
+        border-radius:13px !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .dice-fallback-layer .die::after{
+        inset:auto 6px 6px;
+        height:4px;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .die-label{
+        font-size:.32rem !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .die-value{
+        font-size:.82rem !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .die-note{
+        display:none !important;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-summary-strip{
+        display:grid !important;
+        grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+        grid-template-rows:1fr !important;
+        grid-template-areas:"combo damage next rerolls" !important;
+        align-items:stretch;
+        gap:0;
+        padding:0;
+        overflow:hidden;
+        min-height:72px;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill{
+        display:flex !important;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        min-height:72px;
+        min-width:0;
+        padding:8px 4px;
+        gap:6px;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill:nth-child(1){grid-area:combo}
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill:nth-child(2){grid-area:damage}
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill:nth-child(3){grid-area:next}
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill:nth-child(4){grid-area:rerolls}
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill + .summary-pill{
+        border-left:1px solid rgba(173,188,216,.1);
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill .pill-label{
+        font-size:.4rem;
+        text-align:center;
+        line-height:1.1;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill .pill-value{
+        font-size:.72rem;
+        text-align:center;
+        white-space:nowrap;
+        line-height:1;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .summary-pill.damage .pill-value{
+        font-size:1.04rem;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-bottom-actions{
+        margin-top:auto;
+        padding-top:8px;
+        padding-bottom:calc(6px + env(safe-area-inset-bottom));
+        background:linear-gradient(180deg,rgba(4,6,12,0),rgba(4,6,12,.78) 24%,rgba(4,6,12,.98));
+        align-self:stretch;
+      }
+      #screen-battle .battle-hud-shell.mobile-hud .battle-action-btn{
+        min-height:76px;
+      }
+    }
+  </style>
+  <script id="battle-mobile-runtime-fix-final">
+    (function(){
+      function applyRuntimeCopyFix(){
+        if(typeof state==="undefined" || !state || !state.battle) return;
+        if(typeof window.v2RefreshBattle!=="function") return;
+
+        window.paintVisibleDice = function(){
+          if(typeof state==="undefined" || !state || !state.battle) return;
+          if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+          const host=document.getElementById("dice-fallback-layer");
+          if(!host) return;
+          const info=evaluateHand();
+          const recommended=new Set(window.getRecommendedKeepIndices ? getRecommendedKeepIndices(info) : []);
+          const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+          const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+          const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+          if(ui.diceLockSummary) ui.diceLockSummary.textContent=`已锁定 ${lockedCount} / ${activeCount}`;
+          if(ui.diceLockCopy) ui.diceLockCopy.textContent=lockedCount ? `继续重掷时，仅重掷剩余 ${rerollCount} 枚` : "继续重掷时，仅重掷未锁定骰子";
+          if(ui.diceRerollPreview) ui.diceRerollPreview.textContent=rerollCount ? `将重掷 ${rerollCount} 枚未锁定骰子` : "当前全部已锁定";
+
+          const faceMap={
+            1:{label:"ONE",symbol:"◆",note:"D1"},
+            2:{label:"TWO",symbol:"✿",note:"D2"},
+            3:{label:"THREE",symbol:"✦",note:"D3"},
+            4:{label:"FOUR",symbol:"⬢",note:"D4"},
+            5:{label:"FIVE",symbol:"◉",note:"D5"},
+            6:{label:"SIX",symbol:"✺",note:"D6"}
+          };
+
+          host.innerHTML=state.battle.dice.map(d=>{
+            const face=faceMap[d.value] || faceMap[1];
+            const classes=[
+              "die",
+              d.locked?"locked":"",
+              (!d.locked&&!d.inactive)?"will-reroll":"",
+              (recommended.has(d.index)&&!d.locked)?"recommended":"",
+              d.type==="gold"?"gold":"",
+              d.type==="glass"?"glass":"",
+              d.inactive?"inactive":""
+            ].filter(Boolean).join(" ");
+            const top=d.locked ? "LOCKED" : face.label;
+            const note=d.inactive ? "BROKEN" : (d.type==="gold" ? "GOLD" : d.type==="glass" ? "GLASS" : face.note);
+            return `<button type="button" class="${classes}" data-die-index="${d.index}" ${d.inactive?"disabled":""}>
+              <span class="die-label">${top}</span>
+              <span class="die-lock">锁</span>
+              <span class="die-value">${d.inactive?"✕":face.symbol}</span>
+              <span class="die-note">${note}</span>
+            </button>`;
+          }).join("");
+
+          if(ui.diceRow) ui.diceRow.innerHTML="";
+          host.querySelectorAll("[data-die-index]").forEach(function(btn){
+            btn.onclick=function(event){
+              if(event) event.preventDefault();
+              if(window.__battleHudV2ClickDie) window.__battleHudV2ClickDie(Number(btn.dataset.dieIndex));
+              return false;
+            };
+          });
+        };
+
+        window.renderBattleTopbarV2 = function(){
+          const enemy=state.battle.enemy;
+          const topbarCoinsChip=document.getElementById("topbar-coins-chip");
+          if(ui.enemyNameCopy) ui.enemyNameCopy.textContent=enemy.name;
+          if(ui.battleStage) ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`;
+          if(ui.battleIndexChip) ui.battleIndexChip.textContent=`Lv ${state.run.battleIndex+1}`;
+          if(topbarCoinsChip) topbarCoinsChip.textContent=`金币 ${state.player.coins}`;
+          if(ui.enemyName) ui.enemyName.textContent=enemy.name;
+          if(ui.enemyHpText) ui.enemyHpText.textContent=`${enemy.hp} / ${enemy.maxHp}`;
+          if(ui.enemyHpFill) ui.enemyHpFill.style.width=`${Math.max(0, enemy.hp/enemy.maxHp*100)}%`;
+          if(ui.enemyAvatar) ui.enemyAvatar.textContent=enemy.avatar;
+          if(ui.bossWarning) ui.bossWarning.textContent=enemy.intentText || "普通追击";
+          if(ui.topbarPlayerHp) ui.topbarPlayerHp.textContent=`生命 ${state.player.hp}`;
+          if(ui.playerHpText) ui.playerHpText.textContent=`${state.player.hp} / ${state.player.maxHp}`;
+          if(ui.playerHpFill) ui.playerHpFill.style.width=`${Math.max(0, state.player.hp/state.player.maxHp*100)}%`;
+        };
+
+        window.renderBattleHudV2 = function(preview,info){
+          if(ui.heroHand) ui.heroHand.textContent=info.hand.name;
+          if(ui.heroDamage) ui.heroDamage.textContent=String(preview.totalDamage);
+          if(ui.heroTarget) ui.heroTarget.textContent=window.getCompactTarget ? getCompactTarget(preview,info) : "更高牌型";
+          if(ui.heroRerollsCopy) ui.heroRerollsCopy.textContent=String(state.battle.rerollsRemaining);
+        };
+
+        window.renderBottomActionsV2 = function(preview,info){
+          const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+          const canEmergencyReroll=state.battle.rerollsRemaining<=0&&state.player.pityTokens>0;
+          const target=window.getCompactTarget ? getCompactTarget(preview,info) : "高阶牌型";
+          if(ui.settleBtnTitle) ui.settleBtnTitle.textContent=`收手结算 ${preview.totalDamage}`;
+          if(ui.settleSubline) ui.settleSubline.textContent=preview.busted ? "止损，换补偿" : "锁住这手收益";
+          if(ui.rerollTitle) ui.rerollTitle.textContent=canEmergencyReroll ? "拆筹码继续赌" : state.battle.rerollsRemaining>0 ? "继续赌" : "本回合到头";
+          if(ui.rerollSubline) ui.rerollSubline.textContent=canEmergencyReroll ? `强续一手 · 冲 ${target}` : state.battle.rerollsRemaining>0 ? `冲 ${target} · 重掷 ${rerollCount} 枚` : "没有可用重掷";
+          if(ui.rerollBtn) ui.rerollBtn.disabled=state.battle.rerollsRemaining<=0&&!canEmergencyReroll;
+        };
+
+        window.renderSideDrawersV2 = function(preview,info){
+          if(window.renderRelics) renderRelics();
+          if(window.renderBreakdown) renderBreakdown(preview);
+          if(window.renderLog) renderLog();
+          if(ui.highestChip) ui.highestChip.textContent=state.run.buildType||"未成型";
+          if(ui.stateChip && window.getBattleStateLabel) ui.stateChip.textContent=getBattleStateLabel(preview,info);
+          if(ui.pityChip){
+            ui.pityChip.textContent=state.player.pityTokens>0 ? `怜悯筹码 ${state.player.pityTokens}` : "怜悯筹码待命";
+            ui.pityChip.classList.toggle("active",state.player.pityTokens>0||state.player.pityBaseBonus>0);
+          }
+        };
+      }
+
+      const prevRenderBattle=window.renderBattle;
+      window.renderBattle=function(){
+        if(prevRenderBattle) prevRenderBattle();
+        applyRuntimeCopyFix();
+        if(window.v2RefreshBattle) window.v2RefreshBattle();
+      };
+
+      const prevStartBattleFix=window.startBattle;
+      window.startBattle=function(index){
+        if(prevStartBattleFix) prevStartBattleFix(index);
+        applyRuntimeCopyFix();
+        if(window.v2RefreshBattle) window.v2RefreshBattle();
+      };
+    })();
+  </script>
+  <style id="global-mobile-surfaces-final">
+    @media (max-width:430px){
+      .screen{
+        padding:12px 12px calc(12px + env(safe-area-inset-bottom));
+        gap:10px;
+      }
+      .title-screen,
+      .summary-screen{
+        justify-content:flex-start;
+        padding-top:max(18px,env(safe-area-inset-top));
+      }
+      .card,
+      .panel{
+        border-radius:22px;
+      }
+      .card{
+        width:100%;
+        padding:20px 16px;
+      }
+      .kicker,
+      .tag,
+      .badge,
+      .pill,
+      .battle-level-chip,
+      .battle-player-chip,
+      .battle-trait-chip{
+        min-height:28px;
+        padding:0 10px;
+        border-radius:999px;
+        font-size:.64rem;
+        line-height:1;
+      }
+      .logo{
+        margin:10px 0 6px;
+        font-size:2.4rem;
+        line-height:.92;
+      }
+      .subcopy{
+        font-size:.92rem;
+        line-height:1.45;
+      }
+      .mini-copy{
+        font-size:.78rem;
+        line-height:1.4;
+      }
+      .row{
+        gap:8px;
+      }
+      .primary-btn,
+      .secondary-btn,
+      .action-btn,
+      .battle-action-btn{
+        min-height:56px;
+        width:100%;
+        border-radius:18px;
+      }
+      .meta-grid,
+      .meta-list,
+      .starter-grid,
+      .shop-grid,
+      .summary-grid{
+        grid-template-columns:1fr !important;
+      }
+      .summary-grid{
+        gap:10px;
+      }
+      .summary-list{
+        width:100%;
+      }
+      #screen-title .row[style*="margin:20px"]{
+        margin:14px 0 16px !important;
+      }
+      #screen-title #start-debug-status,
+      #screen-title button[onclick*="FORCE START PROBE"],
+      #screen-title div[style*="LOCAL V4 PROBE"]{
+        display:none !important;
+      }
+      #screen-shop .topline,
+      #screen-summary .row{
+        gap:10px;
+      }
+      #screen-shop .topline{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      #screen-shop .shop-grid{
+        gap:10px;
+      }
+      #screen-shop .offer-name{
+        font-size:1.12rem;
+      }
+      #screen-summary .summary-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+      }
+      #screen-summary .row{
+        width:100%;
+      }
+      #screen-summary #play-again-btn{
+        width:100%;
+      }
+    }
+  </style>
+  <script id="battle-mobile-postpatch-v2">
+    (function(){
+      function isActiveMobileBattle(){
+        const battle=document.getElementById("screen-battle");
+        return !!(battle && battle.dataset.hudVersion==="v2-mobile" && window.matchMedia && window.matchMedia("(max-width:430px)").matches);
+      }
+
+      function setText(id,text){
+        const node=document.getElementById(id);
+        if(node) node.textContent=text;
+      }
+
+      function patchBattleCopy(){
+        if(typeof state==="undefined" || !state || !state.battle || !isActiveMobileBattle()) return;
+        const enemy=state.battle.enemy;
+        const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+        const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+        const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+        const canEmergencyReroll=state.battle.rerollsRemaining<=0 && state.player.pityTokens>0;
+        const info=window.evaluateHand ? evaluateHand() : null;
+        const preview=state.battle.preview || (info && window.calculateDamagePreview ? calculateDamagePreview(info) : null);
+        const target=window.getCompactTarget && info && preview ? getCompactTarget(preview,info) : "高阶牌型";
+
+        setText("battle-stage",`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`);
+        setText("topbar-coins-chip",`金币 ${state.player.coins}`);
+        setText("topbar-player-hp",`生命 ${state.player.hp}`);
+        setText("boss-warning",enemy.intentText || "普通追击");
+        setText("dice-lock-summary",`已锁定 ${lockedCount} / ${activeCount}`);
+        setText("dice-lock-copy",lockedCount ? `继续重掷时，仅重掷剩余 ${rerollCount} 枚` : "继续重掷时，仅重掷未锁定骰子");
+        setText("dice-reroll-preview",rerollCount ? `将重掷 ${rerollCount} 枚未锁定骰子` : "当前全部已锁定");
+        setText("highest-chip",state.run.buildType || "未成型");
+        setText("state-chip",window.getBattleStateLabel && info && preview ? getBattleStateLabel(preview,info) : "局势");
+        setText("pity-chip",state.player.pityTokens>0 ? `怜悯筹码 ${state.player.pityTokens}` : "怜悯筹码待命");
+
+        if(preview){
+          setText("hero-target",target);
+          setText("settle-btn-title",`收手结算 ${preview.totalDamage}`);
+          setText("settle-subline",preview.busted ? "止损，换补偿" : "锁住这手收益");
+          setText("reroll-title",canEmergencyReroll ? "拆筹码继续赌" : state.battle.rerollsRemaining>0 ? "继续赌" : "本回合到头");
+          setText("reroll-subline",canEmergencyReroll ? `强续一手 · 冲 ${target}` : state.battle.rerollsRemaining>0 ? `冲 ${target} · 重掷 ${rerollCount} 枚` : "没有可用重掷");
+        }
+      }
+
+      function patchDiceFaces(){
+        if(typeof state==="undefined" || !state || !state.battle || !isActiveMobileBattle()) return;
+        const host=document.getElementById("dice-fallback-layer");
+        if(!host) return;
+        const faces={
+          1:{label:"ONE",symbol:"◆"},
+          2:{label:"TWO",symbol:"✿"},
+          3:{label:"THREE",symbol:"✦"},
+          4:{label:"FOUR",symbol:"⬢"},
+          5:{label:"FIVE",symbol:"◉"},
+          6:{label:"SIX",symbol:"✺"}
+        };
+        host.querySelectorAll("[data-die-index]").forEach(btn=>{
+          const die=state.battle.dice[Number(btn.dataset.dieIndex)];
+          if(!die) return;
+          const face=faces[die.value] || faces[1];
+          const label=btn.querySelector(".die-label");
+          const value=btn.querySelector(".die-value");
+          const lock=btn.querySelector(".die-lock");
+          if(label) label.textContent=die.locked ? "LOCKED" : face.label;
+          if(value) value.textContent=die.inactive ? "✕" : face.symbol;
+          if(lock) lock.textContent="锁";
+        });
+      }
+
+      function patchSummaryLayout(){
+        if(!isActiveMobileBattle()) return;
+        const strip=document.getElementById("battle-summary-strip");
+        if(!strip) return;
+        strip.style.display="grid";
+        strip.style.gridTemplateColumns="repeat(4,minmax(0,1fr))";
+        strip.style.gridTemplateRows="1fr";
+        strip.style.gridTemplateAreas='"combo damage next rerolls"';
+      }
+
+      function applyAll(){
+        patchBattleCopy();
+        patchDiceFaces();
+        patchSummaryLayout();
+      }
+
+      const prevRenderBattle=window.renderBattle;
+      window.renderBattle=function(){
+        if(prevRenderBattle) prevRenderBattle();
+        requestAnimationFrame(applyAll);
+      };
+
+      const prevStartBattle=window.startBattle;
+      window.startBattle=function(index){
+        if(prevStartBattle) prevStartBattle(index);
+        requestAnimationFrame(applyAll);
+      };
+    })();
+  </script>
+  <style id="battle-mobile-canonical-style">
+    @media (max-width:430px){
+      #screen-battle.mobile-canonical{
+        padding:max(10px,env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+        gap:0;
+        background:
+          radial-gradient(circle at 50% 34%, rgba(70,96,154,.16), transparent 28%),
+          radial-gradient(circle at 50% 12%, rgba(110,66,151,.14), transparent 34%),
+          linear-gradient(180deg,#0f1020 0%,#090a12 58%,#06070d 100%);
+      }
+      #screen-battle.mobile-canonical .battle-mobile-canonical-shell{
+        min-height:calc(100dvh - max(20px,env(safe-area-inset-top)) - calc(20px + env(safe-area-inset-bottom)));
+        display:flex;
+        flex-direction:column;
+        gap:8px;
+        position:relative;
+      }
+      #screen-battle.mobile-canonical .mobile-panel{
+        border-radius:22px;
+        border:1px solid rgba(173,188,216,.12);
+        background:linear-gradient(180deg,rgba(18,21,31,.92),rgba(10,12,20,.94));
+        backdrop-filter:blur(14px);
+        box-shadow:0 14px 28px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.04);
+      }
+      #screen-battle.mobile-canonical .mobile-header{
+        position:relative;
+        padding:10px 12px;
+        display:grid;
+        gap:8px;
+        padding-bottom:16px;
+      }
+      #screen-battle.mobile-canonical .mobile-header-top{
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        gap:8px;
+        align-items:center;
+      }
+      #screen-battle.mobile-canonical .mobile-header-copy{
+        display:grid;
+        gap:2px;
+        min-width:0;
+      }
+      #screen-battle.mobile-canonical .mobile-header-title{
+        margin:0;
+        font:900 .98rem/1 var(--disp);
+      }
+      #screen-battle.mobile-canonical .mobile-header-stage{
+        color:#bfc9de;
+        font-size:.68rem;
+        font-weight:800;
+      }
+      #screen-battle.mobile-canonical .mobile-chip-stack{
+        display:flex;
+        gap:6px;
+        align-items:center;
+      }
+      #screen-battle.mobile-canonical .mobile-chip{
+        min-height:28px;
+        padding:0 10px;
+        border-radius:999px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        background:rgba(255,255,255,.04);
+        border:1px solid rgba(173,188,216,.14);
+        font-size:.68rem;
+        font-weight:900;
+        color:#f3f7ff;
+      }
+      #screen-battle.mobile-canonical .mobile-enemy-row{
+        display:grid;
+        grid-template-columns:54px minmax(0,1fr);
+        gap:10px;
+        align-items:center;
+      }
+      #screen-battle.mobile-canonical .mobile-avatar{
+        width:54px;
+        height:54px;
+        border-radius:16px;
+        display:grid;
+        place-items:center;
+        background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+        border:1px solid rgba(173,188,216,.14);
+        font-size:1.7rem;
+        box-shadow:0 10px 18px rgba(0,0,0,.18), 0 0 0 1px rgba(150,164,191,.05);
+      }
+      #screen-battle.mobile-canonical .mobile-enemy-copy{
+        display:grid;
+        gap:6px;
+        min-width:0;
+      }
+      #screen-battle.mobile-canonical .mobile-enemy-line{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+      }
+      #screen-battle.mobile-canonical .mobile-enemy-name{
+        min-width:0;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        font-weight:900;
+        font-size:.88rem;
+      }
+      #screen-battle.mobile-canonical .mobile-enemy-hp{
+        font-weight:900;
+        font-size:.78rem;
+      }
+      #screen-battle.mobile-canonical .mobile-intent-row{
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+      #screen-battle.mobile-canonical .mobile-intent{
+        min-height:24px;
+        padding:0 9px;
+        border-radius:999px;
+        display:inline-flex;
+        align-items:center;
+        background:rgba(133,69,53,.2);
+        border:1px solid rgba(255,145,111,.2);
+        color:#ffd2c3;
+        font-size:.62rem;
+        font-weight:900;
+      }
+      #screen-battle.mobile-canonical .mobile-threat{
+        display:none;
+      }
+      #screen-battle.mobile-canonical .mobile-threat span{
+        font-size:.48rem;
+        color:#ffcdc4;
+        font-weight:900;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+      }
+      #screen-battle.mobile-canonical .mobile-threat strong{
+        font-size:1rem;
+        line-height:1;
+      }
+      #screen-battle.mobile-canonical .mobile-track{
+        height:10px;
+        border-radius:999px;
+        padding:2px;
+        background:rgba(255,255,255,.05);
+        border:1px solid rgba(173,188,216,.12);
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+      }
+      #screen-battle.mobile-canonical .mobile-player-row{
+        position:absolute;
+        left:12px;
+        right:12px;
+        bottom:-15px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:8px;
+        padding:6px 10px;
+        margin-top:0;
+        color:#b8c2d7;
+        font-size:.66rem;
+        font-weight:800;
+        border-radius:999px;
+        background:rgba(8,11,19,.72);
+        border:1px solid rgba(173,188,216,.1);
+        backdrop-filter:blur(10px);
+        box-shadow:0 10px 18px rgba(0,0,0,.16);
+      }
+      #screen-battle.mobile-canonical .mobile-player-row .mobile-chip{
+        min-height:22px;
+        padding:0 8px;
+        font-size:.58rem;
+        color:#dbe6fb;
+      }
+      #screen-battle.mobile-canonical .mobile-player-meta{
+        display:flex;
+        align-items:center;
+        gap:8px;
+      }
+      #screen-battle.mobile-canonical .mobile-player-hp{
+        font-size:.72rem;
+        font-weight:900;
+      }
+      #screen-battle.mobile-canonical .mobile-drawer-row{
+        position:absolute;
+        left:0;
+        right:0;
+        top:148px;
+        pointer-events:none;
+        z-index:8;
+      }
+      #screen-battle.mobile-canonical .mobile-drawer-row details{
+        position:relative;
+        pointer-events:auto;
+      }
+      #screen-battle.mobile-canonical .mobile-drawer-left{margin-right:auto;margin-left:-6px}
+      #screen-battle.mobile-canonical .mobile-drawer-right{margin-left:auto;margin-right:-6px}
+      #screen-battle.mobile-canonical .mobile-drawer-row summary{
+        list-style:none;
+        width:26px;
+        min-height:72px;
+        padding:8px 0;
+        border-radius:14px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        writing-mode:vertical-rl;
+        text-orientation:mixed;
+        background:rgba(18,21,31,.78);
+        border:1px solid rgba(173,188,216,.1);
+        font-size:.52rem;
+        font-weight:900;
+        color:#91a0bf;
+        letter-spacing:.08em;
+        box-shadow:0 8px 16px rgba(0,0,0,.2);
+      }
+      #screen-battle.mobile-canonical .mobile-drawer-row summary::-webkit-details-marker{display:none}
+      #screen-battle.mobile-canonical .mobile-drawer-panel{
+        position:absolute;
+        top:0;
+        width:min(250px,74vw);
+        padding:12px;
+        border-radius:18px;
+        background:linear-gradient(180deg,rgba(16,19,29,.98),rgba(10,12,20,.98));
+        border:1px solid rgba(173,188,216,.12);
+        box-shadow:0 20px 40px rgba(0,0,0,.32);
+        z-index:12;
+      }
+      #screen-battle.mobile-canonical .mobile-drawer-left .mobile-drawer-panel{left:34px}
+      #screen-battle.mobile-canonical .mobile-drawer-right .mobile-drawer-panel{right:34px}
+      #screen-battle.mobile-canonical .mobile-battle-core{
+        display:grid;
+        gap:6px;
+        margin-top:8px;
+        position:relative;
+        padding:10px 4px 0;
+      }
+      #screen-battle.mobile-canonical .mobile-battle-core::before{
+        content:"";
+        position:absolute;
+        left:-8px;
+        right:-8px;
+        top:-4px;
+        bottom:6px;
+        border-radius:28px;
+        background:
+          radial-gradient(circle at 50% 40%, rgba(110,166,255,.16), transparent 26%),
+          radial-gradient(circle at 50% 56%, rgba(62,255,212,.12), transparent 34%),
+          linear-gradient(180deg, rgba(8,10,16,.05), rgba(5,7,12,.36));
+        pointer-events:none;
+        z-index:0;
+      }
+      #screen-battle.mobile-canonical .mobile-status-row{
+        position:relative;
+        z-index:1;
+        display:flex;
+        justify-content:flex-start;
+        gap:8px;
+        align-items:center;
+        min-height:20px;
+      }
+      #screen-battle.mobile-canonical .mobile-status-main{
+        font-size:.76rem;
+        font-weight:900;
+        color:#f1f5ff;
+      }
+      #screen-battle.mobile-canonical .mobile-status-sub{
+        display:none;
+      }
+      #screen-battle.mobile-canonical .mobile-dice-row{
+        position:relative;
+        z-index:1;
+        display:grid;
+        grid-template-columns:repeat(6,minmax(0,1fr));
+        grid-template-rows:58px 60px 58px;
+        gap:6px;
+        align-items:end;
+        margin-top:-2px;
+        margin-bottom:-4px;
+      }
+      #screen-battle.mobile-canonical .mobile-die{
+        position:relative;
+        overflow:hidden;
+        height:60px;
+        border-radius:18px;
+        padding:6px 3px 5px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:space-between;
+        background:
+          linear-gradient(145deg, rgba(89,96,124,.98) 0%, rgba(58,64,87,.96) 28%, rgba(31,35,52,.98) 100%);
+        border:1px solid rgba(118,222,214,.22);
+        box-shadow:
+          0 10px 16px rgba(0,0,0,.24),
+          0 4px 10px rgba(0,0,0,.2),
+          inset 0 1px 0 rgba(255,255,255,.1),
+          inset 0 -10px 16px rgba(7,9,16,.26);
+        transition:border-color .16s ease, box-shadow .16s ease, transform .16s ease, opacity .16s ease;
+      }
+      #screen-battle.mobile-canonical .mobile-die::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        pointer-events:none;
+        background:
+          radial-gradient(circle at 45% 16%,rgba(255,255,255,.24),transparent 34%),
+          linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%);
+      }
+      #screen-battle.mobile-canonical .mobile-die.locked{
+        border-color:rgba(255,211,119,.66);
+        box-shadow:
+          0 0 0 2px rgba(255,211,119,.18),
+          0 10px 18px rgba(255,211,119,.15),
+          inset 0 1px 0 rgba(255,255,255,.08),
+          inset 0 -10px 16px rgba(7,9,16,.26);
+        transform:translateY(-2px) scale(1.02);
+      }
+      #screen-battle.mobile-canonical .mobile-die.recommended:not(.locked){
+        border-color:rgba(121,255,202,.5);
+        box-shadow:
+          0 0 0 1px rgba(121,255,202,.14),
+          0 0 16px rgba(121,255,202,.08),
+          inset 0 1px 0 rgba(255,255,255,.08),
+          inset 0 -10px 16px rgba(7,9,16,.26);
+        animation:mobileDiePulse 1.9s ease-in-out infinite;
+      }
+      #screen-battle.mobile-canonical .mobile-die.rolling{
+        opacity:.9;
+        transform:translateY(1px) scale(.985);
+      }
+      #screen-battle.mobile-canonical .mobile-die-label{
+        min-height:10px;
+        font-size:.34rem;
+        font-weight:900;
+        color:#b8c0d5;
+        letter-spacing:.08em;
+      }
+      #screen-battle.mobile-canonical .mobile-die-value{
+        min-height:18px;
+        font-size:1.08rem;
+        line-height:1;
+        color:#eef3ff;
+        text-shadow:0 1px 0 rgba(0,0,0,.25), 0 0 8px rgba(255,255,255,.06);
+      }
+      #screen-battle.mobile-canonical .mobile-die-lock{
+        min-width:18px;
+        font-size:.46rem;
+        color:#ffd777;
+        min-height:10px;
+        text-align:center;
+        visibility:hidden;
+        font-weight:900;
+      }
+      #screen-battle.mobile-canonical .mobile-die.locked .mobile-die-lock{
+        visibility:visible;
+      }
+      #screen-battle.mobile-canonical .mobile-die:nth-child(1){
+        grid-column:3 / span 2;
+        grid-row:1;
+        transform:translateY(6px) scale(1.08);
+        z-index:3;
+      }
+      #screen-battle.mobile-canonical .mobile-die:nth-child(2){
+        grid-column:1 / span 2;
+        grid-row:2;
+        transform:translateY(-2px) scale(.96);
+      }
+      #screen-battle.mobile-canonical .mobile-die:nth-child(3){
+        grid-column:5 / span 2;
+        grid-row:2;
+        transform:translateY(-2px) scale(.96);
+      }
+      #screen-battle.mobile-canonical .mobile-die:nth-child(4){
+        grid-column:2 / span 2;
+        grid-row:3;
+        transform:translateY(-8px);
+      }
+      #screen-battle.mobile-canonical .mobile-die:nth-child(5){
+        grid-column:4 / span 2;
+        grid-row:3;
+        transform:translateY(-8px);
+      }
+      #screen-battle.mobile-canonical .mobile-summary{
+        display:grid;
+        grid-template-columns:repeat(4,minmax(0,1fr));
+        overflow:hidden;
+      }
+      #screen-battle.mobile-canonical .mobile-summary-item{
+        min-height:54px;
+        padding:6px 4px;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        gap:4px;
+      }
+      #screen-battle.mobile-canonical .mobile-summary-item + .mobile-summary-item{
+        border-left:1px solid rgba(173,188,216,.08);
+      }
+      #screen-battle.mobile-canonical .mobile-summary-label{
+        font-size:.38rem;
+        font-weight:900;
+        color:#7d8bac;
+        letter-spacing:.05em;
+        text-transform:uppercase;
+        text-align:center;
+      }
+      #screen-battle.mobile-canonical .mobile-summary-value{
+        font-size:.96rem;
+        font-weight:900;
+        text-align:center;
+        line-height:1;
+      }
+      #screen-battle.mobile-canonical .mobile-summary-item.damage .mobile-summary-value{
+        font-size:1.22rem;
+        color:#ffe7a5;
+      }
+      #screen-battle.mobile-canonical .mobile-actions{
+        margin-top:auto;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+        padding-top:4px;
+      }
+      #screen-battle.mobile-canonical .mobile-action{
+        position:relative;
+        isolation:isolate;
+        min-height:82px;
+        border-radius:22px;
+        padding:12px 13px;
+        display:grid;
+        align-content:center;
+        gap:6px;
+        border:1px solid rgba(173,188,216,.08);
+        background:rgba(9,12,20,.9);
+        box-shadow:0 14px 24px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+        transition:transform .14s ease, box-shadow .14s ease, filter .14s ease;
+      }
+      #screen-battle.mobile-canonical .mobile-action::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        border-radius:inherit;
+        padding:1px;
+        background:linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.04));
+        -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+        -webkit-mask-composite:xor;
+        mask-composite:exclude;
+        opacity:.58;
+      }
+      #screen-battle.mobile-canonical .mobile-action::after{
+        content:"";
+        position:absolute;
+        inset:8px;
+        border-radius:16px;
+        border:1px solid rgba(255,255,255,.08);
+        z-index:-1;
+      }
+      #screen-battle.mobile-canonical .mobile-action.safe{
+        box-shadow:0 0 0 1px rgba(118,255,195,.06), 0 0 18px rgba(95,255,188,.12), 0 14px 24px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+        background:linear-gradient(180deg,rgba(24,46,41,.98),rgba(15,30,28,.98));
+      }
+      #screen-battle.mobile-canonical .mobile-action.risk{
+        box-shadow:0 0 0 1px rgba(255,177,131,.05), 0 0 20px rgba(255,152,112,.11), 0 14px 24px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.06);
+        background:linear-gradient(180deg,rgba(56,35,33,.98),rgba(34,21,23,.98));
+      }
+      #screen-battle.mobile-canonical .mobile-action:active{
+        transform:translateY(1px) scale(.992);
+        filter:brightness(.98);
+      }
+      #screen-battle.mobile-canonical .mobile-action:hover{
+        transform:translateY(-1px);
+      }
+      #screen-battle.mobile-canonical .mobile-action:disabled{
+        opacity:.48;
+        filter:saturate(.7);
+        box-shadow:0 8px 16px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.04);
+      }
+      #screen-battle.mobile-canonical .mobile-action strong{
+        font-size:.98rem;
+        line-height:1;
+        text-align:left;
+      }
+      #screen-battle.mobile-canonical .mobile-action span{
+        font-size:.62rem;
+        color:#c8d1e3;
+      }
+      @keyframes mobileDiePulse{
+        0%,100%{box-shadow:0 0 0 1px rgba(121,255,202,.14), 0 0 12px rgba(121,255,202,.06), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -10px 16px rgba(7,9,16,.26);}
+        50%{box-shadow:0 0 0 1px rgba(121,255,202,.18), 0 0 18px rgba(121,255,202,.12), inset 0 1px 0 rgba(255,255,255,.08), inset 0 -10px 16px rgba(7,9,16,.26);}
+      }
+    }
+  </style>
+  <script id="battle-mobile-canonical-renderer">
+    (function(){
+      function isMobileBattleMode(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function canonicalBattleMarkup(){
+        return `
+          <div class="battle-mobile-canonical-shell">
+            <section class="mobile-panel mobile-header" id="enemy-panel">
+              <div class="mobile-header-top">
+                <div class="mobile-header-copy">
+                  <strong class="mobile-header-title" id="enemy-name-copy">鼠巷混混</strong>
+                  <span class="mobile-header-stage" id="battle-stage">第 1 / 5 战</span>
+                </div>
+                <div class="mobile-chip-stack">
+                  <span class="mobile-chip" id="battle-index-chip">Lv 1</span>
+                </div>
+              </div>
+              <div class="mobile-enemy-row">
+                <div class="mobile-avatar"><span id="enemy-avatar">🐀</span></div>
+                <div class="mobile-enemy-copy">
+                  <div class="mobile-enemy-line">
+                    <span class="mobile-enemy-name" id="enemy-name">鼠巷混混</span>
+                    <strong class="mobile-enemy-hp" id="enemy-hp-text">28 / 28</strong>
+                  </div>
+                  <div class="mobile-intent-row">
+                    <span class="mobile-intent" id="boss-warning">普通追击</span>
+                    <div class="mobile-threat"><strong id="enemy-damage">3</strong></div>
+                  </div>
+                  <div class="mobile-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div>
+                </div>
+              </div>
+              <div class="mobile-player-row">
+                <div class="mobile-player-meta">
+                  <span class="mobile-chip" id="topbar-player-hp">生命 46</span>
+                  <span class="mobile-player-hp" id="player-hp-text">46 / 46</span>
+                </div>
+                <div class="mobile-player-meta">
+                  <span class="mobile-chip" id="topbar-coins-chip">金币 0</span>
+                  <div class="mobile-track" style="height:8px;min-width:96px"><div class="hp-fill player" id="player-hp-fill"></div></div>
+                </div>
+              </div>
+              <span id="enemy-flavor" style="display:none"></span>
+            </section>
+
+            <div class="mobile-drawer-row">
+              <details class="mobile-drawer-left">
+                <summary>RELICS</summary>
+                <div class="mobile-drawer-panel">
+                  <p class="side-section-title">Relics</p>
+                  <div class="inventory-grid" id="relic-slots"></div>
+                  <p class="side-section-title">Pity</p>
+                  <div class="pity-chip" id="pity-chip">怜悯筹码待命</div>
+                </div>
+              </details>
+              <details class="mobile-drawer-right">
+                <summary>LOGS</summary>
+                <div class="mobile-drawer-panel">
+                  <p class="side-section-title">Build</p>
+                  <div class="row" style="gap:8px;justify-content:flex-start;flex-wrap:wrap">
+                    <span class="badge" id="highest-chip">未成型</span>
+                    <span class="badge" id="state-chip">局势</span>
+                  </div>
+                  <div class="panel" style="padding:12px;margin-top:10px">
+                    <div class="calc-box" id="calc-breakdown"></div>
+                  </div>
+                  <p class="side-section-title" style="margin-top:10px">Battle Log</p>
+                  <div class="battle-log" id="battle-log"></div>
+                  <div id="status-chip-row" style="display:none"></div>
+                </div>
+              </details>
+            </div>
+
+            <section class="mobile-battle-core">
+              <div class="mobile-status-row">
+                <div class="mobile-status-main" id="dice-lock-summary">已锁定 0 / 5</div>
+                <div class="mobile-status-sub" id="dice-reroll-preview"></div>
+              </div>
+              <div id="dice-lock-copy" style="display:none"></div>
+              <div class="mobile-dice-row" id="dice-fallback-layer"></div>
+            </section>
+
+            <section class="mobile-panel mobile-summary battle-summary-strip" id="battle-summary-strip">
+              <div class="mobile-summary-item">
+                <span class="mobile-summary-label">Combo</span>
+                <strong class="mobile-summary-value" id="hero-hand">一对</strong>
+              </div>
+              <div class="mobile-summary-item damage">
+                <span class="mobile-summary-label">Damage</span>
+                <strong class="mobile-summary-value" id="hero-damage">4</strong>
+              </div>
+              <div class="mobile-summary-item">
+                <span class="mobile-summary-label">Next</span>
+                <strong class="mobile-summary-value" id="hero-target">三条</strong>
+              </div>
+              <div class="mobile-summary-item">
+                <span class="mobile-summary-label">Rerolls</span>
+                <strong class="mobile-summary-value" id="hero-rerolls-copy">2</strong>
+              </div>
+            </section>
+
+            <div class="mobile-actions battle-bottom-actions">
+              <button class="mobile-action safe" id="settle-btn" type="button"><strong id="settle-btn-title">收手结算 4</strong><span id="settle-subline">锁住这手收益</span></button>
+              <button class="mobile-action risk" id="reroll-btn" type="button"><strong id="reroll-title">继续赌</strong><span id="reroll-subline">冲三条 · 重掷 5 枚</span></button>
+            </div>
+
+            <div id="battle-legacy-copy" style="display:none">
+              <span id="coins-chip"></span>
+              <span id="hero-hand-copy"></span>
+              <span id="hero-damage-copy"></span>
+              <span id="hero-multiplier">x1.00</span>
+              <span id="safe-badge"></span>
+              <span id="risk-badge"></span>
+              <span id="settle-title"></span>
+              <span id="settle-copy"></span>
+              <span id="preview-score"></span>
+              <span id="preview-damage"></span>
+              <span id="settle-real"></span>
+              <span id="settle-style"></span>
+              <span id="settle-reason"></span>
+              <span id="settle-resource"></span>
+              <div id="settle-values"></div>
+              <span id="push-title"></span>
+              <span id="push-copy"></span>
+              <span id="nearMiss"></span>
+              <span id="potentialHit"></span>
+              <div id="pushTargets"></div>
+              <span id="pushReason"></span>
+              <span id="pushCost"></span>
+            </div>
+          </div>`;
+      }
+
+      function ensureCanonicalMobileBattle(){
+        const battle=document.getElementById("screen-battle");
+        if(!battle || !isMobileBattleMode()) return false;
+        battle.classList.add("mobile-canonical");
+        const hasCanonicalShell=!!battle.querySelector(".battle-mobile-canonical-shell");
+        if(battle.dataset.canonicalMobile==="1" && hasCanonicalShell) return true;
+        battle.dataset.canonicalMobile="1";
+        battle.innerHTML=canonicalBattleMarkup();
+        if(window.syncBattleUiRefs) window.syncBattleUiRefs();
+        const rerollBtn=document.getElementById("reroll-btn");
+        const settleBtn=document.getElementById("settle-btn");
+        if(rerollBtn) rerollBtn.onclick=function(e){ if(e) e.preventDefault(); if(window.rerollUnlockedDice) window.rerollUnlockedDice(false); return false; };
+        if(settleBtn) settleBtn.onclick=function(e){ if(e) e.preventDefault(); if(window.settleHand) window.settleHand(); return false; };
+        return true;
+      }
+
+      function renderCanonicalMobileBattle(){
+        if(typeof state==="undefined" || !state || !state.battle || !isMobileBattleMode()) return;
+        ensureCanonicalMobileBattle();
+        const enemy=state.battle.enemy;
+        const info=evaluateHand();
+        const preview=calculateDamagePreview(info);
+        state.battle.preview=preview;
+        const recommended=new Set(window.getRecommendedKeepIndices ? getRecommendedKeepIndices(info) : []);
+        const activeCount=state.battle.dice.filter(d=>!d.inactive).length;
+        const lockedCount=state.battle.dice.filter(d=>d.locked&&!d.inactive).length;
+        const rerollCount=state.battle.dice.filter(d=>!d.locked&&!d.inactive).length;
+        const canEmergencyReroll=state.battle.rerollsRemaining<=0 && state.player.pityTokens>0;
+        const target=window.getCompactTarget ? getCompactTarget(preview,info) : "高阶牌型";
+
+        setText("enemy-name-copy",enemy.name);
+        setText("battle-stage",`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战`);
+        setText("battle-index-chip",`Lv ${state.run.battleIndex+1}`);
+        setText("topbar-coins-chip",`金币 ${state.player.coins}`);
+        setText("enemy-name",enemy.name);
+        setText("enemy-hp-text",`${enemy.hp} / ${enemy.maxHp}`);
+        setText("boss-warning",enemy.intentText || "普通追击");
+        setText("enemy-damage",String(getEnemyDamage()));
+        setText("topbar-player-hp",`生命 ${state.player.hp}`);
+        setText("player-hp-text",`${state.player.hp} / ${state.player.maxHp}`);
+        const avatar=document.getElementById("enemy-avatar");
+        if(avatar) avatar.textContent=enemy.avatar;
+        const enemyFill=document.getElementById("enemy-hp-fill");
+        if(enemyFill) enemyFill.style.width=`${Math.max(0,enemy.hp/enemy.maxHp*100)}%`;
+        const playerFill=document.getElementById("player-hp-fill");
+        if(playerFill) playerFill.style.width=`${Math.max(0,state.player.hp/state.player.maxHp*100)}%`;
+
+        setText("dice-lock-summary",`已锁定 ${lockedCount} / ${activeCount}`);
+        setText("dice-reroll-preview",rerollCount ? `将重掷 ${rerollCount} 枚未锁定骰子` : "当前全部已锁定");
+        setText("hero-hand",info.hand.name);
+        setText("hero-damage",String(preview.totalDamage));
+        setText("hero-target",target);
+        setText("hero-rerolls-copy",String(state.battle.rerollsRemaining));
+        setText("settle-btn-title",`收手结算 ${preview.totalDamage}`);
+        setText("settle-subline",preview.busted ? "止损，换补偿" : "锁住这手收益");
+        setText("reroll-title",canEmergencyReroll ? "拆筹码继续赌" : state.battle.rerollsRemaining>0 ? "继续赌" : "本回合到头");
+        setText("reroll-subline",canEmergencyReroll ? `强续一手 · 冲 ${target}` : state.battle.rerollsRemaining>0 ? `冲 ${target} · 重掷 ${rerollCount} 枚` : "没有可用重掷");
+        setText("highest-chip",state.run.buildType || "未成型");
+        setText("state-chip",window.getBattleStateLabel ? getBattleStateLabel(preview,info) : "局势");
+        setText("pity-chip",state.player.pityTokens>0 ? `怜悯筹码 ${state.player.pityTokens}` : "怜悯筹码待命");
+
+        const host=document.getElementById("dice-fallback-layer");
+        if(host){
+          const faces={
+            1:{label:"ONE",symbol:"◆"},
+            2:{label:"TWO",symbol:"✿"},
+            3:{label:"THREE",symbol:"✦"},
+            4:{label:"FOUR",symbol:"⬢"},
+            5:{label:"FIVE",symbol:"◉"},
+            6:{label:"SIX",symbol:"✺"}
+          };
+          host.innerHTML=state.battle.dice.map(d=>{
+            const face=faces[d.value] || faces[1];
+            const classes=["mobile-die"];
+            if(d.locked) classes.push("locked");
+            else if(recommended.has(d.index)) classes.push("recommended");
+            return `<button type="button" class="${classes.join(" ")}" data-die-index="${d.index}" ${d.inactive?"disabled":""}>
+              <span class="mobile-die-label">${d.locked ? "LOCKED" : face.label}</span>
+              <span class="mobile-die-value">${d.inactive ? "✕" : face.symbol}</span>
+              <span class="mobile-die-lock">${d.locked ? "锁" : ""}</span>
+            </button>`;
+          }).join("");
+          host.querySelectorAll("[data-die-index]").forEach(btn=>{
+            btn.onclick=function(e){
+              if(e) e.preventDefault();
+              if(window.toggleDie) window.toggleDie(Number(btn.dataset.dieIndex));
+              return false;
+            };
+          });
+        }
+
+        if(window.renderRelics) renderRelics();
+        if(window.renderBreakdown) renderBreakdown(preview);
+        if(window.renderLog) renderLog();
+      }
+
+      function setText(id,text){
+        const node=document.getElementById(id);
+        if(node) node.textContent=text;
+      }
+
+      window.isMobileBattleMode=isMobileBattleMode;
+      window.ensureCanonicalMobileBattle=ensureCanonicalMobileBattle;
+      window.renderCanonicalMobileBattle=renderCanonicalMobileBattle;
+
+      const previousRender=window.renderBattle;
+      window.renderBattle=function(){
+        if(isMobileBattleMode() && typeof state!=="undefined" && state && state.battle){
+          renderCanonicalMobileBattle();
+          return;
+        }
+        if(previousRender) previousRender();
+      };
+
+      const previousStart=window.startBattle;
+      window.startBattle=function(index){
+        if(previousStart) previousStart(index);
+        if(isMobileBattleMode() && typeof state!=="undefined" && state && state.battle){
+          ensureCanonicalMobileBattle();
+          renderCanonicalMobileBattle();
+          if(window.setScreen) setScreen("battle");
+        }
+      };
+    })();
+  </script>
+  <script id="battle-mobile-normalize-final">
+    (function(){
+      function isMobile(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function normalizeMobileBattle(){
+        const battle=document.getElementById("screen-battle");
+        if(!battle || !isMobile()) return;
+        if(window.ensureBattleHudV2Shell) window.ensureBattleHudV2Shell();
+        const shell=battle.querySelector(".battle-hud-shell");
+        if(shell) shell.classList.add("mobile-hud");
+        battle.dataset.hudVersion="v2-mobile";
+
+        const strip=document.getElementById("battle-summary-strip");
+        if(strip){
+          strip.style.display="grid";
+          strip.style.gridTemplateColumns="repeat(4,minmax(0,1fr))";
+          strip.style.gridTemplateRows="1fr";
+          strip.style.gridTemplateAreas='"combo damage next rerolls"';
+        }
+
+        const drawers=battle.querySelector(".battle-mobile-drawers");
+        if(drawers){
+          drawers.style.display="flex";
+        }
+
+        const bottom=document.querySelector("#screen-battle .battle-bottom-actions");
+        if(bottom){
+          bottom.style.marginTop="auto";
+        }
+
+        if(window.requestAnimationFrame){
+          requestAnimationFrame(function(){
+            if(window.paintVisibleDice) window.paintVisibleDice();
+            const apply=document.getElementById("battle-mobile-postpatch-v2");
+            if(apply && typeof state!=="undefined" && state && state.battle){
+              const evt=new Event("battle-mobile-normalize");
+              document.dispatchEvent(evt);
+            }
+          });
+        }
+      }
+
+      const prevEnsure=window.ensureBattleHudV2Shell;
+      if(prevEnsure){
+        window.ensureBattleHudV2Shell=function(){
+          prevEnsure();
+          normalizeMobileBattle();
+        };
+      }
+
+      const prevRefresh=window.v2RefreshBattle;
+      if(prevRefresh){
+        window.v2RefreshBattle=function(){
+          prevRefresh();
+          normalizeMobileBattle();
+        };
+      }
+
+      const prevRender=window.renderBattle;
+      window.renderBattle=function(){
+        if(prevRender) prevRender();
+        normalizeMobileBattle();
+      };
+
+      const prevStart=window.startBattle;
+      window.startBattle=function(index){
+        if(prevStart) prevStart(index);
+        normalizeMobileBattle();
+      };
+    })();
+  </script>
+  <script id="battle-mobile-authority-final">
+    (function(){
+      function isMobileBattle(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function primeCanonicalShell(){
+        if(!isMobileBattle()) return false;
+        const battle=document.getElementById("screen-battle");
+        if(!battle) return false;
+        battle.classList.add("mobile-canonical");
+        if(window.ensureCanonicalMobileBattle) window.ensureCanonicalMobileBattle();
+        return true;
+      }
+
+      function forceCanonicalBattle(){
+        if(!primeCanonicalShell()) return false;
+        if(typeof state==="undefined" || !state || !state.battle) return false;
+        if(window.renderCanonicalMobileBattle) window.renderCanonicalMobileBattle();
+        return true;
+      }
+
+      const originalSetScreen=window.setScreen;
+      window.setScreen=function(name){
+        if(name==="battle" && isMobileBattle()){
+          primeCanonicalShell();
+        }
+        if(originalSetScreen) originalSetScreen(name);
+        if(name==="battle" && isMobileBattle()){
+          forceCanonicalBattle();
+          requestAnimationFrame(function(){ forceCanonicalBattle(); });
+        }
+      };
+
+      const desktopRender=window.renderBattle;
+      window.renderBattle=function(){
+        if(forceCanonicalBattle()) return;
+        if(desktopRender) desktopRender();
+      };
+
+      const desktopStart=window.startBattle;
+      window.startBattle=function(index){
+        if(desktopStart) desktopStart(index);
+        forceCanonicalBattle();
+        setTimeout(forceCanonicalBattle,0);
+        setTimeout(forceCanonicalBattle,32);
+      };
+
+      window.ensureBattleHudV2Shell=function(){
+        if(forceCanonicalBattle()) return;
+      };
+
+      window.v2RefreshBattle=function(){
+        if(forceCanonicalBattle()) return;
+      };
+
+      primeCanonicalShell();
+
+      document.addEventListener("DOMContentLoaded",function(){
+        primeCanonicalShell();
+        setTimeout(forceCanonicalBattle,0);
+      });
+
+      window.addEventListener("resize",function(){
+        if(isMobileBattle()){
+          primeCanonicalShell();
+          forceCanonicalBattle();
+        }
+      });
+    })();
+  </script>
+  <script id="battle-mobile-only-final">
+    (function(){
+      function isMobileBattle(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function ensureMobileOnlyShell(){
+        if(!isMobileBattle()) return false;
+        const battle=document.getElementById("screen-battle");
+        if(!battle || !window.ensureCanonicalMobileBattle) return false;
+        battle.classList.add("mobile-canonical");
+        window.ensureCanonicalMobileBattle();
+        return true;
+      }
+
+      const originalRebuild=window.rebuildBattleHudShell;
+      window.rebuildBattleHudShell=function(){
+        if(ensureMobileOnlyShell()) return;
+        if(originalRebuild) originalRebuild();
+      };
+
+      const originalEnsureLegacy=window.ensureLegacyBattleCompatNodes;
+      window.ensureLegacyBattleCompatNodes=function(){
+        if(isMobileBattle()) return;
+        if(originalEnsureLegacy) originalEnsureLegacy();
+      };
+
+      const originalRenderDice=window.renderDice;
+      window.renderDice=function(){
+        if(isMobileBattle() && typeof state!=="undefined" && state && state.battle && window.renderCanonicalMobileBattle){
+          window.renderCanonicalMobileBattle();
+          return;
+        }
+        if(originalRenderDice) originalRenderDice();
+      };
+
+      const originalStartBattle=window.startBattle;
+      window.startBattle=function(index){
+        ensureMobileOnlyShell();
+        if(originalStartBattle) originalStartBattle(index);
+        ensureMobileOnlyShell();
+        if(window.renderCanonicalMobileBattle) window.renderCanonicalMobileBattle();
+        requestAnimationFrame(function(){
+          ensureMobileOnlyShell();
+          if(window.renderCanonicalMobileBattle) window.renderCanonicalMobileBattle();
+        });
+      };
+
+      const originalRenderBattle=window.renderBattle;
+      window.renderBattle=function(){
+        if(isMobileBattle() && typeof state!=="undefined" && state && state.battle && window.renderCanonicalMobileBattle){
+          ensureMobileOnlyShell();
+          window.renderCanonicalMobileBattle();
+          return;
+        }
+        if(originalRenderBattle) originalRenderBattle();
+      };
+
+      document.addEventListener("DOMContentLoaded",function(){
+        ensureMobileOnlyShell();
+      });
+    })();
+  </script>
+  <script id="battle-mobile-dice-normalize-final">
+    (function(){
+      function isMobileBattle(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function normalizeDiceHost(){
+        if(!isMobileBattle()) return;
+        if(typeof state==="undefined" || !state || !state.battle) return;
+        const host=document.getElementById("dice-fallback-layer");
+        if(!host) return;
+        const faces={
+          1:{label:"ONE",symbol:"◆"},
+          2:{label:"TWO",symbol:"✿"},
+          3:{label:"THREE",symbol:"✦"},
+          4:{label:"FOUR",symbol:"⬢"},
+          5:{label:"FIVE",symbol:"◉"},
+          6:{label:"SIX",symbol:"✺"}
+        };
+        const info=window.evaluateHand ? evaluateHand() : null;
+        const recommended=new Set(window.getRecommendedKeepIndices && info ? getRecommendedKeepIndices(info) : []);
+        host.innerHTML=state.battle.dice.map(d=>{
+          const face=faces[d.value] || faces[1];
+          const classes=["mobile-die"];
+          if(d.locked) classes.push("locked");
+          else if(recommended.has(d.index)) classes.push("recommended");
+          if(d.rolling) classes.push("rolling");
+          return `<button type="button" class="${classes.join(" ")}" data-die-index="${d.index}" ${d.inactive?"disabled":""}>
+            <span class="mobile-die-label">${face.label}</span>
+            <span class="mobile-die-value">${d.inactive ? "✕" : face.symbol}</span>
+            <span class="mobile-die-lock">LOCK</span>
+          </button>`;
+        }).join("");
+        host.querySelectorAll("[data-die-index]").forEach(btn=>{
+          btn.onclick=function(e){
+            if(e) e.preventDefault();
+            if(window.toggleDie) window.toggleDie(Number(btn.dataset.dieIndex));
+            return false;
+          };
+        });
+      }
+
+      const originalCanonicalRender=window.renderCanonicalMobileBattle;
+      window.renderCanonicalMobileBattle=function(){
+        if(originalCanonicalRender) originalCanonicalRender();
+        normalizeDiceHost();
+      };
+
+      const originalRenderDice=window.renderDice;
+      window.renderDice=function(){
+        if(isMobileBattle()){
+          normalizeDiceHost();
+          return;
+        }
+        if(originalRenderDice) originalRenderDice();
+      };
+
+      const originalToggleDie=window.toggleDie;
+      window.toggleDie=function(index){
+        if(originalToggleDie) originalToggleDie(index);
+        normalizeDiceHost();
+      };
+
+      const originalRerollUnlockedDice=window.rerollUnlockedDice;
+      window.rerollUnlockedDice=function(isFree){
+        if(originalRerollUnlockedDice) originalRerollUnlockedDice(isFree);
+        normalizeDiceHost();
+        setTimeout(normalizeDiceHost,120);
+        setTimeout(normalizeDiceHost,520);
+      };
+
+      document.addEventListener("DOMContentLoaded",function(){
+        normalizeDiceHost();
+      });
+    })();
+  </script>
+  <script id="battle-mobile-actions-final">
+    (function(){
+      function isMobileBattle(){
+        return window.matchMedia && window.matchMedia("(max-width:430px)").matches;
+      }
+
+      function refreshMobileBattle(){
+        if(window.renderCanonicalMobileBattle) window.renderCanonicalMobileBattle();
+      }
+
+      function refreshAfterToggle(index){
+        setTimeout(function(){
+          if(typeof state!=="undefined" && state && state.battle && state.battle.dice[index]){
+            state.battle.dice[index].toggled=false;
+            refreshMobileBattle();
+          }
+        },260);
+      }
+
+      const originalToggleDie=window.toggleDie;
+      window.toggleDie=function(index){
+        if(!isMobileBattle()){
+          if(originalToggleDie) return originalToggleDie(index);
+          return;
+        }
+        const die=state && state.battle ? state.battle.dice[index] : null;
+        if(!die || die.inactive) return;
+        state.run.metrics.hold_clicks+=1;
+        die.locked=!die.locked;
+        die.toggled=true;
+        refreshMobileBattle();
+        if(window.addLog){
+          addLog(die.locked?"锁定骰子":"取消锁定",die.locked?`第 ${index+1} 枚骰子已经拿下，下一次重掷不会动它。`:`第 ${index+1} 枚骰子已重新加入下一次重掷。`);
+        }
+        refreshAfterToggle(index);
+      };
+
+      const originalRerollUnlockedDice=window.rerollUnlockedDice;
+      window.rerollUnlockedDice=function(isFree=false){
+        if(!isMobileBattle()){
+          if(originalRerollUnlockedDice) return originalRerollUnlockedDice(isFree);
+          return;
+        }
+        if(!state || !state.battle) return;
+        if(state.battle.rerollsRemaining<=0 && !isFree && !(window.spendPityOnReroll && spendPityOnReroll())) return;
+
+        let unlocked=state.battle.dice.filter(d=>!d.locked&&!d.inactive);
+        if(!unlocked.length) unlocked=state.battle.dice.filter(d=>!d.inactive);
+
+        const rolled=[];
+        unlocked.forEach(d=>{
+          d.value=window.rollDie ? rollDie() : Math.floor(Math.random()*6)+1;
+          d.rolling=true;
+          rolled.push(d.index+1);
+        });
+
+        if(!isFree){
+          state.battle.rerollsRemaining-=1;
+          state.battle.rerollsUsed+=1;
+          state.run.metrics.reroll_count+=1;
+          if(state.battle.enemyIntent==="punish_greed"||state.battle.enemyIntent==="mixed"||state.battle.enemyIntent==="boss"){
+            state.battle.enemyCharge+=1;
+            if(window.addLog) addLog("敌人读牌",`${state.battle.enemy.name} 看你继续贪，顺势把压力抬高了 1 档。`);
+          }
+        }
+
+        refreshMobileBattle();
+        const preview=state.battle.preview;
+        if(window.showFloat && preview){
+          showFloat(`x${preview.multiplier.toFixed(2)}`,window.hasRelic&&hasRelic("greedy-multi")?"var(--orange)":"var(--cyan)");
+        }
+        if(window.addLog){
+          addLog(isFree?"安全网":"重掷",`${isFree?"系统替你兜底重掷了一次。":"你又扭了一次骰子。"} 重新掷出的骰子：${rolled.join("、")}。${state.battle.preview&&state.battle.preview.busted?"这手还悬，但还没到该认输的时候。":"牌型还在上升，别急着松手。"} `);
+        }
+
+        setTimeout(function(){
+          state.battle.dice.forEach(d=>{ d.rolling=false; });
+          refreshMobileBattle();
+        },520);
+      };
+
+      const originalSettleHand=window.settleHand;
+      window.settleHand=function(){
+        if(!isMobileBattle()){
+          if(originalSettleHand) return originalSettleHand();
+          return;
+        }
+        const preview=state&&state.battle?state.battle.preview:null;
+        if(!preview) return;
+        if(preview.busted){
+          if(originalSettleHand) originalSettleHand();
+          refreshMobileBattle();
+          return;
+        }
+
+        const settle=window.getSettleProfile ? getSettleProfile(preview,preview.handInfo) : null;
+        state.run.metrics.total_hands+=1;
+        state.run.metrics.damage_events+=1;
+        if(window.consumePity) consumePity(preview);
+        state.battle.failStreak=0;
+        const shatter=window.applyGlassRisk ? applyGlassRisk(preview) : "";
+        let damage=preview.totalDamage;
+
+        if(state.battle.enemyShield>0){
+          const blocked=Math.min(state.battle.enemyShield,damage);
+          state.battle.enemyShield-=blocked;
+          damage-=blocked;
+          if(window.addLog){
+            addLog("护盾抵消",`${state.battle.enemy.name} 的护盾吸收了 ${blocked} 点伤害。${damage>0?` 仍有 ${damage} 点穿透。`:" 这次收手被整面吃掉。"} `);
+          }
+        }
+
+        state.battle.enemy.hp=Math.max(0,state.battle.enemy.hp-damage);
+        state.player.totalDamage+=damage;
+
+        if(preview.goldDice){
+          state.player.coins+=preview.goldDice*2;
+          if(window.addLog) addLog("黄金骰",`本次共有 ${preview.goldDice} 枚黄金骰参与得分，额外获得 +${preview.goldDice*2} 金币。`);
+        }
+
+        if(settle&&settle.bonusCoins>0){
+          state.player.coins+=settle.bonusCoins;
+          if(window.addLog) addLog("稳住兑现",`这次收手额外拿到 +${settle.bonusCoins} 金币。${state.run.buildType==="保底流"?"保底流会把收手本身也变成收益。":""}`);
+        }
+
+        if(preview.handInfo.hand.rank>=state.player.highestHandRank){
+          state.player.highestHandRank=preview.handInfo.hand.rank;
+          state.player.highestHandName=preview.handInfo.hand.name;
+        }
+
+        if((state.battle.enemy.archetype==="punish_low"||state.battle.enemy.archetype==="boss")&&damage<(state.battle.enemy.lowDamageThreshold||10)){
+          state.battle.lowDamageRounds+=1;
+          if(state.battle.lowDamageRounds>=2){
+            const gain=state.battle.enemy.shieldGain||7;
+            state.battle.enemyShield+=gain;
+            state.battle.lowDamageRounds=0;
+            if(window.addLog) addLog("敌人坐大",`${state.battle.enemy.name} 看你连续两回合都在小收，给自己叠了 ${gain} 点护盾。`);
+          }
+        }else{
+          state.battle.lowDamageRounds=0;
+        }
+
+        if(window.launchMissile) launchMissile(`${preview.baseDamage} x ${preview.multiplier.toFixed(2)} = ${damage}`,"var(--gold2)");
+        if(window.showFloat) showFloat(`-${damage}`,preview.handInfo.hand.rank>=6?"var(--orange)":"var(--gold)");
+        if(window.flashEnemy) flashEnemy();
+        if(window.screenShake) screenShake();
+        if(window.addLog) addLog("命中",`你用 ${preview.handInfo.hand.name} 结算了 ${damage} 点伤害。${shatter?`${shatter}`:""}`);
+
+        if(state.battle.enemy.hp<=0){
+          const coins=window.payoutCoins ? payoutCoins() : 0;
+          state.run.enemiesDefeated+=1;
+          if(window.addLog) addLog("拆桌成功",`${state.battle.enemy.name} 倒下了，你把桌上的 ${coins} 金币全扫走。`);
+          if(state.run.battleIndex===ENEMIES.length-1){
+            if(window.showSummary) showSummary(true);
+            return;
+          }
+          if(window.prepareShop) prepareShop();
+          return;
+        }
+
+        if(state.battle.countdown>0){
+          state.battle.countdown-=1;
+          if(state.battle.countdown===0){
+            state.battle.enemyCharge+=state.battle.enemy.countdownBurst||2;
+            if(window.addLog) addLog("倒计时归零",`${state.battle.enemy.name} 进入高压，直接蓄力 +${state.battle.enemy.countdownBurst||2}。现在再拖，就会吃整桌反扑。`);
+          }
+        }
+
+        if(window.enemyAttack) enemyAttack();
+        if(state.player.hp<=0){
+          if(window.showSummary) showSummary(false);
+          return;
+        }
+
+        state.battle.turnCount=(state.battle.turnCount||1)+1;
+        state.battle.disruptTriggered=false;
+        state.battle.rerollsRemaining=2;
+        state.battle.rerollsUsed=0;
+        state.battle.dice=window.createBattleDice ? createBattleDice() : state.battle.dice;
+        if(window.addLog) addLog("下一手","桌面重新洗牌。现在你得重新判断：这手该稳稳收下，还是继续贪到能改命的那一下。");
+        refreshMobileBattle();
+      };
+    })();
   </script>
 </body>
 </html>
