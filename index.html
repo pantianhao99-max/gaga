@@ -482,6 +482,94 @@ function getHpWarningLine(){
   if(hpRatio<=.35)return"血线开始发红，这一手的收放会决定后面能不能接着赌。";
   return"血线还扛得住，你可以把注意力放在这手值不值得追。";
 }
+const RUN_PACING=[
+  {title:"开局试手",goal:"快速理解保底 vs 贪刀",intro:"第一战的目标不是难住你，而是让你立刻经历一次“该不该收”的正确抉择。",hint:"这里更宽容，适合先学会怎么收、怎么追。"},
+  {title:"偏流派",goal:"让构筑开始偏向一种打法",intro:"第二战开始给你方向感。奖励会更明显地把你往某个流派推。",hint:"这一战仍然留有容错，但你该开始决定自己想玩哪种风格。"},
+  {title:"变打法",goal:"敌人机制逼你换思路",intro:"第三战不是更厚的血条，而是更明确地逼你改判断。",hint:"沿用前两战的习惯，很容易在这里被看穿。"},
+  {title:"验构筑",goal:"验证当前 build 是否真的成型",intro:"第四战开始检查你的构筑有没有真正站住。",hint:"这一战会要求你把已经拿到的方向转成稳定胜势。"},
+  {title:"终局发问",goal:"Boss 拿你的 build 反过来问你",intro:"最终战不是纯数值放大，而是庄家会专门针对你当前的打法出题。",hint:"Boss 会把你这把最依赖的东西逼到极限。"}
+];
+function getStagePlan(index){
+  return RUN_PACING[index]||RUN_PACING[RUN_PACING.length-1];
+}
+function getBossBuildExamText(buildKey){
+  if(buildKey==="stable")return"庄家会抬高低伤害惩罚，逼保底流证明自己不是只会小收。";
+  if(buildKey==="greed")return"庄家会放大每次 reroll 的代价，逼贪刀流证明自己值得继续赌。";
+  if(buildKey==="risk")return"庄家会把高压和倒计时一起压上来，逼受伤反打流证明自己能在红线里翻盘。";
+  return"庄家会从你的弱项下手，逼你给出最终答案。";
+}
+const baseStartBattlePacing=startBattle;
+startBattle=function(index){
+  baseStartBattlePacing(index);
+  if(!state?.battle)return;
+  const plan=getStagePlan(index);
+  state.battle.stagePlan=plan;
+  state.battle.firstHandGrace=index===0;
+  state.battle.validationPressure=index>=3;
+  if(index===0){
+    state.battle.countdown=Math.max(state.battle.countdown||0,4);
+  }
+  if(index===1){
+    state.battle.enemy.hp=Math.round(state.battle.enemy.hp*.94);
+    state.battle.enemy.maxHp=state.battle.enemy.hp;
+  }
+  if(index===3){
+    state.battle.enemy.hp=Math.round(state.battle.enemy.hp*1.04);
+    state.battle.enemy.maxHp=state.battle.enemy.hp;
+  }
+  if(index===4){
+    const build=getBuildFocus().key;
+    state.battle.enemy.intentText=`终局发问：${getBossBuildExamText(build)}`;
+    if(build==="stable"){
+      state.battle.enemy.lowDamageThreshold=14;
+      state.battle.enemy.shieldGain=10;
+    }else if(build==="greed"){
+      state.battle.enemy.greedCharge=2;
+      state.battle.enemy.countdownBurst=4;
+    }else if(build==="risk"){
+      state.battle.countdown=Math.min(state.battle.countdown||3,2);
+      state.player.pityFloor=Math.max(state.player.pityFloor||0,12);
+    }
+  }
+  addLog(plan.title,`${plan.intro}${index===4?` ${getBossBuildExamText(getBuildFocus().key)}`:""} ${plan.hint}`);
+  renderBattle();
+};
+const baseGetShopOffersPacing=getShopOffers;
+getShopOffers=function(){
+  const index=state.run.battleIndex;
+  const focus=getBuildFocus().key;
+  if(index===0){
+    const fixed=["floor-plan","greedy-multi","painbank"].map(id=>RELIC_POOL.find(r=>r.id===id)).filter(Boolean);
+    const extras=baseGetShopOffersPacing().filter(offer=>!fixed.some(f=>f.id===offer.id));
+    return [...fixed, ...extras].slice(0,3);
+  }
+  if(index===1){
+    const weighted=baseGetShopOffersPacing();
+    const focusOffers=weighted.filter(offer=>getOfferBuildType(offer)===focus);
+    const otherOffers=weighted.filter(offer=>getOfferBuildType(offer)!==focus);
+    return [...focusOffers, ...otherOffers].slice(0,3);
+  }
+  if(index===3){
+    const weighted=baseGetShopOffersPacing();
+    const focusOffers=weighted.filter(offer=>getOfferBuildType(offer)===focus);
+    const validationOffers=weighted.filter(offer=>offer.id==="banked-tempo"||offer.id==="double-stake"||offer.id==="redline");
+    const merged=[...focusOffers, ...validationOffers, ...weighted];
+    const used=new Set();
+    return merged.filter(offer=>{if(used.has(offer.id))return false;used.add(offer.id);return true;}).slice(0,3);
+  }
+  return baseGetShopOffersPacing();
+};
+const baseRenderBattlePacing=renderBattle;
+renderBattle=function(){
+  baseRenderBattlePacing();
+  if(!state?.battle)return;
+  const plan=state.battle.stagePlan||getStagePlan(state.run.battleIndex);
+  ui.battleStage.textContent=`第 ${state.run.battleIndex+1} / ${ENEMIES.length} 战 · ${plan.title}`;
+  ui.enemyFlavor.textContent=`${ui.enemyFlavor.textContent} 本战目标：${plan.goal}。${plan.hint}`;
+  if(state.run.battleIndex===4){
+    ui.bossWarning.textContent=`终局提问 · ${getBuildFocus().label}`;
+  }
+};
 function classifyLogEntry(entry){
   const text=`${entry.title} ${entry.text}`;
   if(/炸|受伤|危险|蓄力|反击|背水|崩/.test(text))return"warning";
