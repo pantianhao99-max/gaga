@@ -539,6 +539,55 @@ function getBuildBonusCopy(result) {
   return notes.length ? notes.join(" / ") : "\u5f53\u524d\u8fd8\u6ca1\u6709\u7ec4\u5408\u52a0\u6210";
 }
 
+function applyHighTierComboRewards(round) {
+  if (!round?.final?.comboType) return;
+
+  if (round.final.comboType === "four") {
+    state.player.pityTokens += 1;
+    addLog("\u9ad8\u9636\u5956\u52b1", "\u56db\u540c\u6210\u7acb\uff0c\u989d\u5916\u62ff\u5230 1 \u679a\u601c\u609f\u7b79\u7801\u3002");
+    return;
+  }
+
+  if (round.final.comboType === "full") {
+    state.player.armor += 4;
+    addLog("\u9ad8\u9636\u5956\u52b1", "\u6ee1\u5802\u5f69\u6210\u7acb\uff0c\u989d\u5916\u83b7\u5f97 4 \u62a4\u7532\u3002");
+    return;
+  }
+
+  if (["five", "straight5"].includes(round.final.comboType)) {
+    state.battle.straightRefundPending = true;
+    addLog("\u9ad8\u9636\u5956\u52b1", "\u9ad8\u9636\u7ec4\u5408\u6210\u7acb\uff0c\u4e0b\u56de\u5408\u989d\u5916\u8fd4\u8fd8 1 \u6b21\u91cd\u63b7\u3002");
+  }
+}
+
+function applyEnemyPressure(round) {
+  if (!state?.battle?.enemy || !round?.final) return;
+
+  const enemy = state.battle.enemy;
+  const damage = round.final.damage;
+  const armor = round.final.armor;
+
+  if (enemy.archetype === "punish_low" && damage <= 6) {
+    state.battle.enemyCharge += 1;
+    addLog("\u654c\u65b9\u53cd\u5236", "\u4f4e\u4f24\u89e6\u53d1\u654c\u4eba\u6210\u957f\uff0c\u84c4\u529b +1\u3002");
+    showEnemyAlert("\u4f4e\u4f24\u89e6\u53d1\u53cd\u5236");
+    return;
+  }
+
+  if (enemy.archetype === "mixed" && damage <= 6) {
+    state.battle.enemyCharge += 1;
+    addLog("\u654c\u65b9\u53cd\u5236", "\u4f60\u8fd9\u624b\u6253\u5f97\u592a\u8f7b\uff0c\u6df7\u5408\u654c\u4eba\u84c4\u529b +1\u3002");
+    showEnemyAlert("\u4f4e\u4f24\u89e6\u53d1\u53cd\u5236");
+    return;
+  }
+
+  if (enemy.archetype === "boss" && (damage <= 8 || armor >= 6)) {
+    state.battle.enemyCharge += 1;
+    addLog("\u654c\u65b9\u53cd\u5236", "\u8f93\u51fa\u504f\u4f4e\u6216\u62a4\u7532\u8fc7\u9ad8\uff0cBoss \u538b\u529b +1\u3002");
+    showEnemyAlert("Boss \u538b\u529b\u5347\u7ea7");
+  }
+}
+
 function startBattle(index) {
   state.run.battleIndex = index;
   const enemy = { ...ENEMIES[index], maxHp: ENEMIES[index].hp };
