@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>骰命赌局</title>
+  <title>楠板懡璧屽眬</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -12,15 +12,15 @@
       <section class="screen title-screen active" id="screen-title">
         <div class="title-card">
           <div class="kicker">Trigger Chain Run</div>
-          <h1 class="title-logo">骰命赌局</h1>
-          <p class="title-copy">每回合掷 5 枚骰子。锁住想保留的骰面，决定现在结算触发，还是继续重掷把组合做大。</p>
+          <h1 class="title-logo">楠板懡璧屽眬</h1>
+          <p class="title-copy">姣忓洖鍚堟幏 5 鏋氶瀛愩€傞攣浣忔兂淇濈暀鐨勯闈紝鍐冲畾鐜板湪缁撶畻瑙﹀彂锛岃繕鏄户缁噸鎺锋妸缁勫悎鍋氬ぇ銆?/p>
           <div class="title-tags">
-            <span class="title-tag">5 场战斗</span>
-            <span class="title-tag">锁骰重掷</span>
-            <span class="title-tag">战后 3 选 1</span>
+            <span class="title-tag">5 鍦烘垬鏂?/span>
+            <span class="title-tag">閿侀閲嶆幏</span>
+            <span class="title-tag">鎴樺悗 3 閫?1</span>
           </div>
-          <button class="primary-launch" id="start-run-btn" type="button">开始这一局</button>
-          <div class="title-foot">首次进入提示：点击骰子可锁定，再次点击取消。</div>
+          <button class="primary-launch" id="start-run-btn" type="button">寮€濮嬭繖涓€灞€</button>
+          <div class="title-foot">棣栨杩涘叆鎻愮ず锛氱偣鍑婚瀛愬彲閿佸畾锛屽啀娆＄偣鍑诲彇娑堛€?/div>
         </div>
       </section>
 
@@ -28,27 +28,28 @@
 
       <section class="screen shop-screen" id="screen-shop">
         <div class="shop-card">
-          <div class="kicker">战后选择</div>
-          <h2 class="shop-title">强化选择</h2>
-          <p class="shop-copy" id="shop-copy">拿 1 个奖励，准备下一战。</p>
+          <div class="kicker">鎴樺悗閫夋嫨</div>
+          <h2 class="shop-title">寮哄寲閫夋嫨</h2>
+          <p class="shop-copy" id="shop-copy">鎷?1 涓鍔憋紝鍑嗗涓嬩竴鎴樸€?/p>
           <div class="shop-grid" id="shop-grid"></div>
         </div>
       </section>
 
       <section class="screen summary-screen" id="screen-summary">
         <div class="summary-card">
-          <div class="kicker" id="summary-kicker">结算</div>
-          <h2 class="summary-title" id="summary-title">这一局结束</h2>
+          <div class="kicker" id="summary-kicker">缁撶畻</div>
+          <h2 class="summary-title" id="summary-title">杩欎竴灞€缁撴潫</h2>
           <p class="summary-copy" id="summary-copy"></p>
           <div class="summary-grid" id="summary-grid"></div>
           <div class="summary-list" id="summary-list"></div>
-          <button class="secondary-launch" id="play-again-btn" type="button">再开一局</button>
+          <button class="secondary-launch" id="play-again-btn" type="button">鍐嶅紑涓€灞€</button>
         </div>
       </section>
     </main>
   </div>
 
   <div class="damage-float" id="damage-float"></div>
+  <div class="enemy-alert-float" id="enemy-alert-float"></div>
   <script src="./app.js"></script>
 </body>
 </html>
