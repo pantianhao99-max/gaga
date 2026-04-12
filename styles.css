@@ -140,29 +140,22 @@ linear-gradient(180deg, rgba(11,14,21,.99), rgba(5,8,13,.99));box-shadow:inset 0
 .action-btn:disabled{opacity:.5;cursor:not-allowed;filter:saturate(.6)}
 .shop-title,.summary-title{margin:12px 0 8px;font-size:2rem;line-height:1;font-weight:900}
 .shop-copy,.summary-copy{margin:0 0 18px;color:#c4cce2;line-height:1.6}
-.shop-shell{width:min(100%,400px);margin:auto;padding:22px 16px 18px;border-radius:30px;border:1px solid rgba(181,194,227,.1);background:linear-gradient(180deg, rgba(18,22,33,.98), rgba(9,12,18,.99));box-shadow:var(--shadow)}
-.shop-header{display:grid;gap:8px;margin-bottom:16px}
-.shop-badge{display:inline-flex;align-items:center;justify-content:center;justify-self:start;padding:8px 12px;border-radius:999px;border:1px solid rgba(141,231,242,.18);background:rgba(141,231,242,.08);color:var(--cyan);font-size:.76rem;font-weight:900;letter-spacing:.06em}
-.shop-grid{grid-template-columns:1fr;gap:12px}
-.reward-card{position:relative;display:grid;gap:12px;padding:16px;border-radius:24px;border:1px solid rgba(181,194,227,.1);background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));box-shadow:0 14px 28px rgba(0,0,0,.22)}
-.reward-card--recommended{border-color:rgba(255,217,135,.22);box-shadow:0 0 0 1px rgba(255,217,135,.08),0 16px 30px rgba(0,0,0,.24)}
+.shop-shell{width:min(100%,400px);margin:auto;padding:20px 14px 14px;border-radius:28px;border:1px solid rgba(181,194,227,.1);background:linear-gradient(180deg, rgba(18,22,33,.98), rgba(9,12,18,.99));box-shadow:var(--shadow)}
+.shop-header{display:grid;gap:4px;margin-bottom:12px}
+.shop-grid{grid-template-columns:1fr;gap:10px}
+.reward-card{position:relative;display:grid;gap:10px;padding:14px 14px 12px;border-radius:22px;border:1px solid rgba(181,194,227,.1);background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));box-shadow:0 12px 22px rgba(0,0,0,.18)}
 .reward-card--straight{background:linear-gradient(180deg, rgba(86,143,171,.18), rgba(19,33,44,.96))}
 .reward-card--pair{background:linear-gradient(180deg, rgba(112,118,182,.16), rgba(20,24,43,.96))}
 .reward-card--triple{background:linear-gradient(180deg, rgba(168,94,88,.18), rgba(34,20,24,.96))}
 .reward-card--utility{background:linear-gradient(180deg, rgba(88,132,108,.16), rgba(20,30,24,.96))}
-.reward-topline{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.reward-type,.reward-badge{display:inline-flex;align-items:center;justify-content:center;height:26px;padding:0 10px;border-radius:999px;font-size:.72rem;font-weight:900}
-.reward-type{border:1px solid rgba(181,194,227,.12);background:rgba(255,255,255,.06);color:#dbe4fb}
-.reward-badge{border:1px solid rgba(255,217,135,.18);background:rgba(255,217,135,.12);color:#ffe8ae}
-.reward-main{display:grid;gap:6px}
-.reward-name{margin:0;font-size:1.18rem;line-height:1.06;font-weight:900}
-.reward-hook{margin:0;color:#d4dcec;font-size:.86rem;line-height:1.45}
-.reward-impact{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"value meta" "value sub";column-gap:10px;row-gap:2px;align-items:center;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(8,10,16,.22)}
-.reward-impact-value{grid-area:value;font-size:1.7rem;line-height:1;font-weight:900;color:#fff0bf}
-.reward-impact-meta{grid-area:meta;color:#eef3ff;font-size:.84rem;font-weight:900}
-.reward-impact-sub{grid-area:sub;color:#bfc8df;font-size:.76rem;line-height:1.35}
-.reward-fit{padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.05);color:#cbd3e8;font-size:.8rem;font-weight:800}
-.reward-btn{min-height:50px;border:0;border-radius:16px;background:linear-gradient(180deg,#27344c,#151d2c);border:1px solid rgba(150,168,209,.18);color:#f2f6ff;font-weight:900;cursor:pointer}
+.reward-main{display:grid;gap:4px}
+.reward-name{margin:0;font-size:1.06rem;line-height:1.04;font-weight:900}
+.reward-hook{margin:0;color:#d4dcec;font-size:.8rem;line-height:1.35}
+.reward-impact{display:flex;align-items:baseline;gap:8px;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(8,10,16,.18)}
+.reward-impact-value{font-size:1.45rem;line-height:1;font-weight:900;color:#fff0bf}
+.reward-impact-meta{color:#eef3ff;font-size:.8rem;font-weight:900}
+.reward-btn{min-height:48px;border:0;border-radius:15px;background:linear-gradient(180deg,#3c5075,#1b2540);border:1px solid rgba(180,201,244,.24);color:#f7fbff;font-weight:900;letter-spacing:.02em;cursor:pointer;box-shadow:0 12px 22px rgba(8,12,22,.22), inset 0 1px 0 rgba(255,255,255,.12)}
+.reward-btn:active{transform:translateY(1px) scale(.992);filter:brightness(.98)}
 .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
 .summary-box{padding:14px;display:grid;gap:8px}
 .summary-box small{color:#93a2c7;font-size:.74rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
@@ -182,8 +175,10 @@ linear-gradient(180deg, rgba(11,14,21,.99), rgba(5,8,13,.99));box-shadow:inset 0
 @media (max-width:390px){
   .intent-copy{display:grid;gap:4px}
   .intent-copy span{max-width:none;text-align:left}
-  .shop-shell{padding:18px 14px 16px}
-  .reward-card{padding:14px}
+  .shop-shell{padding:16px 12px 12px}
+  .reward-card{padding:12px}
+  .reward-name{font-size:1rem}
+  .reward-impact-value{font-size:1.32rem}
 }
 @media (max-height:760px){
   .battle-shell{gap:6px}

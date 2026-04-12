@@ -630,11 +630,10 @@ function getOfferTheme(offer) {
     return {
       type: "\u8fde\u6bb5\u6d41",
       className: "reward-card--straight",
-      hook: "\u8fde\u6bb5\u6210\u578b\u540e\uff0c\u6bcf\u56de\u5408\u90fd\u66f4\u7a33",
+      hook: offer.id === "straightPlus" ? "\u8fde\u6bb5\u66f4\u7a33 \u00b7 \u5f53\u524d\u66f4\u5bb9\u6613\u6210\u578b" : "\u8fde\u6bb5\u80fd\u56de\u8f6c \u00b7 \u5f53\u524d\u66f4\u5bb9\u6613\u6210\u578b",
       impactValue: "+12",
-      impactMeta: "\u4f24\u5bb3",
-      impactSub: offer.id === "straightPlus" ? "\u989d\u5916 +6 \u62a4\u7532" : "\u89e6\u53d1\u540e\u8fd4\u8fd8 1 \u6b21\u91cd\u63b7",
-      buttonLabel: offer.id === "straightPlus" ? "\u8d70\u8fde\u6bb5\u6d41" : "\u62ff\u8fde\u6bb5\u56de\u8f6c"
+      impactMeta: offer.id === "straightPlus" ? "\u4f24\u5bb3 \u00b7 +6 \u62a4\u7532" : "\u8fd4\u8fd8 1 \u6b21\u91cd\u63b7",
+      buttonLabel: "\u9009\u8fd9\u4e2a"
     };
   }
 
@@ -642,11 +641,10 @@ function getOfferTheme(offer) {
     return {
       type: "\u4e09\u540c\u6d41",
       className: "reward-card--triple",
-      hook: "\u8d4c\u5230\u5927\u62db\u65f6\uff0c\u56de\u62a5\u4f1a\u66f4\u731b",
+      hook: "\u5927\u62db\u66f4\u731b \u00b7 \u8d4c\u4e2d\u5c31\u662f\u7206\u53d1",
       impactValue: "+26",
       impactMeta: "\u4f24\u5bb3",
-      impactSub: "\u4e09\u540c\u76f4\u63a5\u63d0\u5347",
-      buttonLabel: "\u8d70\u4e09\u540c\u6d41"
+      buttonLabel: "\u9009\u8fd9\u4e2a"
     };
   }
 
@@ -654,50 +652,29 @@ function getOfferTheme(offer) {
     return {
       type: "\u53cc\u6570\u6d41",
       className: "reward-card--pair",
-      hook: offer.id === "pairPlus" ? "\u53cc\u6570\u53d8\u6210\u66f4\u7a33\u7684\u6b62\u635f\u6536\u76ca" : "\u9996\u6b21\u91cd\u63b7\u66f4\u6562\u8d4c",
+      hook: offer.id === "pairPlus" ? "\u53cc\u6570\u66f4\u80fd\u6536 \u00b7 \u6b62\u635f\u66f4\u7a33" : "\u9996\u63b7\u66f4\u6562\u8d4c \u00b7 \u7ee7\u7eed\u8bd5\u4e00\u6b21",
       impactValue: offer.id === "pairPlus" ? "+10" : "+1",
-      impactMeta: offer.id === "pairPlus" ? "\u4f24\u5bb3" : "\u514d\u8d39",
-      impactSub: offer.id === "pairPlus" ? "\u53cc\u6570\u76f4\u63a5\u63d0\u5347" : "\u672c\u573a\u9996\u63b7\u4e0d\u8017\u6b21\u6570",
-      buttonLabel: offer.id === "pairPlus" ? "\u8d70\u53cc\u6570\u6d41" : "\u62ff\u989d\u5916\u673a\u4f1a"
+      impactMeta: offer.id === "pairPlus" ? "\u4f24\u5bb3" : "\u9996\u63b7\u514d\u8d39",
+      buttonLabel: "\u9009\u8fd9\u4e2a"
     };
   }
 
   return {
     type: "\u8c03\u6574",
     className: "reward-card--utility",
-    hook: "\u5148\u628a\u72b6\u6001\u7a33\u4f4f\uff0c\u518d\u8fdb\u4e0b\u4e00\u6218",
+    hook: "\u5148\u7a33\u4e00\u624b \u00b7 \u7acb\u5373\u56de\u590d",
     impactValue: "+8",
     impactMeta: "\u751f\u547d",
-    impactSub: "\u7acb\u5373\u56de\u590d",
-    buttonLabel: "\u62ff\u8fd9\u4e2a"
+    buttonLabel: "\u9009\u8fd9\u4e2a"
   };
-}
-
-function getRecommendedOfferId(offers) {
-  const ranking = Object.entries(state.run.buildScores).sort((a, b) => b[1] - a[1])[0];
-  if (!ranking || ranking[1] <= 0) return offers[0]?.id || null;
-  const targetMap = {
-    pair: ["pairPlus", "extraRerollOnce"],
-    straight: ["straightPlus", "rerollRefundOnStraight"],
-    triple: ["triplePlus"]
-  };
-  const preferred = targetMap[ranking[0]] || [];
-  return offers.find(offer => preferred.includes(offer.id))?.id || offers[0]?.id || null;
 }
 
 function showShop() {
   chooseOffers();
-  ui.shopCopy.textContent = `\u7b2c ${state.run.battleIndex + 1} \u6218\u7ed3\u675f\uff0c\u9009 1 \u4e2a\u5f3a\u5316\uff0c\u628a\u8fd9\u5c40\u5f80\u4e00\u4e2a\u89e6\u53d1\u65b9\u5411\u63a8\u3002`;
-  const recommendedId = getRecommendedOfferId(state.pendingOffers);
   ui.shopGrid.innerHTML = state.pendingOffers.map(offer => {
     const theme = getOfferTheme(offer);
-    const recommended = offer.id === recommendedId;
     return `
-    <article class="reward-card ${theme.className} ${recommended ? "reward-card--recommended" : ""}">
-      <div class="reward-topline">
-        <span class="reward-type">${theme.type}</span>
-        ${recommended ? `<span class="reward-badge">\u63a8\u8350</span>` : ""}
-      </div>
+    <article class="reward-card ${theme.className}">
       <div class="reward-main">
         <h3 class="reward-name">${offer.name}</h3>
         <p class="reward-hook">${theme.hook}</p>
@@ -705,9 +682,7 @@ function showShop() {
       <div class="reward-impact">
         <div class="reward-impact-value">${theme.impactValue}</div>
         <div class="reward-impact-meta">${theme.impactMeta}</div>
-        <div class="reward-impact-sub">${theme.impactSub}</div>
       </div>
-      <div class="reward-fit">${offer.text}</div>
       <button class="reward-btn" type="button" data-offer-id="${offer.id}">${theme.buttonLabel}</button>
     </article>
   `;
