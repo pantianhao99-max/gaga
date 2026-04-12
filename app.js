@@ -69,6 +69,20 @@ const OFFERS = [
   }
 ];
 
+const FALLBACK_OFFERS = [
+  {
+    id: "healPulse",
+    name: "缓口气",
+    text: "回复 8 点生命",
+    summary: "拿完强化后，用它把状态拉回来。",
+    apply(state) {
+      const healed = Math.min(8, state.player.maxHp - state.player.hp);
+      state.player.hp += healed;
+      addLog("缓口气", healed > 0 ? `回复了 ${healed} 点生命。` : "生命已满，这次只是稳住节奏。");
+    }
+  }
+];
+
 const ui = {
   cabinet: document.getElementById("cabinet"),
   screens: {
@@ -419,6 +433,14 @@ function getRecommendedIndexesFromValues(dice, values, excluded = [], limit = 2)
   return indexes;
 }
 
+function hasUnlockedDice(dice) {
+  return dice.some(die => !die.locked && !die.inactive);
+}
+
+function isStraightFamily(comboType) {
+  return ["straight", "straight4", "straight5"].includes(comboType);
+}
+
 function getDicePlan(currentState = state, preview = null) {
   const dice = currentState.battle?.dice?.filter(die => !die.inactive) || [];
   const roundPreview = preview || (currentState.battle ? calculateRoundResult() : null);
@@ -595,6 +617,19 @@ function getCurrentTargetText(currentState) {
   return getDicePlan(currentState).targetText;
 }
 
+function getRiskHint(preview, plan) {
+  if (!preview?.final) return "";
+  if (preview.final.comboType) {
+    return plan.recommendedIndexes.length
+      ? `当前可收 ${preview.final.damage} · 可赌更高`
+      : `当前可收 ${preview.final.damage} · 见好就收`;
+  }
+  if (plan.targetText.includes("再出1个") || plan.targetText.includes("五连") || plan.targetText.includes("四连")) {
+    return "还差一步 · 可以再赌";
+  }
+  return "继续重掷风险更高";
+}
+
 function getDieStatus(die, currentState, dice) {
   if (die.locked) return "locked";
 
@@ -666,11 +701,14 @@ function getBuildBonusCopy(result) {
   if (result.comboType === "triple") {
     notes.push(result.upgradeText || "三同触发");
   }
-  if (state.player.upgrades.rerollRefundOnStraight && result.comboType === "straight") {
+  if (state.player.upgrades.rerollRefundOnStraight && isStraightFamily(result.comboType)) {
     notes.push("下回合返还重掷");
   }
-  if (state.player.upgrades.extraRerollOnce) {
+  if (state.player.upgrades.extraRerollOnce && state.battle && !state.battle.freeRerollUsed) {
     notes.push("本场首掷免费");
+  }
+  if (state.player.upgrades.extraRerollOnce && state.battle?.freeRerollUsed) {
+    notes.push("本场首掷免费（已用）");
   }
   return notes.length ? notes.join(" / ") : "当前还没有组合加成";
 }
@@ -699,6 +737,23 @@ function applyEnemyPressure(round) {
   }
 }
 
+function applyHighTierComboRewards(round) {
+  if (round.final.comboType === "four") {
+    state.player.pityTokens += 1;
+    addLog("高阶奖励", "四同额外获得 1 枚怜悯筹码。");
+  }
+
+  if (round.final.comboType === "full") {
+    state.player.armor += 4;
+    addLog("高阶奖励", "满堂彩额外 +4 护甲。");
+  }
+
+  if (["five", "straight5"].includes(round.final.comboType)) {
+    state.battle.straightRefundPending = true;
+    addLog("高阶奖励", "高阶组合命中，下回合额外返还 1 次重掷。");
+  }
+}
+
 function buildBattleScreen() {
   ui.battle.innerHTML = `
     <div class="battle-shell">
@@ -710,7 +765,6 @@ function buildBattleScreen() {
           </div>
           <div class="topbar-pills">
             <div class="pill" id="enemy-level-pill"></div>
-            <div class="pill" id="coin-pill"></div>
           </div>
         </div>
         <div class="enemy-row">
@@ -743,6 +797,7 @@ function buildBattleScreen() {
       </section>
 
       <section class="target-bar" id="target-bar"></section>
+      <section class="risk-bar" id="risk-bar"></section>
 
       <div class="drawer-rail">
         <details class="drawer left">
@@ -808,7 +863,6 @@ function renderBattle() {
   document.getElementById("enemy-title-name").textContent = enemy.name;
   document.getElementById("enemy-stage-copy").textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
   document.getElementById("enemy-level-pill").textContent = `Lv ${state.run.battleIndex + 1}`;
-  document.getElementById("coin-pill").textContent = `金币 ${state.player.coins}`;
   document.getElementById("enemy-avatar").textContent = enemy.avatar;
   document.getElementById("enemy-name-copy").textContent = enemy.name;
   document.getElementById("enemy-trait").textContent = state.battle.enemyCharge > 0 ? `蓄力 ${state.battle.enemyCharge}` : enemy.intentText;
@@ -820,6 +874,7 @@ function renderBattle() {
   document.getElementById("enemy-intent-title").textContent = `本回合敌人攻击 ${getEnemyDamage()}`;
   document.getElementById("enemy-intent-copy").textContent = enemy.flavor;
   document.getElementById("target-bar").textContent = getCurrentTargetText(state);
+  document.getElementById("risk-bar").textContent = getRiskHint(preview, plan);
   document.getElementById("dice-lock-summary").textContent = `已锁 ${lockedCount} / 5 · 还可继续选择`;
 
   document.getElementById("hud-damage").textContent = String(preview.final.damage);
@@ -832,9 +887,10 @@ function renderBattle() {
     triple: "三同",
     straight: "三连",
     pair: "双数",
-    none: "未成型"
+    none: "散牌"
   };
   document.getElementById("hud-combo").textContent = comboLabelMap[preview.final.comboType] || comboLabelMap.none;
+  document.getElementById("hud-combo").classList.toggle("combo-accent", preview.final.comboType !== null);
   document.getElementById("hud-armor").textContent = String(preview.final.armor);
   document.getElementById("hud-rerolls").textContent = String(state.battle.rerollsRemaining);
 
@@ -902,6 +958,12 @@ function renderBattle() {
   if (comboHitNode) {
     comboHitNode.hidden = !comboHitText;
     comboHitNode.textContent = comboHitText || "";
+    comboHitNode.classList.toggle("combo-hit-elite", ["four", "five", "straight4", "straight5", "full"].includes(preview.final.comboType));
+    comboHitNode.classList.remove("combo-hit-pulse");
+    if (comboHitText) {
+      void comboHitNode.offsetWidth;
+      comboHitNode.classList.add("combo-hit-pulse");
+    }
   }
 
   const burstText = preview.final.extraBursts.length
@@ -944,7 +1006,11 @@ function startBattle(index) {
 }
 
 function chooseOffers() {
-  const pool = [...OFFERS];
+  const pool = OFFERS.filter(offer => !state.player.relicIds.has(offer.id));
+  if (!pool.length) {
+    state.pendingOffers = [...FALLBACK_OFFERS];
+    return;
+  }
   const chosen = [];
   const used = new Set();
   while (chosen.length < 3 && used.size < pool.length) {
@@ -987,7 +1053,6 @@ function showSummary(victory) {
 
   ui.summaryList.innerHTML = [
     `怜悯筹码：${state.player.pityTokens} 枚`,
-    `金币：${state.player.coins}`,
     `强化：${state.player.relics.map(relic => relic.name).join("、") || "无"}`
   ].map(text => `<div class="summary-item">${text}</div>`).join("");
 
@@ -1040,7 +1105,7 @@ function settleHand() {
   addLog("结算触发", `造成 ${totalDamage} 点伤害，同时拿到 ${round.final.armor} 护甲。`);
   addLog("组合反馈", round.final.extraBursts.length ? round.final.extraBursts.join(" / ") : getBuildBonusCopy(round.final));
 
-  if (state.player.upgrades.rerollRefundOnStraight && round.final.comboType === "straight") {
+  if (state.player.upgrades.rerollRefundOnStraight && isStraightFamily(round.final.comboType)) {
     state.battle.straightRefundPending = true;
     addLog("连段回转", "下回合返还 1 次重掷。");
   }
@@ -1048,11 +1113,11 @@ function settleHand() {
   showFloat(`-${totalDamage}`, "#ffe49e");
 
   state.run.metrics.avg_damage += totalDamage;
+  applyHighTierComboRewards(round);
   applyEnemyPressure(round);
 
   if (state.battle.enemy.hp <= 0) {
     state.run.enemiesDefeated += 1;
-    state.player.coins += 4 + state.run.battleIndex * 2;
     if (state.run.battleIndex === ENEMIES.length - 1) {
       showSummary(true);
       return;
@@ -1079,8 +1144,15 @@ function rerollUnlockedDice(free = false) {
     }
   }
 
+  if (!hasUnlockedDice(state.battle.dice)) {
+    addLog("无法重掷", "全部已锁定，无法重掷。");
+    showFloat("已全锁", "#9ee7ff");
+    renderBattle();
+    return;
+  }
   const targets = state.battle.dice.filter(die => !die.locked && !die.inactive);
-  const actualTargets = targets.length ? targets : state.battle.dice.filter(die => !die.inactive);
+  const actualTargets = targets;
+
 
   actualTargets.forEach(die => {
     die.value = rollDie();
