@@ -340,14 +340,6 @@ function getSequencePlan(dice) {
   };
 }
 
-function findDieIndexByValue(dice, value, excluded = []) {
-  const excludedSet = new Set(excluded);
-  const unlocked = dice.find(die => !die.locked && die.value === value && !excludedSet.has(die.index));
-  if (unlocked) return unlocked.index;
-  const fallback = dice.find(die => die.value === value && !excludedSet.has(die.index));
-  return fallback ? fallback.index : null;
-}
-
 function getRecommendedIndexesFromValues(dice, values, excluded = [], limit = 2) {
   const excludedSet = new Set(excluded);
   const indexes = [];
@@ -364,22 +356,17 @@ function getRecommendedIndexesFromValues(dice, values, excluded = [], limit = 2)
   return indexes;
 }
 
-function getSequenceMiddleValue(sequence) {
-  if (!sequence.length) return null;
-  return sequence[Math.floor(sequence.length / 2)];
-}
-
 function getDicePlan(currentState = state, preview = null) {
   const dice = currentState.battle?.dice?.filter(die => !die.inactive) || [];
   const roundPreview = preview || (currentState.battle ? calculateRoundResult() : null);
   const damage = roundPreview?.final?.damage ?? 0;
+  const comboType = roundPreview?.final?.comboType ?? null;
 
   if (!dice.length) {
     return {
-      targetText: "还没成型 · 再找组合",
-      settleCopy: "先吃当前收益",
-      rerollCopy: "再赌一手",
-      coreIndex: null,
+      targetText: "这手偏散 · 重掷",
+      settleCopy: "先吃收益",
+      rerollCopy: "找组合",
       recommendedIndexes: []
     };
   }
@@ -393,76 +380,83 @@ function getDicePlan(currentState = state, preview = null) {
   const topGroup = faceGroups[0];
   const pairGroups = faceGroups.filter(group => group.group.length >= 2);
 
-  if (activeSequence.length >= 3) {
-    const middleValue = getSequenceMiddleValue(activeSequence);
-    const coreIndex = findDieIndexByValue(dice, middleValue);
-    const relatedValues = activeSequence.filter(value => value !== middleValue);
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
+  if (comboType === "triple") {
+    return {
+      targetText: "三同已成 · 先收",
+      settleCopy: "稳稳收下",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "straight" && activeSequence.length >= 3) {
+    const extensionValue = activeSequence[activeSequence.length - 1] < 6
+      ? activeSequence[activeSequence.length - 1]
+      : activeSequence[0];
+    const recommendedIndexes = damage >= 8
+      ? []
+      : getRecommendedIndexesFromValues(dice, [extensionValue], [], 1);
 
     return {
-      targetText: damage >= 8 ? "连段已成 · 先收" : "连段已成 · 可结算",
+      targetText: damage >= 8 ? "连段已成 · 先收" : "连段已成 · 可收",
       settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
       rerollCopy: "再赌一手",
-      coreIndex,
       recommendedIndexes
     };
   }
 
-  if (topGroup.group.length >= 3 || pairGroups.length >= 2) {
+  if (comboType === "pair" && (topGroup.group.length >= 2 || pairGroups.length >= 1)) {
     const primaryValue = topGroup.value;
-    const coreIndex = findDieIndexByValue(dice, primaryValue);
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [primaryValue], [coreIndex], 1);
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [primaryValue], [], 2);
 
     return {
       targetText: damage >= 8 ? "已有收益 · 先收" : "双数已成 · 可收",
       settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
       rerollCopy: "冲三同",
-      coreIndex,
       recommendedIndexes
     };
   }
 
   if (topGroup.group.length === 2) {
     const pairValue = topGroup.value;
-    const coreIndex = findDieIndexByValue(dice, pairValue);
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [pairValue], [coreIndex], 1);
+    const bonusValues = dice
+      .filter(die => die.value !== pairValue && !die.locked)
+      .sort((a, b) => b.value - a.value)
+      .slice(0, 1)
+      .map(die => die.value);
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [pairValue, ...bonusValues], [], 2);
 
     return {
       targetText: pairValue >= 5 ? `双${pairValue}已成 · 冲三同` : `再出1个${pairValue} → 大爆发`,
       settleCopy: damage >= 8 ? "稳稳收下" : `打出 ${damage} 伤害`,
       rerollCopy: "冲三同",
-      coreIndex,
       recommendedIndexes
     };
   }
 
   const sequencePlan = getSequencePlan(dice);
   if (sequencePlan) {
-    const coreIndex = findDieIndexByValue(dice, sequencePlan.anchorValue);
-    const relatedValues = sequencePlan.sequence.filter(value => value !== sequencePlan.anchorValue).sort((a, b) => Math.abs(a - sequencePlan.anchorValue) - Math.abs(b - sequencePlan.anchorValue));
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
-    const targetText = sequencePlan.sequence.length === 2
-      ? `再出${sequencePlan.target} → 连段成型`
-      : "差1步 → 连段";
+    const relatedValues = sequencePlan.sequence.sort((a, b) => Math.abs(a - sequencePlan.target) - Math.abs(b - sequencePlan.target));
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [], 2);
+    const targetText = `再出${sequencePlan.target} → 连段成型`;
 
     return {
       targetText,
       settleCopy: damage >= 7 ? "先吃收益" : `打出 ${damage} 伤害`,
       rerollCopy: "补连段",
-      coreIndex,
       recommendedIndexes
     };
   }
 
   const sortedDice = [...dice].sort((a, b) => b.value - a.value || a.index - b.index);
-  const scatterCore = sortedDice.find(die => !die.locked) || sortedDice[0];
+  const scatterValues = sortedDice.filter(die => !die.locked && die.value >= 5).slice(0, 1).map(die => die.value);
+  const recommendedIndexes = getRecommendedIndexesFromValues(dice, scatterValues, [], 1);
 
   return {
-    targetText: damage >= 7 ? "还没成型 · 再找组合" : "这手偏散 · 重掷",
+    targetText: "这手偏散 · 重掷",
     settleCopy: damage >= 7 ? `打出 ${damage} 伤害` : "先吃收益",
-    rerollCopy: damage >= 7 ? "找组合" : "再赌一手",
-    coreIndex: scatterCore ? scatterCore.index : null,
-    recommendedIndexes: []
+    rerollCopy: recommendedIndexes.length ? "找组合" : "再赌一手",
+    recommendedIndexes
   };
 }
 
@@ -474,7 +468,6 @@ function getDieStatus(die, currentState, dice) {
   if (die.locked) return "locked";
 
   const plan = getDicePlan(currentState);
-  if (plan.coreIndex === die.index) return "core";
   if (plan.recommendedIndexes.includes(die.index)) return "recommended";
 
   return "normal";
@@ -498,7 +491,6 @@ function getDiceLayout(index, total) {
 
 function getDieTag(status) {
   if (status === "locked") return "锁定";
-  if (status === "core") return "核心";
   if (status === "recommended") return "推荐";
   return "";
 }
@@ -644,7 +636,7 @@ function buildBattleScreen() {
 
       <section class="battle-hud">
         <div class="hud-item"><div class="hud-label">伤害</div><div class="hud-value damage" id="hud-damage"></div></div>
-        <div class="hud-item"><div class="hud-label">能量</div><div class="hud-value" id="hud-energy"></div></div>
+        <div class="hud-item"><div class="hud-label">组合</div><div class="hud-value" id="hud-combo"></div></div>
         <div class="hud-item"><div class="hud-label">护甲</div><div class="hud-value" id="hud-armor"></div></div>
         <div class="hud-item"><div class="hud-label">重掷</div><div class="hud-value" id="hud-rerolls"></div></div>
       </section>
@@ -689,7 +681,13 @@ function renderBattle() {
   document.getElementById("dice-lock-summary").textContent = `已锁 ${lockedCount} / 5 · 还可继续选择`;
 
   document.getElementById("hud-damage").textContent = String(preview.final.damage);
-  document.getElementById("hud-energy").textContent = String(preview.final.energy);
+  const comboLabelMap = {
+    triple: "三同",
+    straight: "连段",
+    pair: "双数",
+    none: "未成型"
+  };
+  document.getElementById("hud-combo").textContent = comboLabelMap[preview.final.comboType] || comboLabelMap.none;
   document.getElementById("hud-armor").textContent = String(preview.final.armor);
   document.getElementById("hud-rerolls").textContent = String(state.battle.rerollsRemaining);
 
