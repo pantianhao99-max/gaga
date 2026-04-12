@@ -329,6 +329,22 @@ function getDieStatus(die, currentState, dice) {
   return "normal";
 }
 
+function getDiceLayout(index, total) {
+  const maxPerRow = 3;
+  const totalColumns = 6;
+  const span = 2;
+  const row = Math.floor(index / maxPerRow);
+  const indexInRow = index % maxPerRow;
+  const itemsBeforeRow = row * maxPerRow;
+  const itemsInRow = Math.min(maxPerRow, total - itemsBeforeRow);
+  const startColumn = Math.floor((totalColumns - itemsInRow * span) / 2) + 1;
+
+  return {
+    row: row + 1,
+    column: startColumn + indexInRow * span
+  };
+}
+
 function getDieTag(status) {
   if (status === "locked") return "锁定";
   if (status === "core") return "核心";
@@ -534,20 +550,25 @@ function renderBattle() {
       : "没有可用重掷";
   document.getElementById("reroll-btn").disabled = state.battle.rerollsRemaining <= 0 && !canEmergencyReroll;
 
-  document.getElementById("dice-grid").innerHTML = state.battle.dice.map((die, index) => {
+  const diceRows = Math.max(1, Math.ceil(state.battle.dice.length / 3));
+  const diceStage = document.querySelector(".dice-stage");
+  const diceGrid = document.getElementById("dice-grid");
+  diceStage?.style.setProperty("--dice-rows", String(diceRows));
+  diceGrid.style.setProperty("--dice-rows", String(diceRows));
+  diceGrid.innerHTML = state.battle.dice.map((die, index) => {
     const status = getDieStatus(die, state, state.battle.dice);
     const dieTag = getDieTag(status);
+    const layout = getDiceLayout(index, state.battle.dice.length);
 
     const className = [
       "die",
       `die-${status}`,
-      `pos-${index}`,
       die.rolling ? "rolling" : "",
       die.toggled ? "toggled" : "",
       die.inactive ? "inactive" : ""
     ].filter(Boolean).join(" ");
 
-    return `<button class="${className}" type="button" data-die-index="${die.index}" ${die.inactive ? "disabled" : ""}>
+    return `<button class="${className}" type="button" data-die-index="${die.index}" style="grid-column:${layout.column} / span 2;grid-row:${layout.row};" ${die.inactive ? "disabled" : ""}>
       ${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}
       <span class="die-value">${die.inactive ? "×" : die.value}</span>
     </button>`;
