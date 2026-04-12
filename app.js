@@ -1,9 +1,9 @@
 const ENEMIES = [
-  { name: "\u8857\u5934\u6df7\u6df7", hp: 28, damage: 4, avatar: "A", intentText: "\u76f4\u63a5\u538b\u8840", flavor: "\u5f00\u5c40\u5148\u8bd5\u4f60\u4e00\u624b\u5e95\u5b50\u3002", archetype: "attack" },
-  { name: "\u5df7\u53e3\u5b88\u536b", hp: 38, damage: 5, avatar: "G", intentText: "\u91cd\u63b7\u4f1a\u84c4\u529b", flavor: "\u4f60\u6bcf\u591a\u91cd\u63b7\u4e00\u6b21\uff0c\u5b83\u7684\u4e0b\u8f6e\u4f24\u5bb3\u5c31\u66f4\u9ad8\u3002", archetype: "punish_greed" },
-  { name: "\u8bc8\u724c\u8001\u5343", hp: 52, damage: 7, avatar: "C", intentText: "\u4f4e\u4f24\u4f1a\u6210\u957f", flavor: "\u8fd9\u4e00\u624b\u6253\u592a\u8f7b\uff0c\u5b83\u4f1a\u987a\u52bf\u62ac\u9ad8\u538b\u5236\u3002", archetype: "punish_low" },
-  { name: "\u94c1\u9762\u53d1\u724c\u5458", hp: 70, damage: 10, avatar: "D", intentText: "\u4f4e\u4f24 / \u8d2a\u63b7\u90fd\u5403", flavor: "\u4f60\u6253\u5f97\u8f7b\uff0c\u6216\u8005\u91cd\u63b7\u592a\u591a\uff0c\u5b83\u90fd\u4f1a\u53cd\u5236\u3002", archetype: "mixed" },
-  { name: "\u8d4c\u684c\u672c\u8eab", hp: 96, damage: 13, avatar: "B", intentText: "\u7ec8\u5c40\u9ad8\u538b", flavor: "\u8f93\u51fa\u4e0d\u591f\uff0c\u6216\u8005\u62a4\u7532\u592a\u539a\uff0c\u5b83\u90fd\u4f1a\u7ee7\u7eed\u4e0a\u538b\u3002", archetype: "boss", boss: true }
+  { name: "\u8857\u5934\u6df7\u6df7", hp: 28, damage: 4, avatar: "\ud83d\udde1", intentText: "\u76f4\u63a5\u538b\u8840", flavor: "\u5f00\u5c40\u5148\u8bd5\u4f60\u4e00\u624b\u5e95\u5b50\u3002", archetype: "attack" },
+  { name: "\u5df7\u53e3\u5b88\u536b", hp: 38, damage: 5, avatar: "\ud83d\udee1", intentText: "\u91cd\u63b7\u4f1a\u84c4\u529b", flavor: "\u4f60\u6bcf\u591a\u91cd\u63b7\u4e00\u6b21\uff0c\u5b83\u7684\u4e0b\u8f6e\u4f24\u5bb3\u5c31\u66f4\u9ad8\u3002", archetype: "punish_greed" },
+  { name: "\u8bc8\u724c\u8001\u5343", hp: 52, damage: 7, avatar: "\ud83c\udfb2", intentText: "\u4f4e\u4f24\u4f1a\u6210\u957f", flavor: "\u8fd9\u4e00\u624b\u6253\u592a\u8f7b\uff0c\u5b83\u4f1a\u987a\u52bf\u62ac\u9ad8\u538b\u5236\u3002", archetype: "punish_low" },
+  { name: "\u94c1\u9762\u53d1\u724c\u5458", hp: 70, damage: 10, avatar: "\ud83c\udccf", intentText: "\u4f4e\u4f24 / \u8d2a\u63b7\u90fd\u5403", flavor: "\u4f60\u6253\u5f97\u8f7b\uff0c\u6216\u8005\u91cd\u63b7\u592a\u591a\uff0c\u5b83\u90fd\u4f1a\u53cd\u5236\u3002", archetype: "mixed" },
+  { name: "\u8d4c\u684c\u672c\u8eab", hp: 96, damage: 13, avatar: "\ud83d\udc41", intentText: "\u7ec8\u5c40\u9ad8\u538b", flavor: "\u8f93\u51fa\u4e0d\u591f\uff0c\u6216\u8005\u62a4\u7532\u592a\u539a\uff0c\u5b83\u90fd\u4f1a\u7ee7\u7eed\u4e0a\u538b\u3002", archetype: "boss", boss: true }
 ];
 
 const OFFERS = [
@@ -625,17 +625,93 @@ function chooseOffers() {
   state.pendingOffers = chosen;
 }
 
+function getOfferTheme(offer) {
+  if (["straightPlus", "rerollRefundOnStraight"].includes(offer.id)) {
+    return {
+      type: "\u8fde\u6bb5\u6d41",
+      className: "reward-card--straight",
+      hook: "\u8fde\u6bb5\u6210\u578b\u540e\uff0c\u6bcf\u56de\u5408\u90fd\u66f4\u7a33",
+      impactValue: "+12",
+      impactMeta: "\u4f24\u5bb3",
+      impactSub: offer.id === "straightPlus" ? "\u989d\u5916 +6 \u62a4\u7532" : "\u89e6\u53d1\u540e\u8fd4\u8fd8 1 \u6b21\u91cd\u63b7",
+      buttonLabel: offer.id === "straightPlus" ? "\u8d70\u8fde\u6bb5\u6d41" : "\u62ff\u8fde\u6bb5\u56de\u8f6c"
+    };
+  }
+
+  if (["triplePlus"].includes(offer.id)) {
+    return {
+      type: "\u4e09\u540c\u6d41",
+      className: "reward-card--triple",
+      hook: "\u8d4c\u5230\u5927\u62db\u65f6\uff0c\u56de\u62a5\u4f1a\u66f4\u731b",
+      impactValue: "+26",
+      impactMeta: "\u4f24\u5bb3",
+      impactSub: "\u4e09\u540c\u76f4\u63a5\u63d0\u5347",
+      buttonLabel: "\u8d70\u4e09\u540c\u6d41"
+    };
+  }
+
+  if (["pairPlus", "extraRerollOnce"].includes(offer.id)) {
+    return {
+      type: "\u53cc\u6570\u6d41",
+      className: "reward-card--pair",
+      hook: offer.id === "pairPlus" ? "\u53cc\u6570\u53d8\u6210\u66f4\u7a33\u7684\u6b62\u635f\u6536\u76ca" : "\u9996\u6b21\u91cd\u63b7\u66f4\u6562\u8d4c",
+      impactValue: offer.id === "pairPlus" ? "+10" : "+1",
+      impactMeta: offer.id === "pairPlus" ? "\u4f24\u5bb3" : "\u514d\u8d39",
+      impactSub: offer.id === "pairPlus" ? "\u53cc\u6570\u76f4\u63a5\u63d0\u5347" : "\u672c\u573a\u9996\u63b7\u4e0d\u8017\u6b21\u6570",
+      buttonLabel: offer.id === "pairPlus" ? "\u8d70\u53cc\u6570\u6d41" : "\u62ff\u989d\u5916\u673a\u4f1a"
+    };
+  }
+
+  return {
+    type: "\u8c03\u6574",
+    className: "reward-card--utility",
+    hook: "\u5148\u628a\u72b6\u6001\u7a33\u4f4f\uff0c\u518d\u8fdb\u4e0b\u4e00\u6218",
+    impactValue: "+8",
+    impactMeta: "\u751f\u547d",
+    impactSub: "\u7acb\u5373\u56de\u590d",
+    buttonLabel: "\u62ff\u8fd9\u4e2a"
+  };
+}
+
+function getRecommendedOfferId(offers) {
+  const ranking = Object.entries(state.run.buildScores).sort((a, b) => b[1] - a[1])[0];
+  if (!ranking || ranking[1] <= 0) return offers[0]?.id || null;
+  const targetMap = {
+    pair: ["pairPlus", "extraRerollOnce"],
+    straight: ["straightPlus", "rerollRefundOnStraight"],
+    triple: ["triplePlus"]
+  };
+  const preferred = targetMap[ranking[0]] || [];
+  return offers.find(offer => preferred.includes(offer.id))?.id || offers[0]?.id || null;
+}
+
 function showShop() {
   chooseOffers();
   ui.shopCopy.textContent = `\u7b2c ${state.run.battleIndex + 1} \u6218\u7ed3\u675f\uff0c\u9009 1 \u4e2a\u5f3a\u5316\uff0c\u628a\u8fd9\u5c40\u5f80\u4e00\u4e2a\u89e6\u53d1\u65b9\u5411\u63a8\u3002`;
-  ui.shopGrid.innerHTML = state.pendingOffers.map(offer => `
-    <div class="offer-card">
-      <strong>${offer.name}</strong>
-      <p>${offer.text}</p>
-      <p>${offer.summary}</p>
-      <button type="button" data-offer-id="${offer.id}">\u62ff\u8fd9\u4e2a</button>
-    </div>
-  `).join("");
+  const recommendedId = getRecommendedOfferId(state.pendingOffers);
+  ui.shopGrid.innerHTML = state.pendingOffers.map(offer => {
+    const theme = getOfferTheme(offer);
+    const recommended = offer.id === recommendedId;
+    return `
+    <article class="reward-card ${theme.className} ${recommended ? "reward-card--recommended" : ""}">
+      <div class="reward-topline">
+        <span class="reward-type">${theme.type}</span>
+        ${recommended ? `<span class="reward-badge">\u63a8\u8350</span>` : ""}
+      </div>
+      <div class="reward-main">
+        <h3 class="reward-name">${offer.name}</h3>
+        <p class="reward-hook">${theme.hook}</p>
+      </div>
+      <div class="reward-impact">
+        <div class="reward-impact-value">${theme.impactValue}</div>
+        <div class="reward-impact-meta">${theme.impactMeta}</div>
+        <div class="reward-impact-sub">${theme.impactSub}</div>
+      </div>
+      <div class="reward-fit">${offer.text}</div>
+      <button class="reward-btn" type="button" data-offer-id="${offer.id}">${theme.buttonLabel}</button>
+    </article>
+  `;
+  }).join("");
   setScreen("shop");
 }
 
@@ -700,13 +776,11 @@ function settleHand() {
 function buildBattleScreen() {
   ui.battle.innerHTML = `
     <div class="battle-shell">
-      <section class="battle-topbar"><div class="topbar-head"><div class="enemy-title"><div class="enemy-name" id="enemy-title-name"></div><div class="enemy-stage" id="enemy-stage-copy"></div></div><div class="topbar-pills"><div class="pill" id="enemy-level-pill"></div></div></div><div class="enemy-row"><div class="enemy-avatar" id="enemy-avatar"></div><div class="enemy-main"><div class="enemy-meta"><div class="enemy-meta-left"><strong id="enemy-name-copy"></strong><div class="trait-tag" id="enemy-trait"></div></div><div class="enemy-hp-value" id="enemy-hp-value"></div></div><div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div></div></div><div class="player-strip"><div class="player-chip" id="player-chip"></div><div class="player-hp-group"><strong id="player-hp-value"></strong><div class="mini-track"><div class="hp-fill player" id="player-hp-fill"></div></div></div></div></section>
+      <section class="battle-topbar"><div class="topbar-head"><div class="enemy-title"><div class="enemy-name" id="enemy-title-name"></div><div class="enemy-stage" id="enemy-stage-copy"></div></div><div class="topbar-pills"><div class="pill" id="enemy-level-pill"></div></div></div><div class="enemy-row"><div class="enemy-avatar" id="enemy-avatar"></div><div class="enemy-main"><div class="enemy-meta"><div class="enemy-meta-left"><strong id="enemy-name-copy"></strong><div class="trait-tag" id="enemy-trait"></div></div><div class="enemy-hp-value" id="enemy-hp-value"></div></div><div class="hp-track"><div class="hp-fill enemy" id="enemy-hp-fill"></div></div></div></div><div class="player-strip"><div class="player-chip" id="player-chip"></div><div class="player-hp-group"><strong id="player-hp-value"></strong><div class="mini-track"><div class="hp-fill player" id="player-hp-fill"></div></div></div></div><div class="drawer-rail"><details class="drawer left"><summary>\u5f3a\u5316</summary><div class="drawer-sheet"><p class="drawer-title">\u5f3a\u5316</p><div class="relic-list" id="relic-list"></div></div></details><details class="drawer right"><summary>\u8bb0\u5f55</summary><div class="drawer-sheet"><p class="drawer-title">\u6d41\u6d3e</p><div class="log-list" id="build-list"></div><p class="drawer-title" style="margin-top:12px">\u672c\u624b\u7ed3\u7b97</p><div class="calc-list" id="calc-list"></div><p class="drawer-title" style="margin-top:12px">\u6218\u6597\u65e5\u5fd7</p><div class="log-list" id="log-list"></div></div></details></div></section>
       <section class="enemy-intent"><div class="intent-copy"><strong id="enemy-intent-title"></strong><span id="enemy-intent-copy"></span></div></section>
       <section class="target-bar" id="target-bar"></section>
       <section class="risk-bar" id="risk-bar"></section>
-      <div class="drawer-rail"><details class="drawer left"><summary>\u5f3a\u5316</summary><div class="drawer-sheet"><p class="drawer-title">\u5f3a\u5316</p><div class="relic-list" id="relic-list"></div></div></details><details class="drawer right"><summary>\u8bb0\u5f55</summary><div class="drawer-sheet"><p class="drawer-title">\u6d41\u6d3e</p><div class="log-list" id="build-list"></div><p class="drawer-title" style="margin-top:12px">\u672c\u624b\u7ed3\u7b97</p><div class="calc-list" id="calc-list"></div><p class="drawer-title" style="margin-top:12px">\u6218\u6597\u65e5\u5fd7</p><div class="log-list" id="log-list"></div></div></details></div>
-      <section class="dice-shell"><div class="dice-status"><strong id="dice-lock-summary"></strong></div><div class="dice-stage"><div class="dice-grid" id="dice-grid"></div></div></section>
-      <div class="combo-hit combo-hit-main" id="combo-hit" hidden></div>
+      <section class="dice-shell"><div class="dice-status"><strong id="dice-lock-summary"></strong></div><div class="dice-stage"><div class="combo-hit combo-hit-main" id="combo-hit" hidden></div><div class="dice-grid" id="dice-grid"></div></div></section>
       <section class="battle-hud"><div class="hud-item"><div class="hud-label">\u4f24\u5bb3</div><div class="hud-value damage" id="hud-damage"></div></div><div class="hud-item"><div class="hud-label">\u7ec4\u5408</div><div class="hud-value" id="hud-combo"></div></div><div class="hud-item"><div class="hud-label">\u62a4\u7532</div><div class="hud-value" id="hud-armor"></div></div><div class="hud-item"><div class="hud-label">\u91cd\u63b7</div><div class="hud-value" id="hud-rerolls"></div></div></section>
       <section class="battle-actions"><button class="action-btn safe" id="settle-btn" type="button"><strong id="settle-title"></strong><span id="settle-copy"></span></button><button class="action-btn risk" id="reroll-btn" type="button"><strong id="reroll-title"></strong><span id="reroll-copy"></span></button></section>
     </div>
