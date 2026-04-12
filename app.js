@@ -101,7 +101,6 @@ function makeInitialState() {
       coins: 0,
       pityTokens: 0,
       armor: 0,
-      energy: 0,
       relics: [],
       relicIds: new Set(),
       totalDamage: 0,
@@ -190,13 +189,63 @@ function resolveDice(dice) {
     .sort((a, b) => b.size - a.size || b.value - a.value);
   const uniqueValues = [...new Set(activeDice.map(die => die.value))].sort((a, b) => a - b);
   const bestSequence = getLongestSequence(uniqueValues);
+  const hasFullHouse = faceGroups.some(group => group.size === 3) && faceGroups.some(group => group.size === 2);
 
-  if (faceGroups[0]?.size >= 3) {
+  if (faceGroups[0]?.size === 5) {
+    return {
+      comboType: "five",
+      damage: 50,
+      armor: 0,
+      description: "五同触发",
+      extraBursts: ["五同触发"]
+    };
+  }
+
+  if (bestSequence.length === 5) {
+    return {
+      comboType: "straight5",
+      damage: 22,
+      armor: 10,
+      description: "五连触发",
+      extraBursts: ["五连触发"]
+    };
+  }
+
+  if (faceGroups[0]?.size === 4) {
+    return {
+      comboType: "four",
+      damage: 30,
+      armor: 0,
+      description: "四同触发",
+      extraBursts: ["四同触发"]
+    };
+  }
+
+  if (hasFullHouse) {
+    return {
+      comboType: "full",
+      damage: 26,
+      armor: 6,
+      description: "满堂彩触发",
+      extraBursts: ["满堂彩触发"]
+    };
+  }
+
+  if (bestSequence.length >= 4) {
+    return {
+      comboType: "straight4",
+      damage: 14,
+      armor: 6,
+      description: "四连触发",
+      extraBursts: ["四连触发"]
+    };
+  }
+
+  if (faceGroups[0]?.size === 3) {
     return {
       comboType: "triple",
       damage: 18,
       armor: 0,
-      energy: 0,
       description: "三同触发",
       extraBursts: ["三同触发"]
     };
@@ -207,18 +256,16 @@ function resolveDice(dice) {
       comboType: "straight",
       damage: 8,
       armor: 4,
-      energy: 0,
       description: "连段触发",
       extraBursts: ["连段触发"]
     };
   }
 
-  if (faceGroups[0]?.size >= 2) {
+  if (faceGroups[0]?.size === 2) {
     return {
       comboType: "pair",
       damage: 6,
       armor: 0,
-      energy: 0,
       description: "双数触发",
       extraBursts: ["双数触发"]
     };
@@ -228,7 +275,6 @@ function resolveDice(dice) {
     comboType: null,
     damage: 0,
     armor: 0,
-    energy: 0,
     description: "未触发",
     extraBursts: []
   };
@@ -268,6 +314,10 @@ function applyBuildEffects(result) {
   const upgrades = state.player.upgrades;
   result.upgradeText = "";
 
+  if (!["pair", "straight", "triple"].includes(result.comboType)) {
+    return result;
+  }
+
   if (result.comboType === "pair" && upgrades.pairPlus) {
     result.damage = 10;
     result.upgradeText = "双数强化";
@@ -294,7 +344,6 @@ function calculateRoundResult() {
   const base = resolveDice(state.battle.dice);
   const final = applyBuildEffects({
     damage: base.damage,
-    energy: base.energy,
     armor: base.armor,
     comboType: base.comboType,
     description: base.description,
@@ -319,25 +368,39 @@ function getFaceGroups(dice) {
 function getSequencePlan(dice) {
   const uniqueValues = [...new Set(dice.map(die => die.value))].sort((a, b) => a - b);
   if (uniqueValues.length < 2) return null;
-  const bestSequence = getLongestSequence(uniqueValues);
 
-  if (bestSequence.length < 2) return null;
+  const valueSet = new Set(uniqueValues);
+  let bestPlan = null;
 
-  const highTarget = bestSequence[bestSequence.length - 1] < 6 ? bestSequence[bestSequence.length - 1] + 1 : null;
-  const lowTarget = bestSequence[0] > 1 ? bestSequence[0] - 1 : null;
-  const target = highTarget ?? lowTarget;
+  for (let length = 5; length >= 3; length -= 1) {
+    for (let start = 1; start <= 7 - length; start += 1) {
+      const window = Array.from({ length }, (_, index) => start + index);
+      const present = window.filter(value => valueSet.has(value));
+      const missing = window.filter(value => !valueSet.has(value));
 
-  if (!target) return null;
+      if (!bestPlan && missing.length === 0) {
+        bestPlan = {
+          sequence: window,
+          length,
+          target: null,
+          gap: null,
+          completed: true
+        };
+      }
 
-  const anchorValue = target > bestSequence[bestSequence.length - 1]
-    ? bestSequence[bestSequence.length - 1]
-    : bestSequence[0];
+      if (missing.length === 1 && present.length === length - 1) {
+        return {
+          sequence: present,
+          length,
+          target: missing[0],
+          gap: missing[0],
+          completed: false
+        };
+      }
+    }
+  }
 
-  return {
-    sequence: bestSequence,
-    target,
-    anchorValue
-  };
+  return bestPlan;
 }
 
 function getRecommendedIndexesFromValues(dice, values, excluded = [], limit = 2) {
@@ -374,11 +437,55 @@ function getDicePlan(currentState = state, preview = null) {
   const faceGroups = [...getFaceGroups(dice).entries()]
     .map(([value, group]) => ({ value, group }))
     .sort((a, b) => b.group.length - a.group.length || b.value - a.value);
-  const uniqueValues = [...new Set(dice.map(die => die.value))].sort((a, b) => a - b);
-  const activeSequence = getLongestSequence(uniqueValues);
-
   const topGroup = faceGroups[0];
   const pairGroups = faceGroups.filter(group => group.group.length >= 2);
+  const shouldBank = damage >= 10;
+  const sequencePlan = getSequencePlan(dice);
+
+  if (comboType === "five") {
+    return {
+      targetText: "五同已成 · 直接收",
+      settleCopy: "稳稳收下",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "straight5") {
+    return {
+      targetText: "五连已成 · 先收",
+      settleCopy: "稳稳收下",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "four") {
+    return {
+      targetText: "四同已成 · 先收",
+      settleCopy: "稳稳收下",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "full") {
+    return {
+      targetText: damage >= 20 ? "满堂彩已成 → 直接收" : "高阶组合已成 → 收下爆发",
+      settleCopy: "稳稳收下",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "straight4") {
+    return {
+      targetText: shouldBank ? "四连已成 · 先收" : "四连已成 · 可收",
+      settleCopy: shouldBank ? "稳稳收下" : "先吃收益",
+      rerollCopy: "再赌一手",
+      recommendedIndexes: []
+    };
+  }
 
   if (comboType === "triple") {
     return {
@@ -389,35 +496,43 @@ function getDicePlan(currentState = state, preview = null) {
     };
   }
 
-  if (comboType === "straight" && activeSequence.length >= 3) {
-    const extensionValue = activeSequence[activeSequence.length - 1] < 6
-      ? activeSequence[activeSequence.length - 1]
-      : activeSequence[0];
-    const recommendedIndexes = damage >= 8
-      ? []
-      : getRecommendedIndexesFromValues(dice, [extensionValue], [], 1);
-
+  if (comboType === "straight") {
     return {
-      targetText: damage >= 8 ? "连段已成 · 先收" : "连段已成 · 可收",
-      settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
+      targetText: shouldBank ? "连段已成 · 先收" : "连段已成 · 可收",
+      settleCopy: shouldBank ? "稳稳收下" : "先吃收益",
       rerollCopy: "再赌一手",
-      recommendedIndexes
+      recommendedIndexes: []
     };
   }
 
-  if (comboType === "pair" && (topGroup.group.length >= 2 || pairGroups.length >= 1)) {
-    const primaryValue = topGroup.value;
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [primaryValue], [], 2);
-
+  if (topGroup?.group.length === 4) {
     return {
-      targetText: damage >= 8 ? "已有收益 · 先收" : "双数已成 · 可收",
-      settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
-      rerollCopy: "冲三同",
-      recommendedIndexes
+      targetText: `再出1个${topGroup.value} → 五同！`,
+      settleCopy: shouldBank ? "稳稳收下" : `打出 ${damage} 伤害`,
+      rerollCopy: "再赌一手",
+      recommendedIndexes: getRecommendedIndexesFromValues(dice, [topGroup.value], [], 2)
     };
   }
 
-  if (topGroup.group.length === 2) {
+  if (topGroup?.group.length === 3) {
+    return {
+      targetText: `再出1个${topGroup.value} → 四同`,
+      settleCopy: shouldBank ? "稳稳收下" : `打出 ${damage} 伤害`,
+      rerollCopy: "冲三同",
+      recommendedIndexes: getRecommendedIndexesFromValues(dice, [topGroup.value], [], 2)
+    };
+  }
+
+  if (comboType === "pair" && pairGroups.length >= 2) {
+    return {
+      targetText: shouldBank ? "两组收益已成 · 先收" : "双对子已成 · 可稳收",
+      settleCopy: shouldBank ? "稳稳收下" : "先吃收益",
+      rerollCopy: shouldBank ? "再赌一手" : "可赌更大",
+      recommendedIndexes: []
+    };
+  }
+
+  if (comboType === "pair" && topGroup?.group.length >= 2) {
     const pairValue = topGroup.value;
     const bonusValues = dice
       .filter(die => die.value !== pairValue && !die.locked)
@@ -428,20 +543,36 @@ function getDicePlan(currentState = state, preview = null) {
 
     return {
       targetText: pairValue >= 5 ? `双${pairValue}已成 · 冲三同` : `再出1个${pairValue} → 大爆发`,
-      settleCopy: damage >= 8 ? "稳稳收下" : `打出 ${damage} 伤害`,
+      settleCopy: shouldBank ? "稳稳收下" : `打出 ${damage} 伤害`,
       rerollCopy: "冲三同",
       recommendedIndexes
     };
   }
 
-  const sequencePlan = getSequencePlan(dice);
-  if (sequencePlan) {
-    const relatedValues = sequencePlan.sequence.sort((a, b) => Math.abs(a - sequencePlan.target) - Math.abs(b - sequencePlan.target));
-    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [], 2);
-    const targetText = `再出${sequencePlan.target} → 连段成型`;
-
+  if (sequencePlan?.target && sequencePlan.length >= 5) {
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], 2);
     return {
-      targetText,
+      targetText: `再出${sequencePlan.target} → 五连！`,
+      settleCopy: damage >= 7 ? "先吃收益" : `打出 ${damage} 伤害`,
+      rerollCopy: "补连段",
+      recommendedIndexes
+    };
+  }
+
+  if (sequencePlan?.target && sequencePlan.length >= 4) {
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], 2);
+    return {
+      targetText: `再出${sequencePlan.target} → 四连`,
+      settleCopy: damage >= 7 ? "先吃收益" : `打出 ${damage} 伤害`,
+      rerollCopy: "补连段",
+      recommendedIndexes
+    };
+  }
+
+  if (sequencePlan?.target && sequencePlan.length >= 3) {
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], 2);
+    return {
+      targetText: `再出${sequencePlan.target} → 连段成型`,
       settleCopy: damage >= 7 ? "先吃收益" : `打出 ${damage} 伤害`,
       rerollCopy: "补连段",
       recommendedIndexes
@@ -511,6 +642,21 @@ function syncBuildType() {
 
 function getBuildBonusCopy(result) {
   const notes = [];
+  if (result.comboType === "five") {
+    notes.push("五同触发");
+  }
+  if (result.comboType === "straight5") {
+    notes.push("五连触发");
+  }
+  if (result.comboType === "four") {
+    notes.push("四同触发");
+  }
+  if (result.comboType === "full") {
+    notes.push("满堂彩触发");
+  }
+  if (result.comboType === "straight4") {
+    notes.push("四连触发");
+  }
   if (result.comboType === "pair") {
     notes.push(result.upgradeText || "双数触发");
   }
@@ -539,10 +685,6 @@ function applyEnemyPressure(round) {
     if (round.final.damage <= 6) {
       state.battle.enemyCharge += 1;
       addLog("双向压制", "你这轮输出偏轻，它开始抬压制。");
-    }
-    if (round.final.energy >= 2) {
-      state.battle.enemyCharge += 1;
-      addLog("双向压制", "你这一手攒了太多能量，它也跟着提速。");
     }
   }
   if (enemy.archetype === "boss") {
@@ -682,8 +824,13 @@ function renderBattle() {
 
   document.getElementById("hud-damage").textContent = String(preview.final.damage);
   const comboLabelMap = {
+    five: "五同",
+    straight5: "五连",
+    four: "四同",
+    full: "满堂彩",
+    straight4: "四连",
     triple: "三同",
-    straight: "连段",
+    straight: "三连",
     pair: "双数",
     none: "未成型"
   };
@@ -742,6 +889,11 @@ function renderBattle() {
 
   const comboHitNode = document.getElementById("combo-hit");
   const comboHitTextMap = {
+    five: "五同！",
+    four: "四同！",
+    straight5: "五连！",
+    straight4: "四连！",
+    full: "满堂彩！",
     straight: "连段已成！",
     pair: "双数触发",
     triple: "三同触发！"
@@ -880,7 +1032,6 @@ function settleHand() {
   const totalDamage = round.final.damage;
 
   state.player.totalDamage += totalDamage;
-  state.player.energy += round.final.energy;
   state.player.armor += round.final.armor;
   state.player.highestDamage = Math.max(state.player.highestDamage, totalDamage);
 
