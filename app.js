@@ -7,6 +7,14 @@ const DIE_FACE = {
   6: { label: "SIX", icon: "✺" }
 };
 
+const DIE_SUITS = ["red", "blue", "green", "purple"];
+const SUIT_LABELS = {
+  red: "红色",
+  blue: "蓝色",
+  green: "绿色",
+  purple: "紫色"
+};
+
 const ENEMIES = [
   { name: "鼠巷混混", hp: 28, damage: 4, avatar: "🐀", intentText: "直接压血", flavor: "开局先试你一手底子。", archetype: "attack" },
   { name: "巷口守卫", hp: 38, damage: 5, avatar: "🛡️", intentText: "重掷会蓄力", flavor: "你每多重掷一次，它的下轮伤害就更高。", archetype: "punish_greed" },
@@ -148,10 +156,15 @@ function rollDie() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
+function rollSuit() {
+  return DIE_SUITS[Math.floor(Math.random() * DIE_SUITS.length)];
+}
+
 function createDice() {
   return Array.from({ length: 5 }, (_, index) => ({
     index,
     value: rollDie(),
+    suit: rollSuit(),
     locked: false,
     rolling: false,
     toggled: false,
@@ -241,16 +254,48 @@ function applyBuildEffects(result) {
   return result;
 }
 
+function applySuitEffects(result, dice) {
+  const suitCounts = { red: 0, blue: 0, green: 0, purple: 0 };
+  const suitBursts = [];
+
+  dice.filter(die => !die.inactive).forEach(die => {
+    suitCounts[die.suit] += 1;
+  });
+
+  if (suitCounts.red >= 3) {
+    result.damage += 6;
+    suitBursts.push("红色共鸣 +6 伤害");
+  }
+  if (suitCounts.blue >= 3) {
+    result.armor += 6;
+    suitBursts.push("蓝色共鸣 +6 护甲");
+  }
+  if (suitCounts.green >= 3) {
+    result.energy += 3;
+    suitBursts.push("绿色共鸣 +3 能量");
+  }
+  if (suitCounts.purple >= 3) {
+    result.multiplier += 0.6;
+    suitBursts.push(`紫色共鸣 x${result.multiplier.toFixed(2)}`);
+  }
+
+  result.suitBursts = suitBursts;
+  result.suitCounts = suitCounts;
+  return result;
+}
+
 function calculateRoundResult() {
   const base = resolveDice(state.battle.dice, state);
-  const final = applyBuildEffects({
+  const final = applySuitEffects(applyBuildEffects({
     damage: base.damage,
     energy: base.energy,
     armor: base.armor,
     triggers: [...base.triggers],
     multiplier: base.multiplier,
-    extraBursts: [...base.extraBursts]
-  }, state);
+    extraBursts: [...base.extraBursts],
+    suitBursts: [],
+    suitCounts: { red: 0, blue: 0, green: 0, purple: 0 }
+  }, state), state.battle.dice);
 
   final.damage = Math.floor(final.damage * final.multiplier);
 
@@ -284,12 +329,50 @@ function getTargetTip(dice) {
   return "补 5 / 6 抬伤害";
 }
 
+function getSuitCounts(dice) {
+  const counts = { red: 0, blue: 0, green: 0, purple: 0 };
+  dice.filter(die => !die.inactive).forEach(die => {
+    counts[die.suit] += 1;
+  });
+  return counts;
+}
+
+function getSuitTargetText(dice) {
+  const suitCounts = getSuitCounts(dice);
+  const suitPriority = ["red", "green", "purple", "blue"];
+  const nearBurstSuit = suitPriority.find(suit => suitCounts[suit] === 2);
+  if (nearBurstSuit) {
+    return `当前：已有2个${SUIT_LABELS[nearBurstSuit]}，再找1个`;
+  }
+
+  const activeSuit = suitPriority.find(suit => suitCounts[suit] >= 3);
+  if (activeSuit) {
+    if (activeSuit === "red") return "当前：追红色爆发";
+    if (activeSuit === "blue") return "当前：追蓝色护甲";
+    if (activeSuit === "green") return "当前：追绿色启动";
+    return "当前：追紫色倍率";
+  }
+
+  const bestSuit = suitPriority.reduce((best, suit) => {
+    if (suitCounts[suit] > suitCounts[best]) return suit;
+    return best;
+  }, "red");
+
+  if (suitCounts[bestSuit] > 0) {
+    return `当前：补${SUIT_LABELS[bestSuit]}共鸣`;
+  }
+
+  return "";
+}
+
 function getCurrentTargetText(currentState) {
   const dice = currentState.battle?.dice || [];
+  const suitTarget = getSuitTargetText(dice);
+  if (suitTarget) return suitTarget;
   const count6 = dice.filter(die => !die.inactive && die.value === 6).length;
   if (count6 >= 2) return "当前：双6已成 · 可再赌一手";
 
-  const focus = getBuildFocusValue();
+  const focus = getBuildFocusValue(currentState);
   if (focus === 2) return "当前：连击链 · 优先保留 2";
   if (focus === 3) return "当前：能量链 · 优先保留 3";
   if (focus === 6) return "当前：暴击链 · 优先保留 6";
@@ -350,6 +433,10 @@ function getDieTag(status) {
   if (status === "core") return "核心";
   if (status === "recommended") return "推荐";
   return "";
+}
+
+function getDieSuitClass(suit) {
+  return suit ? `suit-${suit}` : "";
 }
 
 function syncBuildType() {
@@ -559,10 +646,12 @@ function renderBattle() {
     const status = getDieStatus(die, state, state.battle.dice);
     const dieTag = getDieTag(status);
     const layout = getDiceLayout(index, state.battle.dice.length);
+    const suitClass = getDieSuitClass(die.suit);
 
     const className = [
       "die",
       `die-${status}`,
+      suitClass,
       die.rolling ? "rolling" : "",
       die.toggled ? "toggled" : "",
       die.inactive ? "inactive" : ""
@@ -570,6 +659,7 @@ function renderBattle() {
 
     return `<button class="${className}" type="button" data-die-index="${die.index}" style="grid-column:${layout.column} / span 2;grid-row:${layout.row};" ${die.inactive ? "disabled" : ""}>
       ${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}
+      <span class="die-suit-dot" aria-hidden="true"></span>
       <span class="die-value">${die.inactive ? "×" : die.value}</span>
     </button>`;
   }).join("");
@@ -588,6 +678,9 @@ function renderBattle() {
   const burstText = preview.final.extraBursts.length
     ? preview.final.extraBursts.join(" / ")
     : "无";
+  const suitBurstText = preview.final.suitBursts.length
+    ? preview.final.suitBursts.join(" / ")
+    : "无";
   document.getElementById("calc-list").innerHTML = `
     <div class="calc-row calc-row-block">
       <span>本手伤害 ${preview.final.damage}</span>
@@ -596,6 +689,10 @@ function renderBattle() {
     <div class="calc-row calc-row-block">
       <span>原因说明</span>
       <strong>${burstText}</strong>
+    </div>
+    <div class="calc-row calc-row-block">
+      <span>花色共鸣</span>
+      <strong>${suitBurstText}</strong>
     </div>
   `;
 
@@ -755,6 +852,7 @@ function rerollUnlockedDice(free = false) {
 
   actualTargets.forEach(die => {
     die.value = rollDie();
+    die.suit = rollSuit();
     die.rolling = true;
   });
 
