@@ -6,10 +6,6 @@
   --muted:#96a0bb;
   --gold:#ffd987;
   --cyan:#8de7f2;
-  --suit-red:#ff7c87;
-  --suit-blue:#7ebeff;
-  --suit-green:#7fe0a4;
-  --suit-purple:#b38cff;
   --shadow:0 18px 40px rgba(0,0,0,.35);
   --cabinet-w:430px;
   --cabinet-h:min(100dvh, 920px);
@@ -83,6 +79,7 @@ button{font:inherit;color:inherit}
 .drawer.left .drawer-sheet{left:0}.drawer.right .drawer-sheet{right:0}.drawer:not([open]) .drawer-sheet{display:none}
 .drawer-title{margin:0 0 10px;color:#92a1c6;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
 .relic-list,.log-list,.calc-list,.shop-grid,.summary-list{display:grid;gap:8px}
+.combo-hit{margin:0 0 10px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,223,138,.24);background:linear-gradient(180deg, rgba(255,214,104,.16), rgba(255,214,104,.06));color:#fff0bf;font-size:1.02rem;font-weight:900;letter-spacing:.04em;text-align:center;box-shadow:0 0 0 1px rgba(255,225,150,.08),0 0 20px rgba(255,214,104,.14),inset 0 1px 0 rgba(255,255,255,.08);text-shadow:0 0 14px rgba(255,232,162,.28)}
 .relic-card,.log-card,.calc-row,.offer-card,.summary-box,.summary-item{border-radius:16px;border:1px solid rgba(171,186,220,.08);background:rgba(255,255,255,.03)}
 .relic-card,.log-card,.calc-row{padding:9px 10px}
 .relic-card strong,.log-card strong{display:block;margin-bottom:4px}
@@ -97,7 +94,7 @@ button{font:inherit;color:inherit}
 .dice-status strong{font-size:.9rem;font-weight:900}
 .dice-stage{--dice-rows:2;--dice-stage-max:min(40dvh, 360px);position:relative;flex:1 1 auto;border-radius:24px;border:1px solid rgba(255,214,104,.12);background:radial-gradient(circle at 50% 44%, rgba(113,233,225,.08), transparent 26%),radial-gradient(circle at 50% 26%, rgba(255,255,255,.03), transparent 28%),linear-gradient(180deg, rgba(10,13,19,.98), rgba(6,8,12,.98));box-shadow:inset 0 0 0 1px rgba(255,255,255,.02), 0 10px 20px rgba(0,0,0,.2);overflow:hidden;min-height:min(calc(120px * var(--dice-rows) + 44px), var(--dice-stage-max));max-height:var(--dice-stage-max)}
 .dice-grid{--dice-rows:2;width:100%;height:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(var(--dice-rows),minmax(0,1fr));gap:14px 12px;padding:14px 16px;align-items:center;justify-items:center}
-.die{position:relative;width:min(100%,92px);height:auto;aspect-ratio:1;--die-state-transform:scale(.96);--die-hover-transform:translateY(-3px) scale(.98);--die-active-transform:scale(.97);--die-suit-glow:rgba(148,168,216,.08);border:1px solid rgba(148,168,216,.22);border-radius:24px;background:radial-gradient(circle at 50% 18%, rgba(255,255,255,.10), transparent 28%),linear-gradient(180deg, rgba(74,86,118,.96) 0%, rgba(14,22,42,.98) 100%);box-shadow:0 10px 22px rgba(0,0,0,.22),0 0 0 1px var(--die-suit-glow);color:#eff4ff;display:flex;align-items:center;justify-content:center;padding:8px;transition:transform .16s ease, box-shadow .16s ease, opacity .16s ease, border-color .16s ease;transform:var(--die-state-transform);cursor:pointer}
+.die{position:relative;width:min(100%,92px);height:auto;aspect-ratio:1;--die-state-transform:scale(.96);--die-hover-transform:translateY(-3px) scale(.98);--die-active-transform:scale(.97);border:1px solid rgba(148,168,216,.22);border-radius:24px;background:radial-gradient(circle at 50% 18%, rgba(255,255,255,.10), transparent 28%),linear-gradient(180deg, rgba(74,86,118,.96) 0%, rgba(14,22,42,.98) 100%);box-shadow:0 10px 22px rgba(0,0,0,.22);color:#eff4ff;display:flex;align-items:center;justify-content:center;padding:8px;transition:transform .16s ease, box-shadow .16s ease, opacity .16s ease, border-color .16s ease;transform:var(--die-state-transform);cursor:pointer}
 .die::after{content:"";position:absolute;left:14px;right:14px;bottom:-9px;height:10px;border-radius:50%;background:radial-gradient(circle, rgba(0,0,0,.18), transparent 72%);filter:blur(4px);z-index:-1}
 .die:hover{transform:var(--die-hover-transform);box-shadow:0 12px 24px rgba(0,0,0,.24)}
 .die:active{transform:var(--die-active-transform)}
@@ -107,15 +104,10 @@ button{font:inherit;color:inherit}
 .die-locked{opacity:1;--die-state-transform:translateY(-6px) scale(1.04);--die-hover-transform:translateY(-7px) scale(1.04);--die-active-transform:translateY(-3px) scale(1.01);border-color:rgba(134,255,196,.9);box-shadow:0 0 0 1px rgba(134,255,196,.18),0 0 22px rgba(87,240,182,.16),0 16px 34px rgba(0,0,0,.30)}
 .die.rolling{animation:rollDice .52s ease}.die.toggled{animation:toggleDie .22s ease}.die.inactive{opacity:.45;filter:saturate(.4);cursor:not-allowed}
 .die-tag{position:absolute;top:8px;left:8px;padding:4px 9px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;line-height:1;letter-spacing:.02em;color:#eef4ff}
-.die-suit-dot{position:absolute;top:10px;right:10px;width:10px;height:10px;border-radius:50%;background:var(--suit-color, rgba(255,255,255,.55));box-shadow:0 0 0 2px rgba(8,11,17,.55),0 0 10px var(--suit-color, rgba(255,255,255,.25))}
 .die-recommended .die-tag{background:rgba(189,226,255,.15);color:#dff3ff}
 .die-core .die-tag{background:rgba(255,233,168,.16);color:#fff0bf}
 .die-locked .die-tag{background:rgba(134,255,196,.15);color:#d7fff1}
 .die-value{font-size:clamp(40px, 10vw, 52px);font-weight:900;line-height:1;color:#f5f7ff;letter-spacing:-.04em;text-shadow:0 2px 10px rgba(255,255,255,.06)}
-.die.suit-red{--suit-color:var(--suit-red);--die-suit-glow:rgba(255,124,135,.08)}
-.die.suit-blue{--suit-color:var(--suit-blue);--die-suit-glow:rgba(126,190,255,.08)}
-.die.suit-green{--suit-color:var(--suit-green);--die-suit-glow:rgba(127,224,164,.08)}
-.die.suit-purple{--suit-color:var(--suit-purple);--die-suit-glow:rgba(179,140,255,.08)}
 .battle-hud{min-height:68px;padding:8px 10px;border-radius:20px;border:1px solid rgba(171,186,220,.08);background:linear-gradient(180deg, rgba(14,18,27,.88), rgba(8,11,17,.92));box-shadow:0 8px 18px rgba(0,0,0,.16);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
 .hud-item{min-width:0;display:grid;gap:4px;padding:1px 4px}
 .hud-item:not(:last-child){border-right:1px solid rgba(255,255,255,.05)}

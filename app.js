@@ -7,14 +7,6 @@ const DIE_FACE = {
   6: { label: "SIX", icon: "✺" }
 };
 
-const DIE_SUITS = ["red", "blue", "green", "purple"];
-const SUIT_LABELS = {
-  red: "红色",
-  blue: "蓝色",
-  green: "绿色",
-  purple: "紫色"
-};
-
 const ENEMIES = [
   { name: "鼠巷混混", hp: 28, damage: 4, avatar: "🐀", intentText: "直接压血", flavor: "开局先试你一手底子。", archetype: "attack" },
   { name: "巷口守卫", hp: 38, damage: 5, avatar: "🛡️", intentText: "重掷会蓄力", flavor: "你每多重掷一次，它的下轮伤害就更高。", archetype: "punish_greed" },
@@ -25,39 +17,63 @@ const ENEMIES = [
 
 const OFFERS = [
   {
-    id: "double2",
-    name: "连击强化",
-    text: "每个 2 额外造成 +2 伤害",
-    summary: "把 2 堆起来，整轮输出会开始连跳。",
+    id: "pairPlus",
+    name: "双数强化",
+    text: "双数收益更高",
+    summary: "双数额外伤害提升到 +10。",
     apply(state) {
-      state.player.upgrades.double2 = true;
+      state.player.upgrades.pairPlus = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.combo += 2;
+      state.run.buildScores.pair += 2;
     }
   },
   {
-    id: "energyBoost",
-    name: "能量翻倍",
-    text: "3 提供的能量翻倍",
-    summary: "把能量滚起来，后面每手都更宽裕。",
+    id: "straightPlus",
+    name: "连段强化",
+    text: "连段更稳更赚",
+    summary: "连段提升到 +12 伤害和 +6 护甲。",
     apply(state) {
-      state.player.upgrades.energyBoost = true;
+      state.player.upgrades.straightPlus = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.energy += 2;
+      state.run.buildScores.straight += 2;
     }
   },
   {
-    id: "critBoost",
-    name: "暴击强化",
-    text: "每个 6 额外 +3 伤害",
-    summary: "把 6 养起来，高爆发回合会突然抬头。",
+    id: "triplePlus",
+    name: "三同强化",
+    text: "大招更狠",
+    summary: "三同额外伤害提升到 +26。",
     apply(state) {
-      state.player.upgrades.critBoost = true;
+      state.player.upgrades.triplePlus = true;
       state.player.relics.push(this);
       state.player.relicIds.add(this.id);
-      state.run.buildScores.crit += 2;
+      state.run.buildScores.triple += 2;
+    }
+  },
+  {
+    id: "rerollRefundOnStraight",
+    name: "连段回转",
+    text: "连段返还重掷",
+    summary: "触发连段后，下回合返还 1 次重掷。",
+    apply(state) {
+      state.player.upgrades.rerollRefundOnStraight = true;
+      state.player.relics.push(this);
+      state.player.relicIds.add(this.id);
+      state.run.buildScores.straight += 1;
+    }
+  },
+  {
+    id: "extraRerollOnce",
+    name: "额外机会",
+    text: "本场首掷免费",
+    summary: "每场战斗第一次重掷不消耗次数。",
+    apply(state) {
+      state.player.upgrades.extraRerollOnce = true;
+      state.player.relics.push(this);
+      state.player.relicIds.add(this.id);
+      state.run.buildScores.pair += 1;
     }
   }
 ];
@@ -100,15 +116,17 @@ function makeInitialState() {
       totalDamage: 0,
       highestDamage: 0,
       upgrades: {
-        double2: false,
-        energyBoost: false,
-        critBoost: false
+        pairPlus: false,
+        straightPlus: false,
+        triplePlus: false,
+        rerollRefundOnStraight: false,
+        extraRerollOnce: false
       }
     },
     run: {
       battleIndex: 0,
       enemiesDefeated: 0,
-      buildScores: { combo: 0, energy: 0, crit: 0 },
+      buildScores: { pair: 0, straight: 0, triple: 0 },
       buildType: "未成型",
       logs: [],
       metrics: {
@@ -156,15 +174,10 @@ function rollDie() {
   return Math.floor(Math.random() * 6) + 1;
 }
 
-function rollSuit() {
-  return DIE_SUITS[Math.floor(Math.random() * DIE_SUITS.length)];
-}
-
 function createDice() {
   return Array.from({ length: 5 }, (_, index) => ({
     index,
     value: rollDie(),
-    suit: rollSuit(),
     locked: false,
     rolling: false,
     toggled: false,
@@ -180,124 +193,122 @@ function getEnemyDamage() {
 }
 
 function resolveDice(dice) {
-  const result = {
+  const activeDice = dice.filter(die => !die.inactive);
+  const faceGroups = [...getFaceGroups(activeDice).entries()]
+    .map(([value, group]) => ({ value, size: group.length }))
+    .sort((a, b) => b.size - a.size || b.value - a.value);
+  const uniqueValues = [...new Set(activeDice.map(die => die.value))].sort((a, b) => a - b);
+  const bestSequence = getLongestSequence(uniqueValues);
+
+  if (faceGroups[0]?.size >= 3) {
+    return {
+      comboType: "triple",
+      damage: 18,
+      armor: 0,
+      energy: 0,
+      description: "三同触发",
+      extraBursts: ["三同触发"]
+    };
+  }
+
+  if (bestSequence.length >= 3) {
+    return {
+      comboType: "straight",
+      damage: 8,
+      armor: 4,
+      energy: 0,
+      description: "连段触发",
+      extraBursts: ["连段触发"]
+    };
+  }
+
+  if (faceGroups[0]?.size >= 2) {
+    return {
+      comboType: "pair",
+      damage: 6,
+      armor: 0,
+      energy: 0,
+      description: "双数触发",
+      extraBursts: ["双数触发"]
+    };
+  }
+
+  return {
+    comboType: null,
     damage: 0,
-    energy: 0,
     armor: 0,
-    triggers: [],
-    multiplier: 1,
+    energy: 0,
+    description: "未触发",
     extraBursts: []
   };
+}
 
-  dice.filter(die => !die.inactive).forEach(die => {
-    switch (die.value) {
-      case 1:
-        result.damage += 1;
-        result.triggers.push("light_hit");
-        break;
-      case 2:
-        result.damage += 2;
-        result.triggers.push("multi_hit");
-        break;
-      case 3:
-        result.energy += 1;
-        result.triggers.push("energy_gain");
-        break;
-      case 4:
-        result.armor += 3;
-        result.triggers.push("armor_gain");
-        break;
-      case 5:
-        result.damage += 5;
-        result.triggers.push("heavy_hit");
-        break;
-      case 6:
-        result.damage += 6;
-        result.triggers.push("crit");
-        break;
-      default:
-        break;
+function getLongestSequence(values) {
+  if (!values.length) return [];
+
+  let bestSequence = [];
+  let currentSequence = [values[0]];
+
+  for (let i = 1; i < values.length; i += 1) {
+    if (values[i] === values[i - 1] + 1) {
+      currentSequence.push(values[i]);
+    } else {
+      if (
+        currentSequence.length > bestSequence.length ||
+        (currentSequence.length === bestSequence.length && currentSequence[currentSequence.length - 1] > (bestSequence[bestSequence.length - 1] || 0))
+      ) {
+        bestSequence = [...currentSequence];
+      }
+      currentSequence = [values[i]];
     }
-  });
+  }
 
-  return result;
+  if (
+    currentSequence.length > bestSequence.length ||
+    (currentSequence.length === bestSequence.length && currentSequence[currentSequence.length - 1] > (bestSequence[bestSequence.length - 1] || 0))
+  ) {
+    bestSequence = [...currentSequence];
+  }
+
+  return bestSequence;
 }
 
 function applyBuildEffects(result) {
   const upgrades = state.player.upgrades;
-  const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
-  const count3 = result.triggers.filter(trigger => trigger === "energy_gain").length;
-  const count6 = result.triggers.filter(trigger => trigger === "crit").length;
+  result.upgradeText = "";
 
-  if (upgrades.double2 && count2 > 0) {
-    result.multiplier += count2 * 0.35;
-    result.extraBursts.push(`连击链 x${result.multiplier.toFixed(2)}`);
+  if (result.comboType === "pair" && upgrades.pairPlus) {
+    result.damage = 10;
+    result.upgradeText = "双数强化";
+    result.extraBursts = ["双数触发", "双数强化"];
   }
 
-  if (upgrades.energyBoost && count3 > 0) {
-    result.energy += count3;
-    if (result.energy >= 3) {
-      result.damage += 6;
-      result.extraBursts.push("能量溢出 +6");
-    }
+  if (result.comboType === "straight" && upgrades.straightPlus) {
+    result.damage = 12;
+    result.armor = 6;
+    result.upgradeText = "连段强化";
+    result.extraBursts = ["连段触发", "连段强化"];
   }
 
-  if (upgrades.critBoost && count6 > 0) {
-    result.multiplier += count6 * 0.5;
-    result.extraBursts.push(`暴击链 x${result.multiplier.toFixed(2)}`);
-    if (count6 >= 2) {
-      result.damage += 8;
-      result.extraBursts.push("双6暴击 +8");
-    }
+  if (result.comboType === "triple" && upgrades.triplePlus) {
+    result.damage = 26;
+    result.upgradeText = "三同强化";
+    result.extraBursts = ["三同触发", "三同强化"];
   }
 
-  return result;
-}
-
-function applySuitEffects(result, dice) {
-  const suitCounts = { red: 0, blue: 0, green: 0, purple: 0 };
-  const suitBursts = [];
-
-  dice.filter(die => !die.inactive).forEach(die => {
-    suitCounts[die.suit] += 1;
-  });
-
-  if (suitCounts.red >= 3) {
-    result.damage += 6;
-    suitBursts.push("红色共鸣 +6 伤害");
-  }
-  if (suitCounts.blue >= 3) {
-    result.armor += 6;
-    suitBursts.push("蓝色共鸣 +6 护甲");
-  }
-  if (suitCounts.green >= 3) {
-    result.energy += 3;
-    suitBursts.push("绿色共鸣 +3 能量");
-  }
-  if (suitCounts.purple >= 3) {
-    result.multiplier += 0.6;
-    suitBursts.push(`紫色共鸣 x${result.multiplier.toFixed(2)}`);
-  }
-
-  result.suitBursts = suitBursts;
-  result.suitCounts = suitCounts;
   return result;
 }
 
 function calculateRoundResult() {
-  const base = resolveDice(state.battle.dice, state);
-  const final = applySuitEffects(applyBuildEffects({
+  const base = resolveDice(state.battle.dice);
+  const final = applyBuildEffects({
     damage: base.damage,
     energy: base.energy,
     armor: base.armor,
-    triggers: [...base.triggers],
-    multiplier: base.multiplier,
-    extraBursts: [...base.extraBursts],
-    suitBursts: [],
-    suitCounts: { red: 0, blue: 0, green: 0, purple: 0 }
-  }, state), state.battle.dice);
-
-  final.damage = Math.floor(final.damage * final.multiplier);
+    comboType: base.comboType,
+    description: base.description,
+    extraBursts: [...base.extraBursts]
+  });
 
   return {
     base,
@@ -305,109 +316,174 @@ function calculateRoundResult() {
   };
 }
 
-function getBuildFocusValue(currentState = state) {
-  const scores = currentState.run.buildScores;
-  const ranked = [
-    { face: 2, score: scores.combo + (currentState.player.upgrades.double2 ? 3 : 0) },
-    { face: 3, score: scores.energy + (currentState.player.upgrades.energyBoost ? 3 : 0) },
-    { face: 6, score: scores.crit + (currentState.player.upgrades.critBoost ? 3 : 0) }
-  ].sort((a, b) => b.score - a.score);
-
-  return ranked[0].score > 0 ? ranked[0].face : null;
+function getFaceGroups(dice) {
+  const groups = new Map();
+  dice.forEach(die => {
+    if (!groups.has(die.value)) groups.set(die.value, []);
+    groups.get(die.value).push(die);
+  });
+  return groups;
 }
 
-function getTargetTip(dice) {
-  const counts = { 2: 0, 3: 0, 5: 0, 6: 0 };
-  dice.filter(die => !die.inactive).forEach(die => {
-    if (counts[die.value] !== undefined) counts[die.value] += 1;
+function getSequencePlan(dice) {
+  const uniqueValues = [...new Set(dice.map(die => die.value))].sort((a, b) => a - b);
+  if (uniqueValues.length < 2) return null;
+  const bestSequence = getLongestSequence(uniqueValues);
+
+  if (bestSequence.length < 2) return null;
+
+  const highTarget = bestSequence[bestSequence.length - 1] < 6 ? bestSequence[bestSequence.length - 1] + 1 : null;
+  const lowTarget = bestSequence[0] > 1 ? bestSequence[0] - 1 : null;
+  const target = highTarget ?? lowTarget;
+
+  if (!target) return null;
+
+  const anchorValue = target > bestSequence[bestSequence.length - 1]
+    ? bestSequence[bestSequence.length - 1]
+    : bestSequence[0];
+
+  return {
+    sequence: bestSequence,
+    target,
+    anchorValue
+  };
+}
+
+function findDieIndexByValue(dice, value, excluded = []) {
+  const excludedSet = new Set(excluded);
+  const unlocked = dice.find(die => !die.locked && die.value === value && !excludedSet.has(die.index));
+  if (unlocked) return unlocked.index;
+  const fallback = dice.find(die => die.value === value && !excludedSet.has(die.index));
+  return fallback ? fallback.index : null;
+}
+
+function getRecommendedIndexesFromValues(dice, values, excluded = [], limit = 2) {
+  const excludedSet = new Set(excluded);
+  const indexes = [];
+
+  values.forEach(value => {
+    dice.forEach(die => {
+      if (indexes.length >= limit) return;
+      if (die.value !== value || die.locked || excludedSet.has(die.index)) return;
+      excludedSet.add(die.index);
+      indexes.push(die.index);
+    });
   });
 
-  const focus = getBuildFocusValue(currentState);
-  if (focus === 2) return counts[2] >= 2 ? "补 2 拉满连击链" : "找 2 开连击链";
-  if (focus === 3) return counts[3] >= 2 ? "补 3 触发能量溢出" : "找 3 养能量链";
-  if (focus === 6) return counts[6] >= 2 ? "补 6 追双暴击" : "找 6 养暴击链";
-  return "补 5 / 6 抬伤害";
+  return indexes;
 }
 
-function getSuitCounts(dice) {
-  const counts = { red: 0, blue: 0, green: 0, purple: 0 };
-  dice.filter(die => !die.inactive).forEach(die => {
-    counts[die.suit] += 1;
-  });
-  return counts;
+function getSequenceMiddleValue(sequence) {
+  if (!sequence.length) return null;
+  return sequence[Math.floor(sequence.length / 2)];
 }
 
-function getSuitTargetText(dice) {
-  const suitCounts = getSuitCounts(dice);
-  const suitPriority = ["red", "green", "purple", "blue"];
-  const nearBurstSuit = suitPriority.find(suit => suitCounts[suit] === 2);
-  if (nearBurstSuit) {
-    return `当前：已有2个${SUIT_LABELS[nearBurstSuit]}，再找1个`;
+function getDicePlan(currentState = state, preview = null) {
+  const dice = currentState.battle?.dice?.filter(die => !die.inactive) || [];
+  const roundPreview = preview || (currentState.battle ? calculateRoundResult() : null);
+  const damage = roundPreview?.final?.damage ?? 0;
+
+  if (!dice.length) {
+    return {
+      targetText: "还没成型 · 再找组合",
+      settleCopy: "先吃当前收益",
+      rerollCopy: "再赌一手",
+      coreIndex: null,
+      recommendedIndexes: []
+    };
   }
 
-  const activeSuit = suitPriority.find(suit => suitCounts[suit] >= 3);
-  if (activeSuit) {
-    if (activeSuit === "red") return "当前：追红色爆发";
-    if (activeSuit === "blue") return "当前：追蓝色护甲";
-    if (activeSuit === "green") return "当前：追绿色启动";
-    return "当前：追紫色倍率";
+  const faceGroups = [...getFaceGroups(dice).entries()]
+    .map(([value, group]) => ({ value, group }))
+    .sort((a, b) => b.group.length - a.group.length || b.value - a.value);
+  const uniqueValues = [...new Set(dice.map(die => die.value))].sort((a, b) => a - b);
+  const activeSequence = getLongestSequence(uniqueValues);
+
+  const topGroup = faceGroups[0];
+  const pairGroups = faceGroups.filter(group => group.group.length >= 2);
+
+  if (activeSequence.length >= 3) {
+    const middleValue = getSequenceMiddleValue(activeSequence);
+    const coreIndex = findDieIndexByValue(dice, middleValue);
+    const relatedValues = activeSequence.filter(value => value !== middleValue);
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
+
+    return {
+      targetText: "双数已成 · 可以结算",
+      settleCopy: "已有稳定收益",
+      rerollCopy: "再赌一手",
+      coreIndex,
+      recommendedIndexes
+    };
   }
 
-  const bestSuit = suitPriority.reduce((best, suit) => {
-    if (suitCounts[suit] > suitCounts[best]) return suit;
-    return best;
-  }, "red");
+  if (topGroup.group.length >= 3 || pairGroups.length >= 2) {
+    const primaryValue = topGroup.value;
+    const coreIndex = findDieIndexByValue(dice, primaryValue);
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [primaryValue], [coreIndex], 1);
 
-  if (suitCounts[bestSuit] > 0) {
-    return `当前：补${SUIT_LABELS[bestSuit]}共鸣`;
+    return {
+      targetText: damage >= 8 ? "已有稳定收益 · 见好就收" : "双数已成 · 可以结算",
+      settleCopy: "已有稳定收益",
+      rerollCopy: "再赌一手",
+      coreIndex,
+      recommendedIndexes
+    };
   }
 
-  return "";
+  if (topGroup.group.length === 2) {
+    const pairValue = topGroup.value;
+    const coreIndex = findDieIndexByValue(dice, pairValue);
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, [pairValue], [coreIndex], 1);
+
+    return {
+      targetText: pairValue >= 5 ? `双${pairValue}已成 · 再赌三同` : `再出1个${pairValue} → 触发大招`,
+      settleCopy: damage >= 8 ? "已有稳定收益" : `打出 ${damage} 伤害`,
+      rerollCopy: "搏更大爆发",
+      coreIndex,
+      recommendedIndexes
+    };
+  }
+
+  const sequencePlan = getSequencePlan(dice);
+  if (sequencePlan) {
+    const coreIndex = findDieIndexByValue(dice, sequencePlan.anchorValue);
+    const relatedValues = sequencePlan.sequence.filter(value => value !== sequencePlan.anchorValue).sort((a, b) => Math.abs(a - sequencePlan.anchorValue) - Math.abs(b - sequencePlan.anchorValue));
+    const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
+    const sequenceText = sequencePlan.sequence.join("-");
+    const targetText = `再出${sequencePlan.target} → 连段成型`;
+
+    return {
+      targetText,
+      settleCopy: damage >= 7 ? "先吃当前收益" : `打出 ${damage} 伤害`,
+      rerollCopy: "补齐连段",
+      coreIndex,
+      recommendedIndexes
+    };
+  }
+
+  const sortedDice = [...dice].sort((a, b) => b.value - a.value || a.index - b.index);
+  const scatterCore = sortedDice.find(die => !die.locked) || sortedDice[0];
+
+  return {
+    targetText: damage >= 7 ? "还没成型 · 再找组合" : "这手偏散 · 建议重掷",
+    settleCopy: damage >= 7 ? `打出 ${damage} 伤害` : "先吃当前收益",
+    rerollCopy: "再赌一手",
+    coreIndex: scatterCore ? scatterCore.index : null,
+    recommendedIndexes: []
+  };
 }
 
 function getCurrentTargetText(currentState) {
-  const dice = currentState.battle?.dice || [];
-  const suitTarget = getSuitTargetText(dice);
-  if (suitTarget) return suitTarget;
-  const count6 = dice.filter(die => !die.inactive && die.value === 6).length;
-  if (count6 >= 2) return "当前：双6已成 · 可再赌一手";
-
-  const focus = getBuildFocusValue(currentState);
-  if (focus === 2) return "当前：连击链 · 优先保留 2";
-  if (focus === 3) return "当前：能量链 · 优先保留 3";
-  if (focus === 6) return "当前：暴击链 · 优先保留 6";
-
-  const round = currentState.battle ? calculateRoundResult() : null;
-  if (round && round.final.damage <= 6) return "当前：这手偏弱 · 可以直接结算";
-  return "当前：补高伤骰 · 优先保留 5 / 6";
-}
-
-function getPreferredFace(currentState) {
-  return getBuildFocusValue(currentState);
+  return getDicePlan(currentState).targetText;
 }
 
 function getDieStatus(die, currentState, dice) {
   if (die.locked) return "locked";
 
-  const preferred = getPreferredFace(currentState);
-
-  if (preferred && die.value === preferred) {
-    const sameFaceUnlocked = dice.filter(item => !item.locked && !item.inactive && item.value === preferred);
-    if (sameFaceUnlocked.length > 0 && sameFaceUnlocked[0].index === die.index) {
-      return "core";
-    }
-    if (sameFaceUnlocked.findIndex(item => item.index === die.index) < 2) {
-      return "recommended";
-    }
-    return "normal";
-  }
-
-  if (!preferred && die.value >= 5) {
-    const highFaces = dice.filter(item => !item.locked && !item.inactive && item.value >= 5);
-    if (highFaces.findIndex(item => item.index === die.index) < 2) {
-      return "recommended";
-    }
-  }
+  const plan = getDicePlan(currentState);
+  if (plan.coreIndex === die.index) return "core";
+  if (plan.recommendedIndexes.includes(die.index)) return "recommended";
 
   return "normal";
 }
@@ -435,10 +511,6 @@ function getDieTag(status) {
   return "";
 }
 
-function getDieSuitClass(suit) {
-  return suit ? `suit-${suit}` : "";
-}
-
 function syncBuildType() {
   const ranking = Object.entries(state.run.buildScores).sort((a, b) => b[1] - a[1])[0];
   if (!ranking || ranking[1] <= 0) {
@@ -446,27 +518,31 @@ function syncBuildType() {
     return;
   }
   const map = {
-    combo: "连击链",
-    energy: "能量链",
-    crit: "暴击链"
+    pair: "双数流",
+    straight: "连段流",
+    triple: "三同流"
   };
   state.run.buildType = map[ranking[0]];
 }
 
 function getBuildBonusCopy(result) {
   const notes = [];
-  if (state.player.upgrades.double2) {
-    const count2 = result.triggers.filter(trigger => trigger === "multi_hit").length;
-    if (count2 > 0) notes.push(`连击链 +${count2 * 2}`);
+  if (result.comboType === "pair") {
+    notes.push(result.upgradeText || "双数触发");
   }
-  if (state.player.upgrades.energyBoost && result.energy > 0) {
-    notes.push("能量链 x2");
+  if (result.comboType === "straight") {
+    notes.push(result.upgradeText || "连段触发");
   }
-  if (state.player.upgrades.critBoost) {
-    const critCount = result.triggers.filter(trigger => trigger === "crit").length;
-    if (critCount > 0) notes.push(`暴击链 +${critCount * 3}`);
+  if (result.comboType === "triple") {
+    notes.push(result.upgradeText || "三同触发");
   }
-  return notes.length ? notes.join(" / ") : "当前还没有链式加成";
+  if (state.player.upgrades.rerollRefundOnStraight && result.comboType === "straight") {
+    notes.push("下回合返还重掷");
+  }
+  if (state.player.upgrades.extraRerollOnce) {
+    notes.push("本场首掷免费");
+  }
+  return notes.length ? notes.join(" / ") : "当前还没有组合加成";
 }
 
 function applyEnemyPressure(round) {
@@ -556,6 +632,7 @@ function buildBattleScreen() {
             <p class="drawer-title">流派</p>
             <div class="log-list" id="build-list"></div>
             <p class="drawer-title" style="margin-top:12px">本手结算</p>
+            <div class="combo-hit" id="combo-hit" hidden></div>
             <div class="calc-list" id="calc-list"></div>
             <p class="drawer-title" style="margin-top:12px">战斗日志</p>
             <div class="log-list" id="log-list"></div>
@@ -597,9 +674,9 @@ function renderBattle() {
   if (!state.battle) return;
 
   const preview = calculateRoundResult();
+  const plan = getDicePlan(state, preview);
   const enemy = state.battle.enemy;
   const lockedCount = state.battle.dice.filter(die => die.locked && !die.inactive).length;
-  const focusValue = getBuildFocusValue(state);
 
   document.getElementById("enemy-title-name").textContent = enemy.name;
   document.getElementById("enemy-stage-copy").textContent = `第 ${state.run.battleIndex + 1} / ${ENEMIES.length} 战`;
@@ -624,16 +701,16 @@ function renderBattle() {
   document.getElementById("hud-rerolls").textContent = String(state.battle.rerollsRemaining);
 
   document.getElementById("settle-title").textContent = "直接结算";
-  document.getElementById("settle-copy").textContent = `打出 ${preview.final.damage} 伤害`;
+  document.getElementById("settle-copy").textContent = plan.settleCopy;
 
   const canEmergencyReroll = state.battle.rerollsRemaining <= 0 && state.player.pityTokens > 0;
   document.getElementById("reroll-title").textContent = canEmergencyReroll
     ? "继续重掷"
     : (state.battle.rerollsRemaining > 0 ? "继续重掷" : "本回合到头");
   document.getElementById("reroll-copy").textContent = canEmergencyReroll
-    ? "赌一手更大收益"
+    ? "再赌一手"
     : state.battle.rerollsRemaining > 0
-      ? (focusValue === 6 ? "再试一手冲暴击" : focusValue === 3 ? "补 3 启动能量" : focusValue === 2 ? "补 2 拉满连击" : "赌一手更大收益")
+      ? plan.rerollCopy
       : "没有可用重掷";
   document.getElementById("reroll-btn").disabled = state.battle.rerollsRemaining <= 0 && !canEmergencyReroll;
 
@@ -646,12 +723,10 @@ function renderBattle() {
     const status = getDieStatus(die, state, state.battle.dice);
     const dieTag = getDieTag(status);
     const layout = getDiceLayout(index, state.battle.dice.length);
-    const suitClass = getDieSuitClass(die.suit);
 
     const className = [
       "die",
       `die-${status}`,
-      suitClass,
       die.rolling ? "rolling" : "",
       die.toggled ? "toggled" : "",
       die.inactive ? "inactive" : ""
@@ -659,14 +734,13 @@ function renderBattle() {
 
     return `<button class="${className}" type="button" data-die-index="${die.index}" style="grid-column:${layout.column} / span 2;grid-row:${layout.row};" ${die.inactive ? "disabled" : ""}>
       ${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}
-      <span class="die-suit-dot" aria-hidden="true"></span>
       <span class="die-value">${die.inactive ? "×" : die.value}</span>
     </button>`;
   }).join("");
 
   document.getElementById("relic-list").innerHTML = state.player.relics.length
     ? state.player.relics.map(relic => `<div class="relic-card"><strong>${relic.name}</strong><span>${relic.text}</span></div>`).join("")
-    : `<div class="relic-card"><strong>空槽位</strong><span>战后拿强化，慢慢把连锁做出来。</span></div>`;
+    : `<div class="relic-card"><strong>空槽位</strong><span>战后拿强化，慢慢把组合做出来。</span></div>`;
 
   document.getElementById("build-list").innerHTML = `
     <div class="log-card"><strong>当前流派</strong><span>${state.run.buildType}</span></div>
@@ -675,11 +749,20 @@ function renderBattle() {
     <div class="log-card"><strong>本流派加成</strong><span>${getBuildBonusCopy(preview.final)}</span></div>
   `;
 
+  const comboHitNode = document.getElementById("combo-hit");
+  const comboHitTextMap = {
+    straight: "连段已成！",
+    pair: "双数触发",
+    triple: "三同触发！"
+  };
+  const comboHitText = comboHitTextMap[preview.final.comboType];
+  if (comboHitNode) {
+    comboHitNode.hidden = !comboHitText;
+    comboHitNode.textContent = comboHitText || "";
+  }
+
   const burstText = preview.final.extraBursts.length
     ? preview.final.extraBursts.join(" / ")
-    : "无";
-  const suitBurstText = preview.final.suitBursts.length
-    ? preview.final.suitBursts.join(" / ")
     : "无";
   document.getElementById("calc-list").innerHTML = `
     <div class="calc-row calc-row-block">
@@ -689,10 +772,6 @@ function renderBattle() {
     <div class="calc-row calc-row-block">
       <span>原因说明</span>
       <strong>${burstText}</strong>
-    </div>
-    <div class="calc-row calc-row-block">
-      <span>花色共鸣</span>
-      <strong>${suitBurstText}</strong>
     </div>
   `;
 
@@ -709,11 +788,13 @@ function startBattle(index) {
     dice: createDice(),
     rerollsRemaining: 2,
     rerollsUsed: 0,
+    freeRerollUsed: false,
+    straightRefundPending: false,
     enemyCharge: 0,
     failChain: 0,
     safetyUsed: false
   };
-  addLog("新战斗", `${enemy.name} 上桌了。先看这轮是抢伤害、做能量链，还是立护甲。`);
+  addLog("新战斗", `${enemy.name} 上桌了。先看这轮是收收益、补组合，还是先站稳。`);
   setScreen("battle");
   buildBattleScreen();
   renderBattle();
@@ -795,8 +876,9 @@ function enemyAttack() {
   }
 
   state.battle.dice = createDice();
-  state.battle.rerollsRemaining = 2;
+  state.battle.rerollsRemaining = 2 + (state.battle.straightRefundPending ? 1 : 0);
   state.battle.rerollsUsed = 0;
+  state.battle.straightRefundPending = false;
   renderBattle();
 }
 
@@ -813,8 +895,14 @@ function settleHand() {
 
   state.battle.enemy.hp = Math.max(0, state.battle.enemy.hp - totalDamage);
 
-  addLog("结算触发", `造成 ${totalDamage} 点伤害，同时拿到 ${round.final.energy} 能量、${round.final.armor} 护甲。`);
-  addLog("链式反馈", round.final.extraBursts.length ? round.final.extraBursts.join(" / ") : getBuildBonusCopy(round.final));
+  addLog("结算触发", `造成 ${totalDamage} 点伤害，同时拿到 ${round.final.armor} 护甲。`);
+  addLog("组合反馈", round.final.extraBursts.length ? round.final.extraBursts.join(" / ") : getBuildBonusCopy(round.final));
+
+  if (state.player.upgrades.rerollRefundOnStraight && round.final.comboType === "straight") {
+    state.battle.straightRefundPending = true;
+    addLog("连段回转", "下回合返还 1 次重掷。");
+  }
+
   showFloat(`-${totalDamage}`, "#ffe49e");
 
   state.run.metrics.avg_damage += totalDamage;
@@ -837,11 +925,13 @@ function settleHand() {
 function rerollUnlockedDice(free = false) {
   if (!state.battle) return;
 
-  if (!free && state.battle.rerollsRemaining <= 0) {
+  const canUseFreeReroll = !free && state.player.upgrades.extraRerollOnce && !state.battle.freeRerollUsed;
+
+  if (!free && !canUseFreeReroll && state.battle.rerollsRemaining <= 0) {
     if (state.player.pityTokens > 0) {
       state.player.pityTokens -= 1;
       state.battle.rerollsRemaining += 1;
-      addLog("拆筹码", "拆 1 枚怜悯筹码，强行把这一轮连锁续下去。");
+      addLog("拆筹码", "拆 1 枚怜悯筹码，强行把这一轮续下去。");
     } else {
       return;
     }
@@ -852,12 +942,17 @@ function rerollUnlockedDice(free = false) {
 
   actualTargets.forEach(die => {
     die.value = rollDie();
-    die.suit = rollSuit();
     die.rolling = true;
   });
 
   if (!free) {
-    state.battle.rerollsRemaining -= 1;
+    const useFreeReroll = canUseFreeReroll;
+    if (useFreeReroll) {
+      state.battle.freeRerollUsed = true;
+      addLog("额外机会", "本场首次重掷免费。");
+    } else {
+      state.battle.rerollsRemaining -= 1;
+    }
     state.battle.rerollsUsed += 1;
     state.run.metrics.reroll_count += 1;
     if (["punish_greed", "mixed", "boss"].includes(state.battle.enemy.archetype)) {
