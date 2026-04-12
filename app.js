@@ -1,12 +1,3 @@
-const DIE_FACE = {
-  1: { label: "ONE", icon: "◆" },
-  2: { label: "TWO", icon: "✿" },
-  3: { label: "THREE", icon: "✦" },
-  4: { label: "FOUR", icon: "⬢" },
-  5: { label: "FIVE", icon: "◉" },
-  6: { label: "SIX", icon: "✺" }
-};
-
 const ENEMIES = [
   { name: "鼠巷混混", hp: 28, damage: 4, avatar: "🐀", intentText: "直接压血", flavor: "开局先试你一手底子。", archetype: "attack" },
   { name: "巷口守卫", hp: 38, damage: 5, avatar: "🛡️", intentText: "重掷会蓄力", flavor: "你每多重掷一次，它的下轮伤害就更高。", archetype: "punish_greed" },
@@ -409,8 +400,8 @@ function getDicePlan(currentState = state, preview = null) {
     const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
 
     return {
-      targetText: "双数已成 · 可以结算",
-      settleCopy: "已有稳定收益",
+      targetText: damage >= 8 ? "连段已成 · 先收" : "连段已成 · 可结算",
+      settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
       rerollCopy: "再赌一手",
       coreIndex,
       recommendedIndexes
@@ -423,9 +414,9 @@ function getDicePlan(currentState = state, preview = null) {
     const recommendedIndexes = getRecommendedIndexesFromValues(dice, [primaryValue], [coreIndex], 1);
 
     return {
-      targetText: damage >= 8 ? "已有稳定收益 · 见好就收" : "双数已成 · 可以结算",
-      settleCopy: "已有稳定收益",
-      rerollCopy: "再赌一手",
+      targetText: damage >= 8 ? "已有收益 · 先收" : "双数已成 · 可收",
+      settleCopy: damage >= 8 ? "稳稳收下" : "先吃收益",
+      rerollCopy: "冲三同",
       coreIndex,
       recommendedIndexes
     };
@@ -437,9 +428,9 @@ function getDicePlan(currentState = state, preview = null) {
     const recommendedIndexes = getRecommendedIndexesFromValues(dice, [pairValue], [coreIndex], 1);
 
     return {
-      targetText: pairValue >= 5 ? `双${pairValue}已成 · 再赌三同` : `再出1个${pairValue} → 触发大招`,
-      settleCopy: damage >= 8 ? "已有稳定收益" : `打出 ${damage} 伤害`,
-      rerollCopy: "搏更大爆发",
+      targetText: pairValue >= 5 ? `双${pairValue}已成 · 冲三同` : `再出1个${pairValue} → 大爆发`,
+      settleCopy: damage >= 8 ? "稳稳收下" : `打出 ${damage} 伤害`,
+      rerollCopy: "冲三同",
       coreIndex,
       recommendedIndexes
     };
@@ -450,13 +441,14 @@ function getDicePlan(currentState = state, preview = null) {
     const coreIndex = findDieIndexByValue(dice, sequencePlan.anchorValue);
     const relatedValues = sequencePlan.sequence.filter(value => value !== sequencePlan.anchorValue).sort((a, b) => Math.abs(a - sequencePlan.anchorValue) - Math.abs(b - sequencePlan.anchorValue));
     const recommendedIndexes = getRecommendedIndexesFromValues(dice, relatedValues, [coreIndex], 2);
-    const sequenceText = sequencePlan.sequence.join("-");
-    const targetText = `再出${sequencePlan.target} → 连段成型`;
+    const targetText = sequencePlan.sequence.length === 2
+      ? `再出${sequencePlan.target} → 连段成型`
+      : "差1步 → 连段";
 
     return {
       targetText,
-      settleCopy: damage >= 7 ? "先吃当前收益" : `打出 ${damage} 伤害`,
-      rerollCopy: "补齐连段",
+      settleCopy: damage >= 7 ? "先吃收益" : `打出 ${damage} 伤害`,
+      rerollCopy: "补连段",
       coreIndex,
       recommendedIndexes
     };
@@ -466,9 +458,9 @@ function getDicePlan(currentState = state, preview = null) {
   const scatterCore = sortedDice.find(die => !die.locked) || sortedDice[0];
 
   return {
-    targetText: damage >= 7 ? "还没成型 · 再找组合" : "这手偏散 · 建议重掷",
-    settleCopy: damage >= 7 ? `打出 ${damage} 伤害` : "先吃当前收益",
-    rerollCopy: "再赌一手",
+    targetText: damage >= 7 ? "还没成型 · 再找组合" : "这手偏散 · 重掷",
+    settleCopy: damage >= 7 ? `打出 ${damage} 伤害` : "先吃收益",
+    rerollCopy: damage >= 7 ? "找组合" : "再赌一手",
     coreIndex: scatterCore ? scatterCore.index : null,
     recommendedIndexes: []
   };
@@ -632,7 +624,6 @@ function buildBattleScreen() {
             <p class="drawer-title">流派</p>
             <div class="log-list" id="build-list"></div>
             <p class="drawer-title" style="margin-top:12px">本手结算</p>
-            <div class="combo-hit" id="combo-hit" hidden></div>
             <div class="calc-list" id="calc-list"></div>
             <p class="drawer-title" style="margin-top:12px">战斗日志</p>
             <div class="log-list" id="log-list"></div>
@@ -648,6 +639,8 @@ function buildBattleScreen() {
           <div class="dice-grid" id="dice-grid"></div>
         </div>
       </section>
+
+      <div class="combo-hit combo-hit-main" id="combo-hit" hidden></div>
 
       <section class="battle-hud">
         <div class="hud-item"><div class="hud-label">伤害</div><div class="hud-value damage" id="hud-damage"></div></div>

@@ -80,6 +80,7 @@ button{font:inherit;color:inherit}
 .drawer-title{margin:0 0 10px;color:#92a1c6;font-size:.72rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
 .relic-list,.log-list,.calc-list,.shop-grid,.summary-list{display:grid;gap:8px}
 .combo-hit{margin:0 0 10px;padding:12px 14px;border-radius:18px;border:1px solid rgba(255,223,138,.24);background:linear-gradient(180deg, rgba(255,214,104,.16), rgba(255,214,104,.06));color:#fff0bf;font-size:1.02rem;font-weight:900;letter-spacing:.04em;text-align:center;box-shadow:0 0 0 1px rgba(255,225,150,.08),0 0 20px rgba(255,214,104,.14),inset 0 1px 0 rgba(255,255,255,.08);text-shadow:0 0 14px rgba(255,232,162,.28)}
+.combo-hit-main{margin:2px 0 4px;flex:0 0 auto}
 .relic-card,.log-card,.calc-row,.offer-card,.summary-box,.summary-item{border-radius:16px;border:1px solid rgba(171,186,220,.08);background:rgba(255,255,255,.03)}
 .relic-card,.log-card,.calc-row{padding:9px 10px}
 .relic-card strong,.log-card strong{display:block;margin-bottom:4px}
