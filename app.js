@@ -95,7 +95,6 @@ const ui = {
   playAgainBtn: document.getElementById("play-again-btn"),
   battle: document.getElementById("screen-battle"),
   shopGrid: document.getElementById("shop-grid"),
-  shopCopy: document.getElementById("shop-copy"),
   summaryKicker: document.getElementById("summary-kicker"),
   summaryTitle: document.getElementById("summary-title"),
   summaryCopy: document.getElementById("summary-copy"),
@@ -113,7 +112,6 @@ function makeInitialState() {
     player: {
       maxHp: 46,
       hp: 46,
-      coins: 0,
       pityTokens: 0,
       armor: 0,
       relics: [],
@@ -136,13 +134,9 @@ function makeInitialState() {
       logs: [],
       metrics: {
         reroll_count: 0,
-        hold_rate: 0,
-        bust_rate: 0,
         avg_damage: 0,
         hands_settled: 0,
-        reward_pick_rate: {},
-        quit_stage: null,
-        restart_rate: 0
+        reward_pick_rate: {}
       }
     },
     battle: null,
@@ -193,16 +187,21 @@ function createDice() {
   return Array.from({ length: 5 }, (_, index) => ({
     index,
     value: rollDie(),
+    displayValue: null,
+    pendingValue: null,
     locked: false,
     rolling: false,
     toggled: false,
     inactive: false
+  })).map(die => ({
+    ...die,
+    displayValue: die.value
   }));
 }
 
 function getEnemyDamage() {
   if (!state.battle) return 0;
-  let damage = state.battle.enemy.damage + state.battle.enemyCharge * 2;
+  let damage = state.battle.enemy.damage + state.battle.enemyCharge;
   if (state.run.battleIndex < 2) damage = Math.round(damage * 0.75);
   return damage;
 }
@@ -221,28 +220,28 @@ function resolveDice(dice) {
     return { comboType: "five", damage: 50, armor: 0, description: "\u4e94\u540c\u89e6\u53d1", extraBursts: ["\u4e94\u540c\u89e6\u53d1"] };
   }
   if (bestSequence.length === 5) {
-    return { comboType: "straight5", damage: 24, armor: 10, description: "\u4e94\u8fde\u89e6\u53d1", extraBursts: ["\u4e94\u8fde\u89e6\u53d1"] };
+    return { comboType: "straight5", damage: 28, armor: 10, description: "\u4e94\u8fde\u89e6\u53d1", extraBursts: ["\u4e94\u8fde\u89e6\u53d1"] };
   }
   if (faceGroups[0]?.size === 4) {
-    return { comboType: "four", damage: 30, armor: 0, description: "\u56db\u540c\u89e6\u53d1", extraBursts: ["\u56db\u540c\u89e6\u53d1"] };
+    return { comboType: "four", damage: 34, armor: 0, description: "\u56db\u540c\u89e6\u53d1", extraBursts: ["\u56db\u540c\u89e6\u53d1"] };
   }
   if (hasFullHouse) {
-    return { comboType: "full", damage: 24, armor: 6, description: "\u6ee1\u5802\u5f69\u89e6\u53d1", extraBursts: ["\u6ee1\u5802\u5f69\u89e6\u53d1"] };
+    return { comboType: "full", damage: 26, armor: 6, description: "\u6ee1\u5802\u5f69\u89e6\u53d1", extraBursts: ["\u6ee1\u5802\u5f69\u89e6\u53d1"] };
   }
   if (pairGroups.length >= 2) {
-    return { comboType: "twoPair", damage: 10, armor: 2, description: "\u53cc\u5bf9\u5b50\u89e6\u53d1", extraBursts: ["\u53cc\u5bf9\u5b50\u89e6\u53d1"] };
+    return { comboType: "twoPair", damage: 12, armor: 2, description: "\u53cc\u5bf9\u5b50\u89e6\u53d1", extraBursts: ["\u53cc\u5bf9\u5b50\u89e6\u53d1"] };
   }
   if (bestSequence.length >= 4) {
-    return { comboType: "straight4", damage: 14, armor: 5, description: "\u56db\u8fde\u89e6\u53d1", extraBursts: ["\u56db\u8fde\u89e6\u53d1"] };
+    return { comboType: "straight4", damage: 18, armor: 5, description: "\u56db\u8fde\u89e6\u53d1", extraBursts: ["\u56db\u8fde\u89e6\u53d1"] };
   }
   if (faceGroups[0]?.size === 3) {
-    return { comboType: "triple", damage: 16, armor: 0, description: "\u4e09\u540c\u89e6\u53d1", extraBursts: ["\u4e09\u540c\u89e6\u53d1"] };
+    return { comboType: "triple", damage: 18, armor: 0, description: "\u4e09\u540c\u89e6\u53d1", extraBursts: ["\u4e09\u540c\u89e6\u53d1"] };
   }
   if (bestSequence.length >= 3) {
-    return { comboType: "straight", damage: 7, armor: 3, description: "\u8fde\u6bb5\u89e6\u53d1", extraBursts: ["\u8fde\u6bb5\u89e6\u53d1"] };
+    return { comboType: "straight", damage: 8, armor: 3, description: "\u8fde\u6bb5\u89e6\u53d1", extraBursts: ["\u8fde\u6bb5\u89e6\u53d1"] };
   }
   if (faceGroups[0]?.size === 2) {
-    return { comboType: "pair", damage: 4, armor: 0, description: "\u53cc\u6570\u89e6\u53d1", extraBursts: ["\u53cc\u6570\u89e6\u53d1"] };
+    return { comboType: "pair", damage: 5, armor: 0, description: "\u53cc\u6570\u89e6\u53d1", extraBursts: ["\u53cc\u6570\u89e6\u53d1"] };
   }
   return { comboType: null, damage: 0, armor: 0, description: "\u672a\u89e6\u53d1", extraBursts: [] };
 }
@@ -286,20 +285,20 @@ function applyBuildEffects(result) {
   }
 
   if (result.comboType === "pair" && upgrades.pairPlus) {
-    result.damage = 10;
+    result.damage = 11;
     result.upgradeText = "双数强化";
     result.extraBursts = ["双数触发", "双数强化"];
   }
 
   if (result.comboType === "straight" && upgrades.straightPlus) {
-    result.damage = 12;
+    result.damage = 13;
     result.armor = 6;
     result.upgradeText = "连段强化";
     result.extraBursts = ["连段触发", "连段强化"];
   }
 
   if (result.comboType === "triple" && upgrades.triplePlus) {
-    result.damage = 26;
+    result.damage = 28;
     result.upgradeText = "三同强化";
     result.extraBursts = ["三同触发", "三同强化"];
   }
@@ -401,10 +400,6 @@ function isStraightFamily(comboType) {
   return ["straight", "straight4", "straight5"].includes(comboType);
 }
 
-function isHighTierCombo(comboType) {
-  return ["twoPair", "triple", "straight4", "full", "four", "straight5", "five"].includes(comboType);
-}
-
 function getSettlePreviewText(result) {
   if (!result) return "\u9020\u6210 0 \u4f24\u5bb3";
   if (result.armor > 0) return `\u9020\u6210 ${result.damage} \u4f24\u5bb3 \u00b7 \u83b7\u5f97 ${result.armor} \u62a4\u7532`;
@@ -417,7 +412,7 @@ function getDicePlan(currentState = state, preview = null) {
   const comboType = roundPreview?.final?.comboType ?? null;
 
   if (!dice.length) {
-    return { targetText: "\u76ee\u6807\uff1a\u5f53\u524d\u9002\u5408\u76f4\u63a5\u7ed3\u7b97", rerollCopy: "\u5f53\u524d\u65e0\u660e\u786e\u76ee\u6807", recommendedIndexes: [] };
+    return { targetText: "这手先稳也行", rerollCopy: "可继续搏更大", recommendedIndexes: [] };
   }
 
   const faceGroups = [...getFaceGroups(dice).entries()]
@@ -426,68 +421,67 @@ function getDicePlan(currentState = state, preview = null) {
   const topGroup = faceGroups[0];
   const pairGroups = faceGroups.filter(group => group.group.length === 2);
   const sequencePlan = getSequencePlan(dice);
+  const settledCopy = comboType
+    ? {
+        five: { targetText: "这手已经能收", rerollCopy: "还可再搏" },
+        straight5: { targetText: "五连已成", rerollCopy: "还可再搏" },
+        four: { targetText: "四同够狠了", rerollCopy: "还可再搏" },
+        full: { targetText: "满堂彩能收", rerollCopy: "还可再搏" },
+        straight4: { targetText: "四连已经不亏", rerollCopy: "可补五连" },
+        triple: { targetText: "三同先稳也行", rerollCopy: "可冲四同" },
+        straight: { targetText: "连段已成", rerollCopy: "可补四连" },
+        twoPair: { targetText: "双对已经有货", rerollCopy: "可冲更大" }
+      }[comboType]
+    : null;
 
-  if (["five", "straight5", "four", "full", "straight4", "triple", "straight", "twoPair"].includes(comboType)) {
-    const rerollMap = {
-      five: "\u518d\u8d4c\u66f4\u5927",
-      straight5: "\u51b2\u4e94\u540c\uff0c\u6210\u529f\u7387\u672a\u77e5",
-      four: "\u51b2\u4e94\u540c\uff0c\u6210\u529f\u7387\u672a\u77e5",
-      full: "\u518d\u8d4c\u66f4\u5927",
-      straight4: "\u51b2\u4e94\u8fde\uff0c\u6210\u529f\u7387\u672a\u77e5",
-      triple: "\u51b2\u56db\u540c",
-      straight: "\u8865 4 \u8fde",
-      twoPair: "\u51b2\u4e09\u540c"
-    };
-    return { targetText: "\u76ee\u6807\uff1a\u5f53\u524d\u9002\u5408\u76f4\u63a5\u7ed3\u7b97", rerollCopy: rerollMap[comboType] || "\u5f53\u524d\u65e0\u660e\u786e\u76ee\u6807", recommendedIndexes: [] };
+  if (settledCopy) {
+    return { ...settledCopy, recommendedIndexes: [] };
   }
 
-  if (topGroup?.group.length === 4) return { targetText: `\u76ee\u6807\uff1a\u518d\u51fa 1 \u4e2a ${topGroup.value}\uff0c\u51d1\u4e94\u540c`, rerollCopy: "\u51b2\u4e94\u540c\uff0c\u6210\u529f\u7387\u672a\u77e5", recommendedIndexes: getGroupIndexes(topGroup.group) };
-  if (topGroup?.group.length === 3) return { targetText: `\u76ee\u6807\uff1a\u518d\u51fa 1 \u4e2a ${topGroup.value}\uff0c\u51b2\u56db\u540c`, rerollCopy: "\u51b2\u56db\u540c", recommendedIndexes: getGroupIndexes(topGroup.group) };
-  if (pairGroups.length >= 2) return { targetText: "\u76ee\u6807\uff1a\u53cc\u5bf9\u5b50\u5df2\u6210\uff0c\u53ef\u7ee7\u7eed\u51b2\u66f4\u5927", rerollCopy: "\u51b2\u4e09\u540c", recommendedIndexes: pairGroups.flatMap(group => group.group.map(die => die.index)) };
-  if (comboType === "pair" && topGroup?.group.length >= 2) return { targetText: `\u76ee\u6807\uff1a\u518d\u51fa 1 \u4e2a ${topGroup.value}\uff0c\u51b2\u4e09\u540c`, rerollCopy: "\u51b2\u4e09\u540c", recommendedIndexes: getGroupIndexes(topGroup.group) };
-  if (sequencePlan?.target && sequencePlan.length >= 5) return { targetText: `\u76ee\u6807\uff1a\u8865\u51fa ${sequencePlan.target}\uff0c\u51d1\u4e94\u8fde`, rerollCopy: "\u51b2\u4e94\u8fde\uff0c\u6210\u529f\u7387\u672a\u77e5", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
-  if (sequencePlan?.target && sequencePlan.length >= 4) return { targetText: `\u76ee\u6807\uff1a\u8865\u51fa ${sequencePlan.target}\uff0c\u51d1\u56db\u8fde`, rerollCopy: "\u8865 4 \u8fde", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
-  if (sequencePlan?.target && sequencePlan.length >= 3) return { targetText: `\u76ee\u6807\uff1a\u8865\u51fa ${sequencePlan.target}\uff0c\u8865\u8fde\u6bb5`, rerollCopy: "\u8865\u8fde\u6bb5", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
+  if (topGroup?.group.length === 4) return { targetText: `留 ${topGroup.value}，可冲五同`, rerollCopy: "可冲五同", recommendedIndexes: getGroupIndexes(topGroup.group) };
+  if (topGroup?.group.length === 3) return { targetText: `留 ${topGroup.value}，可冲四同`, rerollCopy: "可冲四同", recommendedIndexes: getGroupIndexes(topGroup.group) };
+  if (pairGroups.length >= 2) return { targetText: "双对先留，可冲更大", rerollCopy: "可冲三同", recommendedIndexes: pairGroups.flatMap(group => group.group.map(die => die.index)) };
+  if (comboType === "pair" && topGroup?.group.length >= 2) return { targetText: `优先留 ${topGroup.value}`, rerollCopy: "可冲三同", recommendedIndexes: getGroupIndexes(topGroup.group) };
+  if (sequencePlan?.target && sequencePlan.length >= 5) return { targetText: `差 ${sequencePlan.target}，可补五连`, rerollCopy: "可补五连", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
+  if (sequencePlan?.target && sequencePlan.length >= 4) return { targetText: `差 ${sequencePlan.target}，可补四连`, rerollCopy: "可补四连", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
+  if (sequencePlan?.target && sequencePlan.length >= 3) return { targetText: "连段有苗头", rerollCopy: "可补顺子", recommendedIndexes: getRecommendedIndexesFromValues(dice, sequencePlan.sequence, [], sequencePlan.sequence.length) };
 
-  return { targetText: "\u76ee\u6807\uff1a\u5f53\u524d\u9002\u5408\u76f4\u63a5\u7ed3\u7b97", rerollCopy: "\u5f53\u524d\u65e0\u660e\u786e\u76ee\u6807", recommendedIndexes: [] };
+  return { targetText: "这手先稳也行", rerollCopy: "可继续搏更大", recommendedIndexes: [] };
 }
 
 function getCurrentTargetText(currentState) {
   return getDicePlan(currentState).targetText;
 }
 
-function getRiskHint(preview, plan) {
+function getRiskHint(preview) {
   if (!state?.battle || !preview?.final) return "";
   const enemy = state.battle.enemy;
   const damage = preview.final.damage;
   const armor = preview.final.armor;
 
-  if (!hasUnlockedDice(state.battle.dice)) return "\u5148\u89e3\u9501\u81f3\u5c11 1 \u679a\u9ab0\u5b50";
-  if (state.battle.rerollsRemaining <= 0 && state.player.pityTokens <= 0) return "\u672c\u8f6e\u6ca1\u6709\u53ef\u7528\u91cd\u63b7";
+  if (!hasUnlockedDice(state.battle.dice)) return "先解锁一枚";
+  if (state.battle.rerollsRemaining <= 0 && state.player.pityTokens <= 0) return "这轮没法再掷";
 
   if (enemy.archetype === "punish_greed") {
-    return state.battle.enemyCharge > 0 ? `\u654c\u4eba\u5df2\u84c4\u529b ${state.battle.enemyCharge} \u5c42\uff0c\u518d\u8d2a\u4f1a\u66f4\u75db` : "\u7ee7\u7eed\u91cd\u63b7\u4f1a\u8ba9\u654c\u4eba\u84c4\u529b";
+    return state.battle.enemyCharge > 0 ? "再贪会更痛" : "重掷会涨压";
   }
   if (enemy.archetype === "punish_low") {
-    return damage <= 6 ? "\u4f4e\u4f24\u4f1a\u8ba9\u654c\u4eba\u6210\u957f" : "\u8fd9\u624b\u4f24\u5bb3\u8db3\u591f\uff0c\u4e0d\u4f1a\u89e6\u53d1\u6210\u957f";
+    return damage <= 6 ? "低伤会被反打" : "这手暂时安全";
   }
   if (enemy.archetype === "mixed") {
-    return damage <= 6
-      ? "\u4f4e\u4f24\u548c\u8d2a\u63b7\u90fd\u4f1a\u89e6\u53d1\u53cd\u5236"
-      : state.battle.enemyCharge > 0
-        ? `\u654c\u4eba\u5df2\u84c4\u529b ${state.battle.enemyCharge} \u5c42\uff0c\u4f4e\u4f24\u548c\u8d2a\u63b7\u90fd\u5371\u9669`
-        : "\u7ee7\u7eed\u91cd\u63b7\u4f1a\u8ba9\u654c\u4eba\u84c4\u529b";
+    if (damage <= 4) return "低伤会被追罚";
+    return state.battle.rerollsUsed > 0 ? "再贪会涨压" : "先手还能试探";
   }
   if (enemy.archetype === "boss") {
-    if (armor >= 6 && damage <= 8) return "\u9ad8\u62a4\u7532\u548c\u4f4e\u8f93\u51fa\u90fd\u4f1a\u89e6\u53d1 Boss \u538b\u5236";
-    if (armor >= 6) return "\u9ad8\u62a4\u7532\u4e5f\u4f1a\u89e6\u53d1 Boss \u538b\u5236";
-    if (damage <= 8) return "\u8f93\u51fa\u504f\u4f4e\u4f1a\u7ee7\u7eed\u62ac\u9ad8 Boss \u538b\u529b";
-    return "\u8fd9\u624b\u6682\u65f6\u538b\u4f4f\u4e86 Boss \u538b\u529b";
+    if (armor >= 6 && damage <= 8) return "高甲低伤都吃罚";
+    if (armor >= 6) return "高甲也会吃罚";
+    if (damage <= 8) return "低伤会涨压";
+    return "Boss 压力稳住了";
   }
-  return preview.final.comboType ? `\u5f53\u524d\u53ef\u6536 ${preview.final.damage}` : "\u7ee7\u7eed\u91cd\u63b7\u4ecd\u6709\u5931\u624b\u98ce\u9669";
+  return preview.final.comboType ? "这手可以收" : "再掷仍有风险";
 }
 
-function getDieStatus(die, currentState, dice) {
+function getDieStatus(die, currentState) {
   if (die.locked) return "locked";
   const plan = getDicePlan(currentState);
   if (plan.recommendedIndexes.includes(die.index)) return "recommended";
@@ -574,7 +568,7 @@ function applyEnemyPressure(round) {
     return;
   }
 
-  if (enemy.archetype === "mixed" && damage <= 6) {
+  if (enemy.archetype === "mixed" && damage <= 4) {
     state.battle.enemyCharge += 1;
     addLog("\u654c\u65b9\u53cd\u5236", "\u4f60\u8fd9\u624b\u6253\u5f97\u592a\u8f7b\uff0c\u6df7\u5408\u654c\u4eba\u84c4\u529b +1\u3002");
     showEnemyAlert("\u4f4e\u4f24\u89e6\u53d1\u53cd\u5236");
@@ -599,8 +593,8 @@ function startBattle(index) {
     freeRerollUsed: false,
     straightRefundPending: false,
     enemyCharge: 0,
-    failChain: 0,
-    safetyUsed: false
+    rollAnimation: null,
+    comboFlashTimeout: null
   };
   addLog("\u65b0\u6218\u6597", `${enemy.name} \u4e0a\u684c\u4e86\u3002\u5148\u770b\u8fd9\u8f6e\u662f\u76f4\u63a5\u6536\u3001\u8865\u7ec4\u5408\uff0c\u8fd8\u662f\u5148\u7ad9\u7a33\u3002`);
   setScreen("battle");
@@ -782,7 +776,7 @@ function renderBattle() {
   document.getElementById("enemy-intent-title").textContent = `\u672c\u56de\u5408\u654c\u4eba\u653b\u51fb ${getEnemyDamage()}`;
   document.getElementById("enemy-intent-copy").textContent = enemy.flavor;
   document.getElementById("target-bar").textContent = getCurrentTargetText(state);
-  document.getElementById("risk-bar").textContent = getRiskHint(preview, plan);
+  document.getElementById("risk-bar").textContent = getRiskHint(preview);
   document.getElementById("dice-lock-summary").textContent = `\u5df2\u9501 ${lockedCount} / 5 \u00b7 \u8fd8\u53ef\u7ee7\u7eed\u9009\u62e9`;
   document.getElementById("hud-damage").textContent = String(preview.final.damage);
   const comboLabelMap = { five: "\u4e94\u540c", straight5: "\u4e94\u8fde", four: "\u56db\u540c", full: "\u6ee1\u5802\u5f69", straight4: "\u56db\u8fde", triple: "\u4e09\u540c", straight: "\u4e09\u8fde", twoPair: "\u53cc\u5bf9\u5b50", pair: "\u53cc\u6570", none: "\u6563\u724c" };
@@ -802,11 +796,11 @@ function renderBattle() {
   diceStage?.style.setProperty("--dice-rows", String(diceRows));
   diceGrid.style.setProperty("--dice-rows", String(diceRows));
   diceGrid.innerHTML = state.battle.dice.map((die, index) => {
-    const status = getDieStatus(die, state, state.battle.dice);
+    const status = getDieStatus(die, state);
     const dieTag = getDieTag(status);
     const layout = getDiceLayout(index, state.battle.dice.length);
     const className = ["die", `die-${status}`, die.rolling ? "rolling" : "", die.toggled ? "toggled" : "", die.inactive ? "inactive" : ""].filter(Boolean).join(" ");
-    return `<button class="${className}" type="button" data-die-index="${die.index}" style="grid-column:${layout.column} / span 2;grid-row:${layout.row};" ${die.inactive ? "disabled" : ""}>${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}<span class="die-value">${die.inactive ? "\u00d7" : die.value}</span></button>`;
+    return `<button class="${className}" type="button" data-die-index="${die.index}" style="grid-column:${layout.column} / span 2;grid-row:${layout.row};" ${die.inactive ? "disabled" : ""}>${dieTag ? `<span class="die-tag">${dieTag}</span>` : ""}<span class="die-value">${die.inactive ? "\u00d7" : (die.displayValue ?? die.value)}</span></button>`;
   }).join("");
   document.getElementById("relic-list").innerHTML = state.player.relics.length ? state.player.relics.map(relic => `<div class="relic-card"><strong>${relic.name}</strong><span>${relic.text}</span></div>`).join("") : `<div class="relic-card"><strong>\u6682\u65e0\u5f3a\u5316</strong><span>\u6218\u540e\u62ff\u5f3a\u5316\uff0c\u6162\u6162\u628a\u7ec4\u5408\u505a\u51fa\u6765\u3002</span></div>`;
   document.getElementById("build-list").innerHTML = `<div class="log-card"><strong>\u5f53\u524d\u6d41\u6d3e</strong><span>${state.run.buildType}</span></div><div class="log-card"><strong>\u601c\u609f\u7b79\u7801</strong><span>${state.player.pityTokens} \u679a</span></div><div class="log-card"><strong>\u5f53\u524d\u62a4\u7532</strong><span>${state.player.armor}</span></div><div class="log-card"><strong>\u672c\u6d41\u6d3e\u52a0\u6210</strong><span>${getBuildBonusCopy(preview.final)}</span></div>`;
@@ -820,6 +814,25 @@ function renderBattle() {
     comboHitNode.classList.remove("combo-hit-pulse");
     if (comboHitText) { void comboHitNode.offsetWidth; comboHitNode.classList.add("combo-hit-pulse"); }
   }
+  if (diceStage) {
+    const hitTier = ["five", "straight5", "four"].includes(preview.final.comboType)
+      ? "combo-elite-hit"
+      : ["straight4", "full"].includes(preview.final.comboType)
+        ? "combo-flash"
+        : "";
+    diceStage.classList.remove("combo-flash", "combo-elite-hit");
+    if (state.battle.comboFlashTimeout) clearTimeout(state.battle.comboFlashTimeout);
+    if (hitTier && !state.battle.dice.some(die => die.rolling)) {
+      void diceStage.offsetWidth;
+      diceStage.classList.add(hitTier);
+      state.battle.comboFlashTimeout = setTimeout(() => {
+        const currentStage = document.querySelector(".dice-stage");
+        if (!state?.battle || !currentStage) return;
+        currentStage.classList.remove("combo-flash", "combo-elite-hit");
+        state.battle.comboFlashTimeout = null;
+      }, 420);
+    }
+  }
   const burstText = preview.final.extraBursts.length ? preview.final.extraBursts.join(" / ") : "\u65e0";
   document.getElementById("calc-list").innerHTML = `<div class="calc-row calc-row-block"><span>\u672c\u624b\u4f24\u5bb3 ${preview.final.damage}</span><strong>\u62a4\u7532 +${preview.final.armor}</strong></div><div class="calc-row"><span>\u7ec4\u5408\u7ed3\u7b97</span><strong>${preview.final.description}</strong></div><div class="calc-row"><span>\u547d\u4e2d\u53cd\u9988</span><strong>${burstText}</strong></div>`;
   document.getElementById("log-list").innerHTML = state.run.logs.length ? state.run.logs.map(item => `<div class="log-card"><strong>${item.title}</strong><span>${item.text}</span></div>`).join("") : `<div class="log-card"><strong>\u6682\u65e0\u65e5\u5fd7</strong><span>\u8fd9\u4e00\u624b\u8fd8\u6ca1\u843d\u684c\u3002</span></div>`;
@@ -827,6 +840,7 @@ function renderBattle() {
 
 function rerollUnlockedDice(free = false) {
   if (!state.battle) return;
+  if (state.battle.dice.some(die => die.rolling)) return;
   const canUseFreeReroll = !free && state.player.upgrades.extraRerollOnce && !state.battle.freeRerollUsed;
   if (!free && !canUseFreeReroll && state.battle.rerollsRemaining <= 0) {
     if (state.player.pityTokens > 0) {
@@ -836,37 +850,65 @@ function rerollUnlockedDice(free = false) {
     } else { return; }
   }
   if (!hasUnlockedDice(state.battle.dice)) {
-    addLog("\u65e0\u6cd5\u91cd\u63b7", "\u5168\u90e8\u5df2\u9501\u5b9a\uff0c\u65e0\u6cd5\u91cd\u63b7\u3002\u8bf7\u5148\u89e3\u9501\u81f3\u5c11 1 \u679a\u9ab0\u5b50\u3002");
     showFloat("\u5148\u89e3\u9501", "#9ee7ff");
     renderBattle();
     return;
   }
   const actualTargets = state.battle.dice.filter(die => !die.locked && !die.inactive);
-  actualTargets.forEach(die => { die.value = rollDie(); die.rolling = true; });
+  actualTargets.forEach(die => {
+    die.rolling = true;
+    die.pendingValue = rollDie();
+  });
   if (!free) {
     const useFreeReroll = canUseFreeReroll;
     if (useFreeReroll) { state.battle.freeRerollUsed = true; addLog("\u989d\u5916\u673a\u4f1a", "\u672c\u573a\u9996\u6b21\u91cd\u63b7\u514d\u8d39\u3002"); }
     else { state.battle.rerollsRemaining -= 1; }
     state.battle.rerollsUsed += 1;
     state.run.metrics.reroll_count += 1;
-    if (["punish_greed", "mixed", "boss"].includes(state.battle.enemy.archetype)) {
+    const archetype = state.battle.enemy.archetype;
+    const shouldChargeOnReroll =
+      archetype === "punish_greed" ||
+      archetype === "boss" ||
+      (archetype === "mixed" && state.battle.rerollsUsed > 1);
+    if (shouldChargeOnReroll) {
       state.battle.enemyCharge += 1;
-      const alertMap = { punish_greed: "\u654c\u4eba\u84c4\u529b +1", mixed: "\u8d2a\u63b7\u88ab\u770b\u7a7f", boss: "Boss \u538b\u529b\u5347\u7ea7" };
-      showEnemyAlert(alertMap[state.battle.enemy.archetype]);
+      const alertMap = { punish_greed: "\u654c\u4eba\u84c4\u529b +1", mixed: "\u518d\u8d2a\u4f1a\u6da8\u538b", boss: "Boss \u538b\u529b\u5347\u7ea7" };
+      showEnemyAlert(alertMap[archetype]);
     }
   }
-  addLog("\u7ee7\u7eed\u91cd\u63b7", `\u91cd\u63b7\u4e86 ${actualTargets.length} \u679a\u9ab0\u5b50\uff0c\u7ee7\u7eed\u51b2\u66f4\u5927\u7684\u89e6\u53d1\u3002`);
+  addLog("\u7ee7\u7eed\u91cd\u63b7", `\u91cd\u63b7 ${actualTargets.length} \u679a\u9ab0\u5b50`);
   renderBattle();
-  setTimeout(() => { if (!state?.battle) return; state.battle.dice.forEach(die => { die.rolling = false; }); renderBattle(); }, 520);
+  if (state.battle.rollAnimation?.intervalId) clearInterval(state.battle.rollAnimation.intervalId);
+  if (state.battle.rollAnimation?.timeoutId) clearTimeout(state.battle.rollAnimation.timeoutId);
+  const intervalId = setInterval(() => {
+    if (!state?.battle) return;
+    actualTargets.forEach(die => {
+      if (die.rolling) die.displayValue = rollDie();
+    });
+    renderBattle();
+  }, 80);
+  const timeoutId = setTimeout(() => {
+    if (!state?.battle) return;
+    clearInterval(intervalId);
+    actualTargets.forEach(die => {
+      die.value = die.pendingValue ?? die.value;
+      die.displayValue = die.value;
+      die.pendingValue = null;
+      die.rolling = false;
+    });
+    state.battle.rollAnimation = null;
+    renderBattle();
+  }, 480);
+  state.battle.rollAnimation = { intervalId, timeoutId };
 }
 
 function toggleDie(index) {
   if (!state?.battle) return;
   const die = state.battle.dice[index];
-  if (!die || die.inactive) return;
+  if (!die || die.inactive || die.rolling) return;
   die.locked = !die.locked;
   die.toggled = true;
-  addLog(die.locked ? "\u9501\u5b9a\u9ab0\u5b50" : "\u53d6\u6d88\u9501\u5b9a", `\u7b2c ${index + 1} \u679a\u9ab0\u5b50${die.locked ? "\u5df2\u9501\u5b9a" : "\u5df2\u89e3\u9501"}\u3002`);
+  showFloat(die.locked ? "\u5df2\u9501" : "\u5df2\u89e3", die.locked ? "#baf7d7" : "#b9d8ff");
   renderBattle();
   setTimeout(() => { if (!state?.battle?.dice[index]) return; state.battle.dice[index].toggled = false; renderBattle(); }, 220);
 }
