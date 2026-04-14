@@ -1,55 +1,721 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>&#x9ab0;&#x9762;&#x8d4c;&#x573a;</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>骰子版 Balatro 原型</title>
+  <style>
+    :root{
+      --bg: #f3f1ea;
+      --bg2: #e7ecf3;
+      --panel: rgba(255,255,255,0.86);
+      --panel-strong: rgba(255,255,255,0.96);
+      --text: #1f2430;
+      --muted: #667085;
+      --line: rgba(31,36,48,0.12);
+      --accent: #2457ff;
+      --accent-2: #7a5cff;
+      --success: #12805c;
+      --warning: #c17b00;
+      --danger: #c44c4c;
+      --shadow: 0 18px 40px rgba(18, 29, 51, 0.10);
+      --radius: 20px;
+      --radius-sm: 14px;
+      --die-size: clamp(68px, 16vw, 92px);
+      --die-font: clamp(1.45rem, 4.8vw, 2.05rem);
+      --btn-height: 52px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, rgba(36,87,255,0.10), transparent 24%),
+        radial-gradient(circle at 90% 10%, rgba(122,92,255,0.10), transparent 22%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    .app{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px;
+      min-height: 100%;
+      display: grid;
+      gap: 14px;
+    }
+
+    .topbar{
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .stat{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      min-height: 78px;
+    }
+
+    .stat .label{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.1;
+      margin-bottom: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .stat .value{
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .main{
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(280px, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .card-header{
+      padding: 14px 16px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-title{
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .subtle{
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .play-area{
+      padding: 14px 16px 16px;
+    }
+
+    .candidate-area{
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .candidate-list{
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .candidate-card{
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.82);
+      padding: 12px 12px 13px;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
+    }
+
+    .candidate-card:hover{
+      transform: translateY(-1px);
+      border-color: rgba(36,87,255,0.28);
+      box-shadow: 0 12px 24px rgba(36,87,255,0.08);
+    }
+
+    .candidate-card.selected{
+      border-color: rgba(36,87,255,0.55);
+      background: linear-gradient(180deg, rgba(235,242,255,0.96), rgba(224,235,255,0.94));
+      box-shadow: 0 12px 24px rgba(36,87,255,0.10);
+    }
+
+    .candidate-top{
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .candidate-name{
+      font-weight: 900;
+      font-size: 15px;
+    }
+
+    .candidate-score{
+      font-weight: 900;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .candidate-line{
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      margin-top: 4px;
+      word-break: break-word;
+    }
+
+    .candidate-note{
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .dice-grid{
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .die{
+      position: relative;
+      min-height: var(--die-size);
+      border: 2px solid rgba(31,36,48,0.10);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(247,248,250,0.92));
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 10px 6px 12px;
+      font-size: var(--die-font);
+      font-weight: 900;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease, background 0.14s ease, opacity 0.14s ease;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .die:active{ transform: scale(0.98); }
+    .die:hover{ transform: translateY(-1px); }
+
+    .die.blank{
+      color: rgba(31,36,48,0.28);
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      background: linear-gradient(180deg, rgba(255,255,255,0.62), rgba(247,248,250,0.62));
+    }
+
+    .die.locked{
+      border-color: rgba(36,87,255,0.55);
+      background: linear-gradient(180deg, rgba(231,240,255,0.96), rgba(219,231,255,0.95));
+      box-shadow: 0 10px 22px rgba(36,87,255,0.12);
+    }
+
+    .die.selected{
+      border-color: rgba(18,128,92,0.70);
+      background: linear-gradient(180deg, rgba(225,251,240,0.98), rgba(209,245,231,0.96));
+      box-shadow: 0 10px 22px rgba(18,128,92,0.12);
+    }
+
+    .die.locked.selected{
+      border-color: rgba(122,92,255,0.72);
+      background: linear-gradient(180deg, rgba(239,233,255,0.98), rgba(226,217,255,0.96));
+    }
+
+    .die.retained{
+      border-color: rgba(36,87,255,0.42);
+      box-shadow: 0 10px 22px rgba(36,87,255,0.10);
+    }
+
+    .die.new{
+      border-color: rgba(31,36,48,0.10);
+    }
+
+    .die.charge{
+      background: linear-gradient(180deg, rgba(255,248,222,0.98), rgba(255,241,200,0.96));
+    }
+
+    .die.odd{
+      background: linear-gradient(180deg, rgba(240,255,243,0.98), rgba(225,248,230,0.96));
+    }
+
+    .die.snake{
+      background: linear-gradient(180deg, rgba(239,247,255,0.98), rgba(224,238,255,0.96));
+    }
+
+    .die .badge{
+      position: absolute;
+      left: 8px;
+      top: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 999px;
+      background: rgba(31,36,48,0.08);
+      color: rgba(31,36,48,0.70);
+    }
+
+    .die.locked .badge{
+      background: rgba(36,87,255,0.14);
+      color: var(--accent);
+    }
+
+    .die.selected .badge{
+      background: rgba(18,128,92,0.14);
+      color: var(--success);
+    }
+
+    .die .foot{
+      position: absolute;
+      right: 8px;
+      bottom: 7px;
+      font-size: 11px;
+      color: rgba(31,36,48,0.52);
+      font-weight: 700;
+    }
+
+    .controls{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn{
+      height: var(--btn-height);
+      border: 0;
+      border-radius: 16px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(180deg, #3b67ff, #2457ff);
+      box-shadow: 0 12px 24px rgba(36,87,255,0.18);
+      transition: transform 0.14s ease, filter 0.14s ease, opacity 0.14s ease;
+    }
+
+    .btn.secondary{
+      background: linear-gradient(180deg, #6e7786, #576170);
+      box-shadow: 0 12px 24px rgba(55,64,74,0.14);
+    }
+
+    .btn.ghost{
+      color: var(--text);
+      background: rgba(255,255,255,0.8);
+      border: 1px solid var(--line);
+      box-shadow: none;
+    }
+
+    .btn.danger{
+      background: linear-gradient(180deg, #df5f5f, #c44c4c);
+      box-shadow: 0 12px 24px rgba(196,76,76,0.16);
+    }
+
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn:disabled{
+      opacity: 0.42;
+      cursor: not-allowed;
+      transform: none;
+      filter: grayscale(0.08);
+    }
+
+    .panel-stack{
+      display: grid;
+      gap: 14px;
+    }
+
+    .section{
+      padding: 14px 16px 16px;
+    }
+
+    .relic-list, .history-list{
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .relic{
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+    }
+
+    .relic .name{
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .relic .desc,
+    .history-item .meta{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(36,87,255,0.10);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .log-box{
+      margin-top: 10px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.82);
+      padding: 12px;
+      min-height: 168px;
+    }
+
+    .log-line{
+      font-size: 13px;
+      line-height: 1.62;
+      margin: 0 0 6px;
+      word-break: break-word;
+    }
+
+    .log-line strong{
+      color: var(--text);
+    }
+
+    .preview{
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(31,36,48,0.04);
+      border: 1px dashed rgba(31,36,48,0.12);
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .history-item{
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.72);
+    }
+
+    .history-item .top{
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .history-item .score{
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .muted-box{
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(31,36,48,0.04);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      border: 1px dashed rgba(31,36,48,0.12);
+    }
+
+    .overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 18, 25, 0.48);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 30;
+    }
+
+    .overlay.show{
+      display: flex;
+    }
+
+    .modal{
+      width: min(720px, 100%);
+      background: rgba(255,255,255,0.96);
+      border: 1px solid rgba(255,255,255,0.32);
+      border-radius: 24px;
+      box-shadow: 0 28px 70px rgba(0,0,0,0.22);
+      overflow: hidden;
+    }
+
+    .modal-head{
+      padding: 18px 18px 0;
+    }
+
+    .modal-title{
+      font-size: 20px;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .modal-sub{
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .modal-body{
+      padding: 16px 18px 18px;
+    }
+
+    .reward-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .reward-card{
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(248,249,251,0.92));
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+      min-height: 132px;
+    }
+
+    .reward-card:hover{
+      transform: translateY(-2px);
+      border-color: rgba(36,87,255,0.32);
+      box-shadow: 0 12px 24px rgba(36,87,255,0.10);
+    }
+
+    .reward-card .name{
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .reward-card .desc{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .empty{
+      color: var(--muted);
+      font-size: 13px;
+      padding: 6px 0 0;
+    }
+
+    .footer-note{
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      padding: 0 2px 4px;
+    }
+
+    @media (max-width: 920px){
+      .topbar{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .main{ grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px){
+      .app{ padding: 10px; gap: 10px; }
+      .topbar{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .card-header{ padding: 12px 12px 0; }
+      .play-area, .section{ padding: 12px; }
+      .dice-grid{ gap: 8px; }
+      .controls{ gap: 8px; }
+      .btn{ flex: 1 1 calc(50% - 8px); }
+      .btn.full{ flex: 1 1 100%; }
+      .reward-grid{ grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
   <div class="app">
-    <main class="cabinet" id="cabinet">
-      <section class="screen title-screen active" id="screen-title">
-        <div class="title-card">
-          <div class="kicker">Trigger Chain Run</div>
-          <h1 class="title-logo">&#x9ab0;&#x9762;&#x8d4c;&#x573a;</h1>
-          <p class="title-copy">&#x6bcf;&#x56de;&#x5408;&#x6295;&#x51fa; 5 &#x679a;&#x9ab0;&#x5b50;&#xff0c;&#x51b3;&#x5b9a;&#x662f;&#x76f4;&#x63a5;&#x7ed3;&#x7b97;&#xff0c;&#x8fd8;&#x662f;&#x7ee7;&#x7eed;&#x91cd;&#x63b7;&#x53bb;&#x8d4c;&#x66f4;&#x9ad8;&#x9636;&#x7ec4;&#x5408;&#x3002;</p>
-          <div class="title-tags">
-            <span class="title-tag">5 &#x9ab0;&#x7ec4;&#x5408;</span>
-            <span class="title-tag">&#x7ee7;&#x7eed;&#x91cd;&#x63b7;&#x6295;&#x62e9;</span>
-            <span class="title-tag">&#x5546;&#x5e97; 3 &#x9009; 1</span>
+    <div class="topbar">
+      <div class="stat"><div class="label">当前关卡</div><div class="value" id="levelLabel">1 / 3</div></div>
+      <div class="stat"><div class="label">目标分</div><div class="value" id="targetLabel">120</div></div>
+      <div class="stat"><div class="label">当前累计分</div><div class="value" id="scoreLabel">0</div></div>
+      <div class="stat"><div class="label">剩余回合</div><div class="value" id="roundsLabel">3</div></div>
+      <div class="stat"><div class="label">骰子池</div><div class="value" id="poolLabel">8</div></div>
+      <div class="stat"><div class="label">保留区</div><div class="value" id="reserveLabel">0</div></div>
+      <div class="stat"><div class="label">当前阶段</div><div class="value" id="stageLabel">投掷</div></div>
+    </div>
+
+    <div class="main">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">骰子台</div>
+            <div class="subtle" id="roundHint">点击“投掷”开始本回合，随后可锁定或进入提交。</div>
           </div>
-          <button class="primary-launch" id="start-run-btn" type="button">&#x5f00;&#x59cb;&#x8fd9;&#x4e00;&#x5c40;</button>
-          <div class="title-foot">&#x76ee;&#x6807;&#x5f88;&#x7b80;&#x5355;&#xff1a;&#x770b;&#x6e05;&#x8fd9;&#x624b;&#x80fd;&#x6536;&#x591a;&#x5c11;&#xff0c;&#x8fd8;&#x5dee;&#x4ec0;&#x4e48;&#x80fd;&#x7206;&#xff0c;&#x7136;&#x540e;&#x51b3;&#x5b9a;&#x73b0;&#x5728;&#x6536;&#xff0c;&#x8fd8;&#x662f;&#x518d;&#x8d4c;&#x4e00;&#x6b21;&#x3002;</div>
+          <div class="subtle" id="roundCounter">本关第 1 回合</div>
         </div>
-      </section>
+        <div class="play-area">
+          <div class="dice-grid" id="diceGrid"></div>
+          <div class="preview" id="previewBox">尚未投掷。先开始本回合，再决定锁哪些骰子、要提交哪些骰子。</div>
 
-      <section class="screen battle-screen" id="screen-battle"></section>
-
-      <section class="screen shop-screen" id="screen-shop">
-        <div class="shop-shell">
-          <div class="shop-header">
-            <h2 class="shop-title">&#x9009;&#x4e00;&#x4e2a;&#x5f3a;&#x5316;</h2>
+          <div class="candidate-area">
+            <div class="card-title">候选方案</div>
+            <div class="subtle" id="candidateHint">提交阶段会自动生成最多 3 个方案，点击一张卡选择。</div>
+            <div class="candidate-list" id="candidateList"></div>
           </div>
-          <div class="shop-grid" id="shop-grid"></div>
-        </div>
-      </section>
 
-      <section class="screen summary-screen" id="screen-summary">
-        <div class="summary-card">
-          <div class="kicker" id="summary-kicker">&#x672c;&#x5c40;&#x603b;&#x7ed3;</div>
-          <h2 class="summary-title" id="summary-title">&#x8d4c;&#x684c;&#x5df2;&#x6e05;&#x573a;</h2>
-          <p class="summary-copy" id="summary-copy"></p>
-          <div class="summary-grid" id="summary-grid"></div>
-          <div class="summary-list" id="summary-list"></div>
-          <button class="secondary-launch" id="play-again-btn" type="button">&#x518d;&#x6765;&#x4e00;&#x5c40;</button>
+          <div class="controls">
+            <button class="btn" id="rollBtn">投掷 / 开始本回合</button>
+            <button class="btn secondary" id="rerollBtn">重掷</button>
+            <button class="btn ghost" id="confirmBtn">进入候选</button>
+            <button class="btn ghost" id="nextBtn">下一回合</button>
+            <button class="btn danger full" id="restartBtn">重开本局</button>
+          </div>
         </div>
-      </section>
-    </main>
+      </div>
+
+      <div class="panel-stack">
+        <div class="card">
+          <div class="section">
+            <div class="card-title">遗物</div>
+            <div class="subtle">开局随机 2 个，过关后再三选一补强构筑。</div>
+            <div class="relic-list" id="relicList"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section">
+            <div class="card-title">结算日志</div>
+            <div class="subtle">展示最近一次结算过程，方便调数值。</div>
+            <div class="log-box" id="logBox">
+              <div class="empty">这里会显示最近一次结算细节。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section">
+            <div class="card-title">最近记录</div>
+            <div class="subtle">保留最近几次得分结果。</div>
+            <div class="history-list" id="historyList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      核心验证点：骰子提交由玩家手选，不自动找最大牌型；牌型基础分与遗物加成会同时影响决策。
+    </div>
   </div>
 
-  <div class="damage-float" id="damage-float"></div>
-  <div class="enemy-alert-float" id="enemy-alert-float"></div>
-  <script src="./app.js"></script>
+  <div class="overlay" id="overlay">
+    <div class="modal" id="modal">
+      <div class="modal-head">
+        <h2 class="modal-title" id="modalTitle">过关奖励</h2>
+        <div class="modal-sub" id="modalSub">从剩余遗物中选择 1 个，随后进入下一关。</div>
+      </div>
+      <div class="modal-body">
+        <div class="reward-grid" id="rewardGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+const CFG={levels:[{target:120,rounds:3},{target:220,rounds:3},{target:360,rounds:3}],reserveCap:3,hand:{single:[0,1],scatter:[5,1],pair:[10,1.5],three:[24,2],straight:[30,2.5],fullHouse:[40,3.5],four:[55,4],five:[90,6]},relics:[{id:'lucky6',name:'幸运六',desc:'每个被提交的 6，额外 +12 筹码。'},{id:'snake',name:'蛇眼信仰',desc:'每个被提交的 1 或 2，最终倍率 +0.6。'},{id:'obsess',name:'成对执念',desc:'重复型牌型最终额外 ×1.5。'},{id:'temper',name:'节制之手',desc:'若恰好提交 2 个骰子，最终额外 ×2。'},{id:'greed',name:'贪婪之手',desc:'若提交 5 个骰子，额外 +25 筹码。'},{id:'oddRelic',name:'奇数美学',desc:'每个被提交的奇数点骰子，额外 +8 筹码。'}],diceDefs:{normal:{name:'普通骰',special:false},charge:{name:'充能骰',special:true},odd:{name:'奇数骰',special:true},snake:{name:'蛇眼骰',special:true}}};
+let idSeq=1;
+const S={lvl:0,score:0,rounds:3,round:1,phase:'lock',reroll:false,pool:[],reserve:[],board:[],owned:['lucky6','snake'],hist:[],log:[],cands:[],sel:null,shop:[],shopOpen:false};
+const E={lvl:document.getElementById('levelLabel'),target:document.getElementById('targetLabel'),score:document.getElementById('scoreLabel'),rounds:document.getElementById('roundsLabel'),pool:document.getElementById('poolLabel'),reserve:document.getElementById('reserveLabel'),stage:document.getElementById('stageLabel'),hint:document.getElementById('roundHint'),counter:document.getElementById('roundCounter'),dice:document.getElementById('diceGrid'),preview:document.getElementById('previewBox'),candHint:document.getElementById('candidateHint'),candList:document.getElementById('candidateList'),roll:document.getElementById('rollBtn'),reroll:document.getElementById('rerollBtn'),confirm:document.getElementById('confirmBtn'),next:document.getElementById('nextBtn'),restart:document.getElementById('restartBtn'),relicList:document.getElementById('relicList'),log:document.getElementById('logBox'),hist:document.getElementById('historyList'),overlay:document.getElementById('overlay'),modalTitle:document.getElementById('modalTitle'),modalSub:document.getElementById('modalSub'),rewardGrid:document.getElementById('rewardGrid')};
+const R=()=>Math.floor(Math.random()*6)+1;
+const RI=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1).replace(/\.0$/,'');
+const scoreFmt=n=>Math.round(n);
+const shuf=a=>a.slice().sort(()=>Math.random()-0.5);
+const text=v=>`[${v.join(', ')}]`;
+const handNames={single:'单骰',scatter:'散组',pair:'对子',three:'三条',straight:'顺子',fullHouse:'葫芦',four:'四条',five:'五条'};
+function die(type='normal',source='new'){const d={id:idSeq++,type,name:CFG.diceDefs[type].name,special:CFG.diceDefs[type].special,value:R(),locked:false,source,energy:0};return d;}
+function initPool(){S.pool=[];['normal','normal','normal','normal','normal','charge','odd','snake'].forEach(t=>S.pool.push(die(t,'pool')));S.pool=shuf(S.pool);}
+function drawPool(){return S.pool.length?S.pool.splice(RI(0,S.pool.length-1),1)[0]:die('normal','pool');}
+function currentPoolCount(){return S.pool.length+S.reserve.length;}
+function stage(){return S.phase==='lock'?'投掷':S.phase==='submit'?'提交':S.phase==='resolve'?'结算':S.phase==='shop'?'商店':S.phase==='reward'?'奖励':S.phase==='win'?'通关':S.phase==='lose'?'失败':'投掷';}
+function clampReserve(){while(S.reserve.length>CFG.reserveCap)S.pool.push(S.reserve.pop());}
+function startRound(){S.cands=[];S.sel=null;S.phase='lock';S.reroll=false;clampReserve();S.board=[...S.reserve];S.reserve=[];while(S.board.length<5){const d=drawPool();d.value=R();d.locked=false;d.source='new';S.board.push(d);}S.board.forEach(d=>{d.locked=false;d.source=d.source==='retained'?'retained':'new';});render();}
+function resetGame(){idSeq=1;S.lvl=0;S.score=0;S.rounds=CFG.levels[0].rounds;S.round=1;S.phase='lock';S.reroll=false;S.reserve=[];S.hist=[];S.log=[];S.cands=[];S.sel=null;S.shop=[];S.shopOpen=false;S.owned=['lucky6','snake'];initPool();startRound();hideOverlay();}
+function cur(){return CFG.levels[S.lvl];}
+function ownRelics(){return CFG.relics.filter(r=>S.owned.includes(r.id));}
+function have(id){return S.owned.includes(id);}
+function counts(vals){const m=new Map();vals.forEach(v=>m.set(v,(m.get(v)||0)+1));return m;}
+function consec(u){let b=1,r=1;for(let i=1;i<u.length;i++){r=u[i]===u[i-1]+1?r+1:1;b=Math.max(b,r);}return b;}
+function baseHand(vals){const n=vals.length;const c=[...counts(vals).values()].sort((a,b)=>b-a);const u=[...new Set(vals)].sort((a,b)=>a-b);const st=u.length>=4&&consec(u)>=4;let key=n===1?'single':'scatter';if(n>1){const m=c[0]||1,s=c[1]||0;if(m===5)key='five';else if(m===4)key='four';else if(m===3&&s===2)key='fullHouse';else if(st)key='straight';else if(m===3)key='three';else if(m===2)key='pair';}const [chips,mult]=CFG.hand[key];return {key,label:handNames[key],chips,mult};}
+function relicEffect(vals,handKey){let chip=0,mult=0,factor=1,desc=[];if(have('lucky6')){const n=vals.filter(v=>v===6).length;if(n){chip+=12*n;desc.push(`幸运六 +${12*n}`);}}if(have('snake')){const n=vals.filter(v=>v===1||v===2).length;if(n){mult+=0.6*n;desc.push(`蛇眼信仰 +${fmt(0.6*n)}倍率`);}}if(have('obsess')&&['pair','three','four','five','fullHouse'].includes(handKey)){factor*=1.5;desc.push('成对执念 ×1.5');}if(have('temper')&&vals.length===2){factor*=2;desc.push('节制之手 ×2');}if(have('greed')&&vals.length===5){chip+=25;desc.push('贪婪之手 +25');}if(have('oddRelic')){const n=vals.filter(v=>v%2===1).length;if(n){chip+=8*n;desc.push(`奇数美学 +${8*n}`);}}return {chip,mult,factor,desc};}
+function specialSubmitBonus(d){if(d.type==='charge')return {chip:d.energy*8, mult:1, note:d.energy?`充能骰消耗 ${d.energy} 层能量`:'充能骰无能量'};if(d.type==='odd'&&d.value%2===1)return {chip:10,mult:1,note:'奇数骰 +10'};if(d.type==='snake'&&(d.value===1||d.value===2))return {chip:0,mult:1.5,note:'蛇眼骰 +0.5倍率'};return {chip:0,mult:1,note:''};}
+function reservedGain(d){return d.type==='charge'?1:0;}
+function evalHand(dice){const vals=dice.map(d=>d.value);const hand=baseHand(vals);const relic=relicEffect(vals,hand.key);let chip=vals.reduce((a,b)=>a+b,0)+hand.chips+relic.chip;let mult=hand.mult+relic.mult;let notes=[...relic.desc],special=[];dice.forEach(d=>{const b=specialSubmitBonus(d);chip+=b.chip;mult*=b.mult; if(b.note)special.push(`${d.name}：${b.note}`);});const total=chip*mult*relic.factor;return {hand:hand.label,handKey:hand.key,sum:vals.reduce((a,b)=>a+b,0),baseChips:hand.chips,baseMult:hand.mult,relicChip:relic.chip,relicMult:relic.mult,relicFactor:relic.factor,relicDesc:notes,specialDesc:special,chip,mult,total};}
+function sig(a,b){return `${a.map(x=>x.id).sort().join('|')}::${b.map(x=>x.id).sort().join('|')}`;}
+function allPlans(){const plans=[];const n=S.board.length;const seen=new Set();for(let mask=1;mask<(1<<n);mask++){const sub=[],keep=[];for(let i=0;i<n;i++)(mask&(1<<i)?sub:keep).push(S.board[i]);const k=sig(sub,keep);if(seen.has(k))continue;seen.add(k);const evaled=evalHand(sub);const reserve=keep.slice(0,CFG.reserveCap);const overflow=keep.slice(CFG.reserveCap);const energyChanges=reserve.filter(d=>d.type==='charge').map(d=>`+1 ${d.name}`).join('；')||'无';const lowNote=noteFor(sub,keep);const nextFill=5-reserve.length;plans.push({key:k,submit:sub,keep,reserve,overflow,evaled,nextFill,energyChanges,note:lowNote});}
+plans.sort((a,b)=>b.evaled.total-a.evaled.total||b.keep.length-a.keep.length);const A=plans[0];const B=[...plans.slice(1)].filter(p=>!same(p,A)&&diff(p,A)).sort((a,b)=>buildScore(b)-buildScore(a))[0];const C=[...plans.slice(1)].filter(p=>!same(p,A)&&!same(p,B)).sort((a,b)=>buildScore(b)-buildScore(a))[0];const out=[A];if(B)out.push(B);if(C)out.push(C);out.forEach((p,i)=>{p.slot=['A','B','C'][i];p.title=i===0?'即时最高':i===1?'资源保留':'构筑倾向';});return out;}
+function same(a,b){return !a||!b||a.key===b.key;}
+function diff(a,b){return a.submit.length!==b.submit.length||a.evaled.handKey!==b.evaled.handKey||a.keep.length!==b.keep.length;}
+function buildScore(p){return p.evaled.total + p.keep.length*18 + (p.keep.some(d=>d.type==='charge')?30:0) + (p.keep.some(d=>d.type==='snake')?14:0)+ (p.keep.some(d=>d.type==='odd')?10:0);}
+function noteFor(sub,keep){const s=sub.some(d=>d.type==='charge'),k=keep.some(d=>d.type==='charge'),low=keep.some(d=>d.value<=2),odd=keep.some(d=>d.type==='odd'||d.value%2===1),snake=keep.some(d=>d.type==='snake'),r=keep.some(d=>d.type==='charge');if(sub.length===5)return'即时分最高';if(k)return'保留充能骰，利于下回合爆发';if(low&&snake)return'保留低点骰，利于蛇眼流';if(odd)return'保留奇数骰，利于奇数收益';if(s&&sub.length===2)return'两骰吃倍率，押长期';if(r)return'保留重复结构，利于下一回合';return'平衡即时分与留存';}
+function applyPlan(p){if(!p)return;const submitted=p.submit, kept=p.keep, reserve=kept.slice(0,CFG.reserveCap), overflow=kept.slice(CFG.reserveCap);const res=[];submitted.forEach(d=>{const b=specialSubmitBonus(d);if(d.type==='charge'&&d.energy){res.push(`充能骰 ${d.id} 消耗 ${d.energy} 层`);d.energy=0;}if(b.note)res.push(`${d.name}：${b.note}`);if(d.type==='charge')d.energy=0;});reserve.forEach(d=>{if(d.type==='charge'){d.energy+=1;res.push(`充能骰 ${d.id} 获得 +1 能量`);}d.source='retained';});overflow.forEach(d=>{d.source='new';S.pool.push(d);});submitted.forEach(d=>{d.locked=false;d.source='new';S.pool.push(d);});S.reserve=reserve;S.board=[...S.reserve];S.score+=scoreFmt(p.evaled.total);S.rounds--;S.phase='resolve';S.cands=[];S.sel=null;S.log=[`所选方案：${p.slot}. ${p.title}`,`提交骰子：${showDice(submitted)}`,`留存骰子：${showDice(kept)}`,`进入保留区：${showDice(reserve)}`,`溢出回池：${showDice(overflow)}`,`能量变化：${res.join('；')||'无'}`,`牌型：${p.evaled.hand}`,`点数和：${p.evaled.sum}`,`基础筹码：${p.evaled.baseChips}`,`基础倍率：${fmt(p.evaled.baseMult)}`,`遗物：${p.evaled.relicDesc.join('；')||'无'}`,`特殊骰：${p.evaled.specialDesc.join('；')||'无'}`,`最终得分：${scoreFmt(p.evaled.total)}`,`池/保留区：池 ${S.pool.length} | 保留 ${S.reserve.length}`];S.hist.unshift({title:`R${S.round} ${p.slot}`,score:scoreFmt(p.evaled.total),detail:`${p.evaled.hand} · 留 ${p.keep.length}`});S.hist=S.hist.slice(0,6);if(curClear()){openShop();}else if(S.rounds<=0){S.phase='lose';}render();}
+function showDice(ds){return ds.length?ds.map(d=>`${d.name}${d.type!=='normal'?`(${d.type})`:''}${d.value}[${d.energy||0}]`).join('、'):'无';}
+function curClear(){return S.score>=cur().target;}
+function startShop(){S.phase='shop';S.shop=buildShop();render();}
+function buildShop(){const opts=[];const addTypes=['normal','charge','odd','snake'];opts.push({type:'add',id:'add1',title:'获得特殊骰',desc:'随机加入 1 个骰子到骰子池',choose:()=>{const t=shuf(addTypes)[0];S.pool.push(die(t,'pool'));}});if(S.pool.filter(d=>d.type==='normal').length&&S.pool.length>5)opts.push({type:'del',id:'del1',title:'删除普通骰',desc:'从骰子池删除 1 个普通骰',choose:()=>{const i=S.pool.findIndex(d=>d.type==='normal');if(i>=0)S.pool.splice(i,1);}});const relics=CFG.relics.filter(r=>!S.owned.includes(r.id));if(relics.length)opts.push({type:'relic',id:relics[0].id,title:'获得遗物',desc:relics[0].name,choose:()=>S.owned.push(relics[0].id)});while(opts.length<3){opts.push({type:'add',id:`add${opts.length}`,title:'获得骰子',desc:'随机加入 1 个骰子到骰子池',choose:()=>{const t=shuf(addTypes)[0];S.pool.push(die(t,'pool'));}});}return shuf(opts).slice(0,3);}
+function openShop(){S.phase='shop';S.shop=buildShop();S.overlayOpen=true;E.overlay.classList.add('show');E.modalTitle.textContent='商店奖励';E.modalSub.textContent='选择一个奖励，继续下一关。';renderShop();}
+function renderShop(){E.rewardGrid.innerHTML='';S.shop.forEach((o,i)=>{const c=document.createElement('div');c.className='reward-card';c.innerHTML=`<div class='pill'>奖励</div><div class='name'>${o.title}</div><div class='desc'>${o.desc}</div>`;c.onclick=()=>{o.choose();E.overlay.classList.remove('show');S.phase=S.lvl>=CFG.levels.length-1&&curClear()?'win':'lock';if(S.phase==='win'){render();return;}S.lvl=Math.min(S.lvl+1,CFG.levels.length-1);S.score=0;S.rounds=CFG.levels[S.lvl].rounds;S.round=1;S.reserve=[];startRound();};E.rewardGrid.appendChild(c);});}
+function beginSubmit(){if(S.phase!=='lock')return;S.phase='submit';S.cands=allPlans();S.sel=S.cands[0]?.key||null;render();}
+function nextRound(){if(S.phase!=='resolve')return;if(S.rounds<=0||curClear())return;S.round++;startRound();}
+function roll(){if(S.phase==='ready')startRound();}
+function reroll(){if(S.phase!=='lock'||S.reroll)return;S.board.forEach(d=>{if(!d.locked)d.value=R();d.locked=false;});S.reroll=true;render();}
+function clickDie(i){if(S.phase!=='lock')return;const d=S.board[i];if(!d)return;d.locked=!d.locked;render();}
+function renderDice(){E.dice.innerHTML='';S.board.forEach((d,i)=>{const b=document.createElement('button');b.className=`die ${d.source} ${d.type}`;b.disabled=S.phase!=='lock';const tag=`${d.source==='retained'?'继承':'新抽'}${d.special?'·特':''}`;const bottom=`${d.name}${d.energy?` · ${d.energy}能`:''}`;b.innerHTML=`<span class='badge'>${tag}</span><span>${d.value}</span><span class='foot'>${bottom}</span>`;b.onclick=()=>clickDie(i);E.dice.appendChild(b);});}
+function renderTop(){E.lvl.textContent=`${S.lvl+1} / ${CFG.levels.length}`;E.target.textContent=String(cur().target);E.score.textContent=String(S.score);E.rounds.textContent=String(S.rounds);E.pool.textContent=String(S.pool.length);E.reserve.textContent=String(S.reserve.length);E.stage.textContent=stage();E.counter.textContent=`第 ${S.round} 回合`;}
+function renderRelics(){E.relicList.innerHTML=ownRelics().map(r=>`<div class='relic'><div class='pill'>遗物</div><div class='name'>${r.name}</div><div class='desc'>${r.desc}</div></div>`).join('')||`<div class='muted-box'>暂无遗物。</div>`;}
+function renderHistory(){E.hist.innerHTML=S.hist.map(h=>`<div class='history-item'><div class='top'><div>${h.title}</div><div class='score'>${h.score} 分</div></div><div class='meta'>${h.detail}</div></div>`).join('')||`<div class='muted-box'>尚无记录。</div>`;}
+function renderLog(){E.log.innerHTML=S.log.map(l=>`<div class='log-line'>${l}</div>`).join('')||`<div class='empty'>这里会显示最近一次结算细节。</div>`;}
+function renderCandidates(){E.candList.innerHTML='';if(S.phase!=='submit'){E.candHint.textContent='进入提交阶段后，这里会显示最多 3 个自动生成候选方案。';E.candList.innerHTML=`<div class='muted-box'>候选方案会自动出现，不需要手工穷举子集。</div>`;return;}E.candHint.textContent=`已生成 ${S.cands.length} 个方案，点击选择一个再确认。`;S.cands.forEach(p=>{const c=document.createElement('div');c.className='candidate-card'+(S.sel===p.key?' selected':'');c.innerHTML=`<div class='candidate-top'><div class='candidate-name'>${p.slot}. ${p.title}</div><div class='candidate-score'>${scoreFmt(p.evaled.total)} 分</div></div><div class='candidate-line'><strong>提交：</strong>${showDice(p.submit)}</div><div class='candidate-line'><strong>留存区：</strong>${showDice(p.reserve)} <strong>下回合补：</strong>${p.nextFill} 个</div><div class='candidate-line'><strong>能量变化：</strong>${p.energyChanges}</div><div class='candidate-note'>${p.note}</div>`;c.onclick=()=>{S.sel=p.key;render();};E.candList.appendChild(c);});}
+function renderButtons(){E.roll.disabled=S.phase!=='ready';E.reroll.disabled=!(S.phase==='lock'&&!S.reroll);E.confirm.disabled=!(S.phase==='lock'||(S.phase==='submit'&&S.cands.length));E.next.disabled=!(S.phase==='resolve');E.roll.textContent=S.phase==='ready'?'投掷 / 开始本回合':'本回合已开始';E.reroll.textContent=S.reroll?'重掷已用尽':'重掷';E.confirm.textContent=S.phase==='lock'?'进入候选':'确认提交';E.hint.textContent=S.phase==='lock'?'锁定后可重掷一次，再进入候选方案。':S.phase==='submit'?'从最多 3 个候选方案里选 1 个，不用手工穷举子集。':S.phase==='resolve'?'本回合已结算，留存骰子会进入下一回合。':S.phase==='shop'?'选择商店奖励，强化骰子池。':S.phase==='win'?'本局已通关，可重开继续测试。':S.phase==='lose'?'本局失败，建议重开。':'本局已准备好。';}
+function renderPreview(){if(S.phase==='submit'){const p=S.cands.find(x=>x.key===S.sel)||S.cands[0];E.preview.textContent=p?`当前选中 ${p.slot}. ${p.title}：提交 ${text(p.submit.map(d=>d.value))}，留存 ${text(p.reserve.map(d=>d.value))}，下回合补 ${p.nextFill} 个。`:'没有候选方案。';}else if(S.phase==='resolve'){E.preview.textContent='本回合已结算，留存骰子已进入保留区。';}else if(S.phase==='shop'){E.preview.textContent='选择一个奖励，强化骰子池并继续。';}else if(S.phase==='win'){E.preview.textContent='本局已通关，继续重开测试。';}else if(S.phase==='lose'){E.preview.textContent='本局失败，重开后继续调数值。';}else{E.preview.textContent='锁定骰子，重掷一次，然后选择一个候选方案。';}}
+function render(){renderTop();renderDice();renderRelics();renderHistory();renderLog();renderCandidates();renderButtons();renderPreview();}
+function commit(){if(S.phase!=='submit')return;const p=S.cands.find(x=>x.key===S.sel)||S.cands[0];if(!p)return;applyPlan(p);}
+function openReward(){startShop();}
+function hideOverlay(){E.overlay.classList.remove('show');S.shopOpen=false;}
+function showShop(){openReward();}
+function setupReward(){/* legacy no-op */}
+function addRelicReward(id){if(!S.owned.includes(id))S.owned.push(id);}
+function chooseShop(opt){opt.choose();}
+function startAfterShop(){if(S.lvl>=CFG.levels.length-1&&curClear()){S.phase='win';render();return;}S.lvl=Math.min(S.lvl+1,CFG.levels.length-1);S.score=0;S.rounds=CFG.levels[S.lvl].rounds;S.round=1;S.reserve=[];S.phase='lock';startRound();}
+function openOverlay(title,sub){E.overlay.classList.add('show');E.modalTitle.textContent=title;E.modalSub.textContent=sub;}
+function renderShopPanel(){E.rewardGrid.innerHTML='';S.shop.forEach((o,idx)=>{const c=document.createElement('div');c.className='reward-card';c.innerHTML=`<div class='pill'>商店</div><div class='name'>${o.title}</div><div class='desc'>${o.desc}</div>`;c.onclick=()=>{o.choose();E.overlay.classList.remove('show');const last=S.lvl>=CFG.levels.length-1;if(last){S.phase='win';render();return;}S.lvl=Math.min(S.lvl+1,CFG.levels.length-1);S.score=0;S.rounds=CFG.levels[S.lvl].rounds;S.round=1;S.reserve=[];S.phase='lock';startRound();};E.rewardGrid.appendChild(c);});}
+function openShop(){S.phase='shop';S.shop=makeShop();openOverlay(`第 ${S.lvl+1} 关奖励商店`,'从下面 3 个奖励里选 1 个。');renderShopPanel();render();}
+function makeShop(){const opts=[];const special=['charge','odd','snake'];opts.push({title:'获得一个新骰子',desc:`随机加入 1 个骰子到骰子池。`,choose:()=>S.pool.push(die(shuf(special.concat(['normal']))[0],'pool'))});if(S.pool.filter(d=>d.type==='normal').length&&S.pool.length>5)opts.push({title:'删除一个普通骰',desc:'从骰子池删除 1 个普通骰。',choose:()=>{const i=S.pool.findIndex(d=>d.type==='normal');if(i>=0)S.pool.splice(i,1);}});const relic=CFG.relics.find(r=>!S.owned.includes(r.id));if(relic)opts.push({title:'获得一个遗物',desc:relic.name,choose:()=>S.owned.push(relic.id)});while(opts.length<3)opts.push({title:'获得一个新骰子',desc:'随机加入 1 个骰子到骰子池。',choose:()=>S.pool.push(die(shuf(special.concat(['normal']))[0],'pool'))});return shuf(opts).slice(0,3);}
+function beginSubmitPhase(){if(S.phase!=='lock')return;S.phase='submit';S.cands=allPlans();S.sel=S.cands[0]?.key||null;render();}
+function next(){if(S.phase!=='resolve')return;startRound();}
+function onRestart(){resetGame();}
+function onOverlayClick(e){if(e.target===E.overlay&&S.phase==='reward')hideOverlay();}
+E.roll.onclick=roll;E.reroll.onclick=reroll;E.confirm.onclick=()=>{if(S.phase==='lock')beginSubmitPhase();else if(S.phase==='submit')commit();};E.next.onclick=next;E.restart.onclick=onRestart;E.overlay.onclick=onOverlayClick;
+resetGame();
+</script>
 </body>
 </html>
+
